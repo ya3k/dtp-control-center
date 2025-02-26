@@ -36,7 +36,7 @@ function TopNavBar() {
                 <Breadcrumb>
                     <BreadcrumbList>
                         {breadcrumbs.map((crumb, index) => (
-                            <div key={crumb.href} className="flex items-center ml-2">
+                            <div key={crumb.href} className="flex items-center">
                                 <BreadcrumbItem className={`font-medium ${crumb.href === pathname ? 'text-blue-600 font-bold text-lg' : 'text-gray-800'}`}>
                                     <BreadcrumbLink asChild>
                                         <Link href={crumb.href}>{crumb.label}</Link>

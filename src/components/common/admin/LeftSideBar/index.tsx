@@ -11,7 +11,6 @@ import {
 import { 
     LayoutDashboard, 
     Users, 
-    Settings, 
     LogOut,
     ChevronDown,
     Menu,
@@ -49,15 +48,6 @@ const navItems: NavItem[] = [
         subItems: [
             { name: "All Users", href: "/admin/dashboard/users" },
             { name: "Admins", href: "/admin/dashboard/users1" },
-        ],
-    },
-    { 
-        name: "Settings", 
-        href: "/admin/dashboard/users1", 
-        icon: Settings,
-        subItems: [
-            { name: "Profile", href: "/dashboard/settings/profile" },
-            { name: "Account", href: "/dashboard/settings/account" },
         ],
     },
 ];

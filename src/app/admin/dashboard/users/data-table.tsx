@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import {
     ColumnDef,
     ColumnFiltersState,
@@ -32,6 +31,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { useState } from "react";
 
 interface DataTableProps<TData> {
     columns: ColumnDef<TData>[];
@@ -39,12 +39,12 @@ interface DataTableProps<TData> {
 }
 
 export default function DataTable<TData>({ columns, data }: DataTableProps<TData>) {
-    const [sorting, setSorting] = React.useState<SortingState>([]);
-    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-    const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-    const [rowSelection, setRowSelection] = React.useState({});
-    const [roleFilter, setRoleFilter] = React.useState<string | null>(null);
-
+    const [sorting, setSorting] = useState<SortingState>([]);
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+    const [rowSelection, setRowSelection] = useState({});
+    const [roleFilter, setRoleFilter] = useState<string | null>(null);
+    const [globalFilter, setGlobalFilter] = useState<string>('');
     const table = useReactTable({
         data,
         columns,
@@ -77,24 +77,30 @@ export default function DataTable<TData>({ columns, data }: DataTableProps<TData
             table.getColumn("role")?.setFilterValue(role);
         }
     };
-
-    // Function to clear all filters
-    const clearAllFilters = () => {
-        setRoleFilter(null);               // Reset role UI state
-        table.getColumn("role")?.setFilterValue(null); // Clear role filter
-        table.getColumn("email")?.setFilterValue("");  // Clear email filter
-        setColumnFilters([]);              // Reset all column filters
+    // Handle multi-field filter input change
+    const handleGlobalFilterChange = (value: string) => {
+        setGlobalFilter(value);
+        // Apply filter to email, phone, and fullname columns
+        table.setGlobalFilter(value);
     };
-
     return (
         <div className="w-full">
             <div className="flex items-center py-4 gap-4">
                 <Input
-                    placeholder="Filter emails..."
-                    value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
-                    onChange={(event) =>
-                        table.getColumn("email")?.setFilterValue(event.target.value)
-                    }
+                    name="test1"
+                    placeholder="Filter email"
+                    value={((table.getColumn("email")?.getFilterValue() as string)) ?? ""}
+                    onChange={(event) => {
+                        const value = event.target.value;
+                        table.getColumn("email")?.setFilterValue(value);
+
+                    }}
+                    className="max-w-sm"
+                />
+                <Input
+                    placeholder="Filter email, phone, name..."
+                    value={globalFilter}
+                    onChange={(event) => handleGlobalFilterChange(event.target.value)}
                     className="max-w-sm"
                 />
                 <DropdownMenu>
@@ -113,13 +119,7 @@ export default function DataTable<TData>({ columns, data }: DataTableProps<TData
                                 {role}
                             </DropdownMenuItem>
                         ))}
-                        {/* Clear All option */}
-                        <DropdownMenuItem
-                            onClick={clearAllFilters}
-                            className="capitalize text-red-600 hover:text-red-800"
-                        >
-                            Clear All Filters
-                        </DropdownMenuItem>
+
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <DropdownMenu>
@@ -157,9 +157,9 @@ export default function DataTable<TData>({ columns, data }: DataTableProps<TData
                                         {header.isPlaceholder
                                             ? null
                                             : flexRender(
-                                                  header.column.columnDef.header,
-                                                  header.getContext()
-                                              )}
+                                                header.column.columnDef.header,
+                                                header.getContext()
+                                            )}
                                     </TableHead>
                                 ))}
                             </TableRow>
