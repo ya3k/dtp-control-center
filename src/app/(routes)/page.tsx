@@ -1,9 +1,11 @@
 import ActivitySection from "@/components/sections/landing/ActivitySection";
 import BookNextTourSection from "@/components/sections/landing/BookNextTourSection";
 import ChoosingSection from "@/components/sections/landing/ChoosingSection";
+import GallerySection from "@/components/sections/landing/GallerySection";
+
 import HeroSection from "@/components/sections/landing/HeroSection";
-import SubribeSection from "@/components/sections/landing/SubribeSection";
-import TestimonialsSection from "@/components/sections/landing/TestimonialsSection";
+import SubscribeSection from "@/components/sections/landing/SubscribeSection";
+
 
 export default function Home() {
   return (
@@ -12,8 +14,8 @@ export default function Home() {
       <ChoosingSection />
       <ActivitySection />
       <BookNextTourSection />
-      <TestimonialsSection />
-      <SubribeSection />
+      <GallerySection />
+      <SubscribeSection />
     </div>
   );
 }
