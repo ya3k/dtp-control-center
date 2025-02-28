@@ -1,11 +1,18 @@
-import MobileNav from "@/components/common/Navbar/MobileNav";
-import { Button } from "@/components/ui/button";
+"use client";
+import { usePathname } from "next/navigation";
 import React from "react";
 
+import MobileNav from "@/components/common/Navbar/MobileNav";
+import { Button } from "@/components/ui/button";
+import { links } from "@/configs/routes";
+import Link from "next/link";
+
 export default function Navbar() {
+  const pathname = usePathname();
+  const navLinks = [links.home, links.tour, links.blog, links.about];
   return (
     <header className="mb-8 bg-white">
-      <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-6 sm:px-6 md:max-w-4xl  lg:max-w-6xl">
+      <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-6 sm:px-6 md:max-w-4xl lg:max-w-6xl">
         <div data-svg-wrapper className="">
           <svg
             width="100"
@@ -32,16 +39,28 @@ export default function Navbar() {
             </defs>
           </svg>
         </div>
-        <div className="hidden justify-start items-center gap-14 md:flex">
-          <div className="text-[#2986fe] text-base font-bold">Trang chủ</div>
-          <div className="text-[#101010] text-base font-semibold">Tour</div>
-          <div className="text-[#101010] text-base font-semibold">
-            Về chúng tôi
-          </div>
-          <div className="text-[#101010] text-base font-semibold">Liên hệ</div>
-        </div>
-        <div className="hidden md:flex items-center gap-4">
-          <Button className="text-base bg-core">Đăng nhập</Button>
+        <nav className="hidden items-center justify-start gap-14 lg:flex">
+          {navLinks.map((link, index) => (
+            <div key={index}>
+              {pathname === link.href ? (
+                <Link prefetch href={link.href}>
+                  <h1 className="text-base font-bold text-[#2986fe]">
+                    {link.label}
+                  </h1>
+                </Link>
+              ) : (
+                <Link href={link.href} className="">
+                  <h1 className="text-base font-semibold text-[#101010] transition-colors duration-200 hover:text-core">
+                    {link.label}
+                   
+                  </h1>
+                </Link>
+              )}
+            </div>
+          ))}
+        </nav>
+        <div className="hidden items-center gap-4 lg:flex">
+          <Button className="bg-core text-base">Đăng nhập</Button>
           <Button variant="ghost" className="text-base">
             Đăng ký
           </Button>
