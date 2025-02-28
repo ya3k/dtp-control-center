@@ -1,28 +1,42 @@
-'use client';
+'use client'
+import SidebarBreadcrumb from "@/components/common/SideBar/SidebarBreadcrumb";
+import { SidebarDashboard } from "@/components/common/SideBar/SideBarDashboard";
 
-import Sidebar from "@/components/common/admin/LeftSideBar";
-import TopNavBar from "@/components/common/admin/TopNavBar";
-import { Suspense } from "react";
+import { Separator } from "@/components/ui/separator";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { LayoutDashboard, User } from "lucide-react";
+const adminItems = [
+    {
+        title: "Dashboard",
+        url: "/admin/dashboard",
+        icon: LayoutDashboard,
+    },
+    {
+        title: "Users",
+        url: "/admin/dashboard/users",
+        icon: User,
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+    },
+];
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+
     return (
-        <div className="flex min-h-screen bg-gray-50">
-            <Sidebar />
-            <div className="flex-1 ml-0 md:ml-20 lg:ml-64 transition-all duration-300 flex flex-col">
-                {/* Top Navigation Bar - Fixed */}
-                <header className="bg-white shadow-md p-4 flex justify-between items-center pl-16 md:pl-4 fixed top-0 right-0 left-0 md:left-20 lg:left-64 z-30 transition-all duration-300">
-                    <TopNavBar />
+        <SidebarProvider>
+            <SidebarDashboard title="Admin" items={adminItems} />
+            <SidebarInset>
+                <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+                    <div className="flex items-center gap-2 px-4">
+                        <SidebarTrigger className="-ml-1" />
+                        <Separator orientation="vertical" className="mr-2 h-4" />
+                        {/* breadcrum */}
+                        <SidebarBreadcrumb />
+                    </div>
                 </header>
-                
-                {/* Main Content - With padding top to account for fixed header */}
-                <main className="p-4 md:p-6 mt-16">
-                    <Suspense fallback={<div className="flex items-center justify-center h-64">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
-                    </div>}>
-                        {children}
-                    </Suspense>
-                </main>
-            </div>
-        </div>
+                <div className="ml-4">
+                    {children}
+                </div>
+            </SidebarInset>
+        </SidebarProvider>
     );
 }
