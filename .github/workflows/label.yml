@@ -20,3 +20,12 @@ jobs:
     - uses: actions/labeler@v4
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
+
+# .github/labeler.yml
+pulls:
+  - "src/**/*.ts": "typescript"
+  - "src/**/*.js": "javascript"
+  - "src/**/*.css": "css"
+
+issues:
+  - "*.md": "documentation"
