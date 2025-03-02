@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  transition-property: opacity, background, transform, filter;
+  transition-timing-function: ease-in-out;
+  transition-duration: 500ms;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -83,8 +89,6 @@
   }
 }
 
-
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -92,4 +96,38 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer components {
+
+
+  .map-marker {
+    @apply flex h-6 w-6 items-center justify-center rounded-full bg-core text-white;
+    @apply transform transition-all duration-300;
+    @apply hover:scale-110 hover:shadow-md;
+  }
+}
+
+@layer utilities {
+  .page-transition {
+    @apply translate-y-10 bg-transparent opacity-0 blur-md;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #cccccc;
 }

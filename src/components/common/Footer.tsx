@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <div className="mx-auto mb-4 grid max-w-2xl gap-x-12 px-4 sm:grid-cols-1 sm:pb-6 md:grid-cols-4 lg:max-w-6xl lg:px-8">
+    <footer className="mx-auto mb-4 grid max-w-2xl gap-x-12 px-4 sm:grid-cols-1 sm:pb-6 md:grid-cols-4 lg:max-w-6xl lg:px-8">
       <div className="flex flex-wrap items-center justify-between gap-y-4 md:flex-col">
         <div data-svg-wrapper className="">
           <svg
@@ -89,6 +89,6 @@ export default function Footer() {
           <p>Phone: 0123456789</p>
         </div>
       </div>
-    </div>
+    </footer>
   );
 }

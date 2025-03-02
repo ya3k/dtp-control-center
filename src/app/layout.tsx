@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
+import LoadingBar from "@/components/common/LoadingBar";
+import PageLoader from "@/providers/LoaderProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 const ibmPlexSans = IBM_Plex_Sans({
   variable: "--font-ibm-plex-sans",
@@ -21,7 +24,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${ibmPlexSans.className} antialiased`}>{children}</body>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
+      <body className={`${ibmPlexSans.className} antialiased`}>
+        <LoadingBar />
+        <PageLoader />
+        {children}
+        <Toaster closeButton/>
+        </body>
     </html>
   );
 }
