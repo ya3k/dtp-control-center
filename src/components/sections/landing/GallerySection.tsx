@@ -13,6 +13,7 @@ const data = [
   { id: 10, image: "/images/gallery/landing10.jpg", height: 500 },
 ];
 
+
 export default function GallerySection() {
   return (
     <section className="mx-auto mb-16 max-w-2xl px-4 sm:pb-6 lg:max-w-6xl lg:px-8">

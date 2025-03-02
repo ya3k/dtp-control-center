@@ -13,7 +13,7 @@ export default function MobileNav() {
   const [isOpen, setIsOpen] = React.useState(false);
   const navLinks = [links.home, links.tour, links.blog, links.about];
   return (
-    <div id="mobileNav" className="lg:hidden">
+    <nav id="mobileNav" className="lg:hidden">
       <Button onClick={() => setIsOpen(true)} className="bg-core">
         <Menu size={28} />
       </Button>
@@ -46,6 +46,6 @@ export default function MobileNav() {
           </div>
         </SheetContent>
       </Sheet>
-    </div>
+    </nav>
   );
 }

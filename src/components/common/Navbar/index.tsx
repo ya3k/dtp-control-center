@@ -5,7 +5,7 @@ import React from "react";
 import MobileNav from "@/components/common/Navbar/MobileNav";
 import { Button } from "@/components/ui/button";
 import { links } from "@/configs/routes";
-import Link from "next/link";
+import TransitionLink from "@/components/animation/TransitionLink";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -43,18 +43,18 @@ export default function Navbar() {
           {navLinks.map((link, index) => (
             <div key={index}>
               {pathname === link.href ? (
-                <Link prefetch href={link.href}>
+                <TransitionLink prefetch href={link.href}>
                   <h1 className="text-base font-bold text-[#2986fe]">
                     {link.label}
                   </h1>
-                </Link>
+                </TransitionLink>
               ) : (
-                <Link href={link.href} className="">
+                <TransitionLink href={link.href} className="">
                   <h1 className="text-base font-semibold text-[#101010] transition-colors duration-200 hover:text-core">
                     {link.label}
                    
                   </h1>
-                </Link>
+                </TransitionLink>
               )}
             </div>
           ))}
