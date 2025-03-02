@@ -25,7 +25,7 @@ export function SidebarDashboard({ items, title = 'Dashboard' }: SideBarDashboar
   const pathname = usePathname();
 
   return (
-    <Sidebar className="w-64 bg-gray-50 border-r border-gray-200">
+    <Sidebar className="w-64 bg-gray-50 border-r border-gray-300" style={{ boxShadow: "5px 0 15px rgba(0,0,0,0.1)" }}>
       <SidebarContent className="p-4">
         <SidebarGroup>
           <SidebarGroupLabel className="text-lg font-semibold text-gray-800 px-2 py-2">
@@ -40,7 +40,7 @@ export function SidebarDashboard({ items, title = 'Dashboard' }: SideBarDashboar
               >
                 {/* Use div instead of SidebarMenuItem (li) for the parent */}
                 <div className="relative">
-                  <CollapsibleTrigger  asChild>
+                  <CollapsibleTrigger asChild>
                     <div>
                       <SidebarMenuButton
                         className={cn(

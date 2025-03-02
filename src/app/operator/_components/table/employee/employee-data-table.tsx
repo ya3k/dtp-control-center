@@ -20,7 +20,7 @@ import {
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuTrigger,
-    DropdownMenuItem,
+
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
@@ -38,12 +38,11 @@ interface DataTableProps<TData> {
     data: TData[];
 }
 
-export default function DataTable<TData>({ columns, data }: DataTableProps<TData>) {
+export default function OperatorUsersDataTable<TData>({ columns, data }: DataTableProps<TData>) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [rowSelection, setRowSelection] = useState({});
-    const [roleFilter, setRoleFilter] = useState<string | null>(null);
     const [globalFilter, setGlobalFilter] = useState<string>('');
     const table = useReactTable({
         data,
@@ -64,19 +63,7 @@ export default function DataTable<TData>({ columns, data }: DataTableProps<TData
         },
     });
 
-    // Role options including "all" (which we'll use as part of clear all logic)
-    const roleOptions = ["tourist", "operator", "manager", "admin", "all"];
 
-    // Handle role filter change
-    const handleRoleFilter = (role: string) => {
-        if (role === "all") {
-            setRoleFilter(null);
-            table.getColumn("role")?.setFilterValue(null);
-        } else {
-            setRoleFilter(role);
-            table.getColumn("role")?.setFilterValue(role);
-        }
-    };
     // Handle multi-field filter input change
     const handleGlobalFilterChange = (value: string) => {
         setGlobalFilter(value);
@@ -103,25 +90,6 @@ export default function DataTable<TData>({ columns, data }: DataTableProps<TData
                     onChange={(event) => handleGlobalFilterChange(event.target.value)}
                     className="max-w-sm"
                 />
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="max-w-sm">
-                            Filter by Role: {roleFilter || "All"} <ChevronDown className="ml-2 h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                        {roleOptions.map((role) => (
-                            <DropdownMenuItem
-                                key={role}
-                                onClick={() => handleRoleFilter(role)}
-                                className="capitalize"
-                            >
-                                {role}
-                            </DropdownMenuItem>
-                        ))}
-
-                    </DropdownMenuContent>
-                </DropdownMenu>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="ml-auto">

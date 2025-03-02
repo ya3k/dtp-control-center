@@ -13,7 +13,7 @@ const adminItems = [
     },
     {
         title: "Users",
-        url: "/admin/dashboard/users",
+        url: "/admin/users",
         icon: User,
 
     },
@@ -30,7 +30,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <SidebarTrigger className="-ml-1" />
                         <Separator orientation="vertical" className="mr-2 h-4" />
                         {/* breadcrum */}
-                        <SidebarBreadcrumb />
+                        <div className="w-full border-b border-gray-300 pb-2">
+                            <SidebarBreadcrumb />
+                        </div>
                     </div>
                 </header>
                 <div className="ml-4">

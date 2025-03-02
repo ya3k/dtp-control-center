@@ -2,7 +2,9 @@ import React from 'react'
 
 function TourOperator() {
   return (
-    <div>TourOperator</div>
+    <div>
+      Operator Tour Page
+    </div>
   )
 }
 

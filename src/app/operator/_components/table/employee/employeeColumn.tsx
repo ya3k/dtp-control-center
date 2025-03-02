@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import type { ColumnDef } from "@tanstack/react-table"
+import { ArrowUpDown, MoreHorizontal } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -12,18 +12,20 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { User } from "@/types/user";
+} from "@/components/ui/dropdown-menu"
+import type { User } from "@/types/user"
 
-export const columns: ColumnDef<User>[] = [
+interface OperatorUsersColumnsProps {
+    onEdit: (user: User) => void
+    onDelete: (user: User) => void
+}
+
+export const operatorUsersColumns = ({ onEdit, onDelete }: OperatorUsersColumnsProps): ColumnDef<User>[] => [
     {
         id: "select",
         header: ({ table }) => (
             <Checkbox
-                checked={
-                    table.getIsAllPageRowsSelected() ||
-                    (table.getIsSomePageRowsSelected() && "indeterminate")
-                }
+                checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
                 onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
                 aria-label="Select all"
             />
@@ -46,10 +48,7 @@ export const columns: ColumnDef<User>[] = [
     {
         accessorKey: "fullname",
         header: ({ column }) => (
-            <Button
-                variant="ghost"
-                onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            >
+            <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
                 Full Name
                 <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
@@ -59,10 +58,7 @@ export const columns: ColumnDef<User>[] = [
     {
         accessorKey: "email",
         header: ({ column }) => (
-            <Button
-                variant="ghost"
-                onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            >
+            <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
                 Email
                 <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
@@ -82,26 +78,20 @@ export const columns: ColumnDef<User>[] = [
     {
         accessorKey: "createAt",
         header: "Created At",
-        cell: ({ row }) => (
-            <div>{new Date(row.getValue("createAt")).toLocaleString()}</div>
-        ),
+        cell: ({ row }) => <div>{new Date(row.getValue("createAt")).toLocaleString()}</div>,
     },
     {
         accessorKey: "updatedAt",
         header: "Updated At",
         cell: ({ row }) => (
-            <div>
-                {row.getValue("updatedAt")
-                    ? new Date(row.getValue("updatedAt")).toLocaleString()
-                    : "N/A"}
-            </div>
+            <div>{row.getValue("updatedAt") ? new Date(row.getValue("updatedAt")).toLocaleString() : "N/A"}</div>
         ),
     },
     {
         id: "actions",
         enableHiding: false,
         cell: ({ row }) => {
-            const user = row.original;
+            const user = row.original
 
             return (
                 <DropdownMenu>
@@ -113,17 +103,16 @@ export const columns: ColumnDef<User>[] = [
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem
-                            onClick={() => navigator.clipboard.writeText(user.id)}
-                        >
-                            Copy User ID
-                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.id)}>Copy User ID</DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <DropdownMenuItem>Edit User</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onEdit(user)}>Edit User</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onDelete(user)} className="text-red-600 focus:text-red-600">
+                            Delete User
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-            );
+            )
         },
     },
-];
+]
+

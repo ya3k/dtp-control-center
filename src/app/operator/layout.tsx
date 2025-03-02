@@ -3,23 +3,32 @@ import SidebarBreadcrumb from "@/components/common/SideBar/SidebarBreadcrumb";
 import { SidebarDashboard } from "@/components/common/SideBar/SideBarDashboard";
 
 import { Separator } from "@/components/ui/separator";
-import {  SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Calendar, Home, MapPin, Torus } from "lucide-react";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Calendar, Home, MapPin, Torus, Users } from "lucide-react";
 const operatorItems = [
     {
-        title: "Home",
+        title: "Dashboard",
         url: "/operator/dashboard",
         icon: Home,
     },
     {
         title: "Tours",
-        url: "/operator/dashboard/tours",
+        url: "/operator/tours",
         icon: Torus,
         subItems: [
-            { title: "All Tours", url: "/operator/dashboard/tours", icon: Calendar },
-            { title: "Locations", url: "/operator/dashboard/tours/locations", icon: MapPin },
+            { title: "Danh Sách Tours", url: "/operator/tours", icon: Calendar },
+            { title: "Tạo Tours", url: "/operator/dashboard/tours/locations", icon: MapPin },
         ],
     },
+    {
+        title: "Nhân Viên",
+        url: "/operator/employee",
+        icon: Users,
+        subItems: [
+            { title: "Danh sách nhân viên", url: "/operator/employee", icon: Calendar },
+
+        ],
+    }
 ];
 export default function OperatorLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -31,7 +40,9 @@ export default function OperatorLayout({ children }: { children: React.ReactNode
                         <SidebarTrigger className="font-bold" />
                         <Separator orientation="vertical" className="mr-2 h-4" />
                         {/* breadcrumb */}
-                        <SidebarBreadcrumb />
+                        <div className="w-full border-b border-gray-300 pb-2">
+                            <SidebarBreadcrumb />
+                        </div>
                     </div>
                 </header>
                 <div className="ml-4">
