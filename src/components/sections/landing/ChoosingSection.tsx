@@ -9,6 +9,7 @@ export default function ChoosingSection() {
     setIsMounted(true);
   }, []);
   return (
+    
     <section className="relative mx-auto mb-16 max-w-2xl px-4 sm:pb-6 lg:max-w-6xl lg:px-8">
       <Image
         className="absolute -right-20 top-0 max-md:hidden"

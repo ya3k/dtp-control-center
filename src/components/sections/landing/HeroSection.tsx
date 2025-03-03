@@ -24,14 +24,14 @@ export default function HeroSection() {
         <div className="mb-12 w-full justify-center md:mb-16 lg:w-1/2">
           <div className="relative flex justify-between w-full gap-4 h-full">
             <div>
-              <Image
-                src="/images/ky-co.jpg"
-                className="h-full w-full rounded-2xl object-cover outline outline-2 outline-core transition-transform hover:scale-105"
-                alt="hero"
-                priority
-                width={300}
-                height={300}
-              />
+                <Image
+                  src="/images/ky-co.jpg"
+                  className="h-full w-full rounded-2xl object-cover outline outline-2 outline-core transition-transform hover:scale-105"
+                  alt="hero"
+                  priority
+                  width={300}
+                  height={300}
+                />
             </div>
             <div className="">
               <div className="lg:h-[10%]"></div>
