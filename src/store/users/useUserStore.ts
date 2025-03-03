@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import type { User } from "@/types/user";
-import { mockUsers } from "./mock-data";
 
 interface UserState {
   users: User[];
