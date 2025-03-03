@@ -27,7 +27,11 @@ export const useUserStore = create<UserState>((set, get) => ({
     try {
       // Simulate API call delay
       await delay(1000);
-      set({ users: mockUsers, loading: false });
+      const response = await fetch("https://676bdfa5bc36a202bb860180.mockapi.io/api/v1/users");
+      if (!response.ok) throw new Error("Failed to fetch users");
+      const data = await response.json();
+      set({ users: data, loading: false });
+      // set({ users: mockUsers, loading: false });
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : "Failed to fetch users",

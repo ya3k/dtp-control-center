@@ -14,8 +14,13 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User } from "@/types/user";
+interface AdminUsersColumnsProps {
+    onViewDetail: (user: User) => void
+    onEdit: (user: User) => void
+    onDelete: (user: User) => void
+}
 
-export const adminUserscolumns: ColumnDef<User>[] = [
+export const adminUserscolumns = ({ onViewDetail, onEdit, onDelete }: AdminUsersColumnsProps): ColumnDef<User>[] => [
     {
         id: "select",
         header: ({ table }) => (
@@ -119,8 +124,11 @@ export const adminUserscolumns: ColumnDef<User>[] = [
                             Copy User ID
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <DropdownMenuItem>Edit User</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onViewDetail(user)}>View Details</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onEdit(user)}>Edit User</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onDelete(user)} className="text-red-600 focus:text-red-600">
+                            Delete User
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             );
