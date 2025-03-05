@@ -66,7 +66,7 @@ export default function Footer() {
       </div>
       <div className="mt-6">
         <h2 className="font-semibold md:mb-6 md:text-lg">Khám phá</h2>
-        <div className="flex gap-4 text-gray-600 md:flex-col text-sm md:text-base">
+        <div className="flex gap-4 text-sm text-gray-600 md:flex-col md:text-base">
           <p>Trang chủ</p>
           <p>Giới thiệu</p>
           <p>Điểm đến</p>
@@ -76,7 +76,7 @@ export default function Footer() {
         <h2 className="mb-2 font-semibold md:mb-6 md:text-lg">
           Liên kết nhanh
         </h2>
-        <div className="flex gap-4 text-gray-600 md:flex-col text-sm md:text-base">
+        <div className="flex gap-4 text-sm text-gray-600 md:flex-col md:text-base">
           <p>Gallery</p>
           <p>Blog</p>
           <p>Liên hệ</p>
@@ -84,7 +84,7 @@ export default function Footer() {
       </div>
       <div className="mt-6">
         <h2 className="mb-2 font-semibold md:mb-6 md:text-lg">Liên hệ</h2>
-        <div className="flex gap-4 text-gray-600 md:flex-col text-sm md:text-base">
+        <div className="flex gap-4 text-sm text-gray-600 md:flex-col md:text-base">
           <p>Email: example@gmail.com</p>
           <p>Phone: 0123456789</p>
         </div>
