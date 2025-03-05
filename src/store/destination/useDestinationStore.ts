@@ -7,7 +7,7 @@ interface DestinationState {
   error: string | null;
   fetchDestination: () => Promise<void>;
   createDestination: (
-    destination: Omit<Destination, "id" | "createdAt" | "lastModified" | "isDeleted">
+    destination: Omit<Destination, "id" | "createdAt" | "lastModified">
   ) => Promise<Destination>;
   updateDestination: (id: string, destinationData: Partial<Destination>) => Promise<Destination>;
   deleteDestination: (id: string) => Promise<void>;
@@ -22,9 +22,7 @@ export const useDestinationStore = create<DestinationState>((set, get) => ({
   fetchDestination: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await fetch(
-        "https://676bdfa5bc36a202bb860180.mockapi.io/api/v1/destinations"
-      );
+      const response = await fetch("https://localhost:7171/api/destination");
       if (!response.ok) {
         throw new Error("Failed to fetch destinations");
       }
@@ -39,24 +37,22 @@ export const useDestinationStore = create<DestinationState>((set, get) => ({
     }
   },
 
-  // Create a new destination using the backend API
+  // Create a new destination
   createDestination: async (destinationData) => {
     set({ loading: true, error: null });
     try {
-      const response = await fetch(
-        "https://676bdfa5bc36a202bb860180.mockapi.io/api/v1/destinations",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...destinationData,
-            createdAt: new Date().toISOString(),
-            isDeleted: false,
-          }),
-        }
-      );
+      const response = await fetch("https://localhost:7171/api/destination", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...destinationData,
+          createdAt: new Date().toISOString(),
+          createdBy: "tao",
+          isDeleted: false,
+        }),
+      });
       if (!response.ok) {
         throw new Error("Failed to create destination");
       }
@@ -75,23 +71,21 @@ export const useDestinationStore = create<DestinationState>((set, get) => ({
     }
   },
 
-  // Update an existing destination using the backend API
+  // Update an existing destination
   updateDestination: async (id, destinationData) => {
     set({ loading: true, error: null });
     try {
-      const response = await fetch(
-        `https://676bdfa5bc36a202bb860180.mockapi.io/api/v1/destinations/${id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...destinationData,
-            lastModified: new Date().toISOString(),
-          }),
-        }
-      );
+      const response = await fetch(`https://localhost:7171/api/destination/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...destinationData,
+          lastModified: new Date().toISOString(),
+          lastModifiedBy: "tao",
+        }),
+      });
       if (!response.ok) {
         throw new Error("Failed to update destination");
       }
@@ -112,16 +106,13 @@ export const useDestinationStore = create<DestinationState>((set, get) => ({
     }
   },
 
-  // Delete a destination using the backend API
+  // Delete a destination
   deleteDestination: async (id) => {
     set({ loading: true, error: null });
     try {
-      const response = await fetch(
-        `https://676bdfa5bc36a202bb860180.mockapi.io/api/v1/destinations/${id}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await fetch(`https://localhost:7171/api/destination/${id}`, {
+        method: "DELETE",
+      });
       if (!response.ok) {
         throw new Error("Failed to delete destination");
       }

@@ -1,47 +1,42 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Star } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Star } from "lucide-react";
 
-
-// Define the tour type based on the JSON response
 interface Tour {
-  id: string
-  title: string
-  companyName: string
-  description: string
-  avgStar: number
-  totalRating: number
-  onlyFromCost: number
+  id: string;
+  title: string;
+  companyName: string;
+  description: string;
+  avgStar: number;
+  totalRating: number;
+  onlyFromCost: number;
 }
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-async function fetchTours(): Promise<Tour[]> {
+// ✅ Sử dụng HTTP nếu API cho phép
+const API_URL = "http://localhost:7171/api/tour"; 
+
+async function getTours(): Promise<Tour[]> {
   try {
-    const response = await fetch('https://localhost:7171/api/tour', { 
-      cache: 'no-store',
-      headers: { "Content-Type": "application/json" }
-    });
+    const response = await fetch(API_URL, { cache: "no-store" });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch tours: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to fetch tours: ${response.status}`);
     }
-console.log(response)
+
     return await response.json();
   } catch (error) {
-    console.error('Error fetching tours:', error);
+    console.error("Error fetching tours:", error);
     return [];
   }
 }
 
-
 export default async function TourOperator() {
-  const tours = await fetchTours();
-  // console.log('Fetched tours:', JSON.stringify(tours, null, 2));
+  const tours = await getTours();
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Available Tours</h1>
-      
+
       {tours.length === 0 ? (
         <Card>
           <CardContent className="p-6 text-center text-muted-foreground">
@@ -65,20 +60,12 @@ export default async function TourOperator() {
                 <p className="text-muted-foreground mb-4 line-clamp-2">
                   {tour.description}
                 </p>
-                
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-sm font-medium">
-                      From ${tour.onlyFromCost.toFixed(2)}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {tour.companyName}
-                    </p>
+                    <p className="text-sm font-medium">From ${tour.onlyFromCost.toFixed(2)}</p>
+                    <p className="text-sm text-muted-foreground">{tour.companyName}</p>
                   </div>
-                  
-                  <Button variant="outline" size="sm">
-                    View Details
-                  </Button>
+                  <Button variant="outline" size="sm">View Details</Button>
                 </div>
               </CardContent>
             </Card>
@@ -86,5 +73,5 @@ export default async function TourOperator() {
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
@@ -15,6 +16,14 @@ import { cn } from "@/lib/utils";
 import SidebarItem from "@/types/sidebaritems";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronRight } from "lucide-react";
+import { NavUser } from "./side-bar-user";
+const user = {
+
+  name: "shadcn",
+  email: "m@example.com",
+  avatar: "/avatars/shadcn.jpg",
+
+}
 
 interface SideBarDashboardProps {
   items: SidebarItem[],
@@ -89,6 +98,9 @@ export function SidebarDashboard({ items, title = 'Dashboard' }: SideBarDashboar
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <NavUser user={user} />
+      </SidebarFooter>
     </Sidebar>
   );
 }
