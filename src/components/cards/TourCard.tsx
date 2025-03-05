@@ -4,19 +4,16 @@ import Image from "next/image";
 
 interface TourCardProps {
   tour: Tour;
-  isSelected: boolean;
-  onClick: () => void;
 }
 
-export default function TourCard({ tour, isSelected, onClick }: TourCardProps) {
+export default function TourCard({ tour }: TourCardProps) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("vi-VN").format(amount);
   };
 
   return (
     <div
-      className={`h-full transform animate-fade-up overflow-hidden rounded-xl border border-core bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${isSelected ? "ring-tour-primary ring-2" : ""}`}
-      onClick={onClick}
+      className={`ring-tour-primary h-full transform animate-fade-up overflow-hidden rounded-xl border border-core bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-lg`}
       id={`tour-${tour.id}`}
     >
       <div className="relative">
@@ -31,7 +28,7 @@ export default function TourCard({ tour, isSelected, onClick }: TourCardProps) {
       </div>
 
       <div className="p-3">
-        <h3 className="mb-2 line-clamp-2 h-10 text-sm font-semibold">
+        <h3 title={tour.title} className="mb-2 line-clamp-2 h-10 text-sm font-semibold">
           {tour.title}
         </h3>
 
@@ -53,7 +50,7 @@ export default function TourCard({ tour, isSelected, onClick }: TourCardProps) {
         </div>
 
         <div className="flex items-end justify-between">
-          <div>
+          <div className="flex gap-2">
             <span className="text-xs text-gray-500">Từ</span>
             <div className="inline-flex items-center text-sm font-semibold text-core">
               ₫ {formatCurrency(tour.price)}

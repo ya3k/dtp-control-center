@@ -10,6 +10,7 @@ body {
 
 @layer base {
   :root {
+    --core: 184.62,69.15%,36.86%;
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -111,6 +112,10 @@ body {
 @layer utilities {
   .page-transition {
     @apply translate-y-10 bg-transparent opacity-0 blur-md;
+  }
+  .animate-zoom-in-out {
+    will-change: transform;
+    backface-visibility: hidden;
   }
 }
 

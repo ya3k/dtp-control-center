@@ -7,7 +7,7 @@ import RotatingText from "@/components/animation/RotatingText";
 export default function ActivitySection() {
   return (
     <section className="mx-auto mb-16 max-w-2xl px-4 sm:pb-6 lg:max-w-6xl lg:px-8">
-      <h1 className="flex gap-2 text-4xl font-bold lg:gap-4 lg:text-6xl">
+      <h1 className="flex gap-2 text-2xl md:text-4xl font-bold lg:gap-4 lg:text-6xl">
         <span className="pt-2">Các hoạt động</span>
         <RotatingText
           texts={["đặc sắc", "độc đáo", "hấp dẫn"]}

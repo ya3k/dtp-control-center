@@ -64,7 +64,7 @@ const tours = [
 export default function PopulationSection() {
   return (
     <section className="mx-auto mb-16 flex max-w-2xl flex-col gap-6 px-4 sm:pb-6 lg:max-w-6xl lg:px-8">
-      <h1 className="text-3xl font-bold">Vui chơi hết cỡ tại Quy Nhơn</h1>
+      <h1 className="text-xl sm:text-3xl font-bold">Vui chơi hết cỡ tại Quy Nhơn</h1>
       <Carousel className="w-full" opts={{ loop: true }}>
         <CarouselContent className="-ml-1">
           {tours.map((tour, index) => (
