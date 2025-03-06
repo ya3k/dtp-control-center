@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tour } from "@/types/schema/TourSchema"
 
 // Define the Categories enum for display
-enum Categories {
+enum Frequency {
   Daily = "Daily",
   Weekly = "Weekly",
   Monthly = "Monthly"
@@ -21,29 +21,25 @@ enum Categories {
 
 // Predefined categories with their UUIDs
 const categoriesList = [
-  {
-    id: "eed52b33-866d-4eaa-bc49-ec5fc264830b",
-    name: Categories.Daily
-  },
-  {
-    id: "eed52b33-866d-4eaa-bc49-ec5fc264830c",
-    name: Categories.Weekly
-  },
-  {
-    id: "eed52b33-866d-4eaa-bc49-ec5fc264830d",
-    name: Categories.Monthly
-  }
+  { id: "eed52b33-866d-4eaa-bc49-ec5fc264830b", name: "Adventure" },
+  { id: "abc12345-def6-7890-ghij-klmnopqrstuv", name: "Cultural" }
+]
+
+const frequencyList = [
+  { id: Frequency.Daily, name: "Daily" },
+  { id: Frequency.Weekly, name: "Weekly" },
+  { id: Frequency.Monthly, name: "Monthly" }
 ]
 
 // Create a subset schema for the tour info step
-const tourInfoSchema = z
-  .object({
-    title: z.string().min(3, "Title must be at least 3 characters"),
-    category: z.string().uuid("Please select a valid category"),
-    openDay: z.string(),
-    closeDay: z.string(),
-    description: z.string().min(10, "Description must be at least 10 characters"),
-  });
+const tourInfoSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  category: z.string().uuid("Please select a valid category"),
+  scheduleFrequency: z.nativeEnum(Frequency, { errorMap: () => ({ message: "Please select a valid frequency" }) }),
+  openDay: z.string(),
+  closeDay: z.string(),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+})
 
 type TourInfoFormValues = z.infer<typeof tourInfoSchema>
 
@@ -59,40 +55,23 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
     defaultValues: {
       title: data.title || "",
       category: data.category || categoriesList[0].id,
+      scheduleFrequency: data.scheduleFrequency as Frequency || Frequency.Daily,
       openDay: data.openDay || "",
       closeDay: data.closeDay || "",
       description: data.description || "",
-
     },
   })
 
   const onSubmit = (values: TourInfoFormValues) => {
-    console.log(`form: ${values}`)
     updateData(values)
-    console.log(`form: ${values}`)
-
-    onNext();
-  }
-
-  // Helper function to get category name by UUID
-  const getCategoryName = (uuid: string) => {
-    const category = categoriesList.find(cat => cat.id === uuid)
-    return category ? category.name : "Unknown Category"
+    onNext()
   }
 
   return (
     <Card>
       <CardContent className="pt-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(
-            (values) => {
-              console.log("Form validation passed:", values);
-              onSubmit(values);
-            },
-            (errors) => {
-              console.error("Form validation failed:", errors);
-            }
-          )} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* title */}
             <FormField
               control={form.control}
@@ -107,6 +86,7 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
                 </FormItem>
               )}
             />
+
             {/* category */}
             <FormField
               control={form.control}
@@ -114,14 +94,11 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a category">
-                          {getCategoryName(field.value)}
+                          {categoriesList.find(cat => cat.id === field.value)?.name || "Select a category"}
                         </SelectValue>
                       </SelectTrigger>
                     </FormControl>
@@ -137,6 +114,35 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
                 </FormItem>
               )}
             />
+
+            {/* Schedule Frequency */}
+            <FormField
+              control={form.control}
+              name="scheduleFrequency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Frequency</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a frequency">
+                          {frequencyList.find(freq => freq.id === field.value)?.name || "Select a frequency"}
+                        </SelectValue>
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {frequencyList.map((freq) => (
+                        <SelectItem key={freq.id} value={freq.id}>
+                          {freq.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {/* Open Day */}
             <FormField
               control={form.control}
@@ -151,7 +157,8 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
                 </FormItem>
               )}
             />
-            {/* close Day */}
+
+            {/* Close Day */}
             <FormField
               control={form.control}
               name="closeDay"
@@ -165,7 +172,8 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
                 </FormItem>
               )}
             />
-            {/* des */}
+
+            {/* Description */}
             <FormField
               control={form.control}
               name="description"
@@ -181,7 +189,7 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
             />
 
             <div className="flex justify-end">
-              <Button type="submit" onClick={() => console.log("Button clicked")}>Next: Destinations</Button>
+              <Button type="submit">Next: Destinations</Button>
             </div>
           </form>
         </Form>
@@ -190,5 +198,5 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
   )
 }
 
-// Export the Categories enum and categoriesList for use in other parts of the application
-export { Categories, categoriesList }
+// Export the Categories enum and frequencyList for use in other parts of the application
+export { Frequency, frequencyList }

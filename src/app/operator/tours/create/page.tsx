@@ -20,13 +20,14 @@ export default function CreateTourPage() {
   // Initialize form data with default values
   const [formData, setFormData] = useState<Partial<Tour>>({
     title: "",
-    companyId: "eed52b33-866d-4eaa-bc49-ec5fc264830b",
+    companyId: "0aa50ae3-f3f1-44f9-a1f1-58287011bb3b",
     category: "",
     description: "",
     destinations: [],
     tickets: [],
     openDay: "",
     closeDay: "",
+    scheduleFrequency: ""
   })
 
   const updateFormData = (data: Partial<Tour>) => {
