@@ -26,11 +26,13 @@ const TicketSchema = z.object({
 
 const TourSchema = z.object({
   title: z.string(),
-  companyId: z.literal("eed52b33-866d-4eaa-bc49-ec5fc264830b"), // Fixed UUID
+  companyId: z.literal("eed52b33-866d-4eaa-bc49-ec5fc264830b"), 
   category: z.string().uuid(),
   description: z.string(),
   destinations: z.array(DestinationSchema),
-  tickets: z.array(TicketSchema)
+  tickets: z.array(TicketSchema),
+  openDay: z.string(),
+  closeDay: z.string(),
 });
 
 export type Tour = z.infer<typeof TourSchema>;

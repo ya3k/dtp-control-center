@@ -21,26 +21,29 @@ enum Categories {
 
 // Predefined categories with their UUIDs
 const categoriesList = [
-  { 
-    id: "eed52b33-866d-4eaa-bc49-ec5fc264830b", 
-    name: Categories.Daily 
+  {
+    id: "eed52b33-866d-4eaa-bc49-ec5fc264830b",
+    name: Categories.Daily
   },
-  { 
-    id: "eed52b33-866d-4eaa-bc49-ec5fc264830c", 
-    name: Categories.Weekly 
+  {
+    id: "eed52b33-866d-4eaa-bc49-ec5fc264830c",
+    name: Categories.Weekly
   },
-  { 
-    id: "eed52b33-866d-4eaa-bc49-ec5fc264830d", 
-    name: Categories.Monthly 
+  {
+    id: "eed52b33-866d-4eaa-bc49-ec5fc264830d",
+    name: Categories.Monthly
   }
 ]
 
 // Create a subset schema for the tour info step
-const tourInfoSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  category: z.string().uuid("Please select a valid category"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-})
+const tourInfoSchema = z
+  .object({
+    title: z.string().min(3, "Title must be at least 3 characters"),
+    category: z.string().uuid("Please select a valid category"),
+    openDay: z.string(),
+    closeDay: z.string(),
+    description: z.string().min(10, "Description must be at least 10 characters"),
+  });
 
 type TourInfoFormValues = z.infer<typeof tourInfoSchema>
 
@@ -56,13 +59,19 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
     defaultValues: {
       title: data.title || "",
       category: data.category || categoriesList[0].id,
+      openDay: data.openDay || "",
+      closeDay: data.closeDay || "",
       description: data.description || "",
+
     },
   })
 
   const onSubmit = (values: TourInfoFormValues) => {
+    console.log(`form: ${values}`)
     updateData(values)
-    onNext()
+    console.log(`form: ${values}`)
+
+    onNext();
   }
 
   // Helper function to get category name by UUID
@@ -75,7 +84,16 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
     <Card>
       <CardContent className="pt-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(
+            (values) => {
+              console.log("Form validation passed:", values);
+              onSubmit(values);
+            },
+            (errors) => {
+              console.error("Form validation failed:", errors);
+            }
+          )} className="space-y-6">
+            {/* title */}
             <FormField
               control={form.control}
               name="title"
@@ -89,15 +107,15 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
                 </FormItem>
               )}
             />
-
+            {/* category */}
             <FormField
               control={form.control}
               name="category"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
+                  <Select
+                    onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
@@ -119,7 +137,35 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
                 </FormItem>
               )}
             />
-
+            {/* Open Day */}
+            <FormField
+              control={form.control}
+              name="openDay"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Open Day</FormLabel>
+                  <FormControl>
+                    <Input type="datetime-local" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* close Day */}
+            <FormField
+              control={form.control}
+              name="closeDay"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Close Day</FormLabel>
+                  <FormControl>
+                    <Input type="datetime-local" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* des */}
             <FormField
               control={form.control}
               name="description"
@@ -135,7 +181,7 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
             />
 
             <div className="flex justify-end">
-              <Button type="submit">Next: Destinations</Button>
+              <Button type="submit" onClick={() => console.log("Button clicked")}>Next: Destinations</Button>
             </div>
           </form>
         </Form>

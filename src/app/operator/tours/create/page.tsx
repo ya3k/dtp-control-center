@@ -25,6 +25,8 @@ export default function CreateTourPage() {
     description: "",
     destinations: [],
     tickets: [],
+    openDay: "",
+    closeDay: "",
   })
 
   const updateFormData = (data: Partial<Tour>) => {
@@ -42,10 +44,9 @@ export default function CreateTourPage() {
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true)
-
+      console.log(JSON.stringify(formData))
       // Validate the complete form data
       const validatedData = TourSchema.parse(formData)
-
       // Send data to the backend
       const response = await fetch("https://localhost:7171/api/tour", {
         method: "POST",

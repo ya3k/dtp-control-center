@@ -25,7 +25,7 @@ async function fetchTours(): Promise<Tour[]> {
     if (!response.ok) {
       throw new Error(`Failed to fetch tours: ${response.status} ${response.statusText}`);
     }
-console.log(response)
+// console.log(response)
     return await response.json();
   } catch (error) {
     console.error('Error fetching tours:', error);
