@@ -13,11 +13,10 @@ const data = [
   { id: 10, image: "/images/gallery/landing10.jpg", height: 500 },
 ];
 
-
 export default function GallerySection() {
   return (
     <section className="mx-auto mb-16 max-w-2xl px-4 sm:pb-6 lg:max-w-6xl lg:px-8">
-      <h1 className="mb-8 text-3xl font-extrabold tracking-tight text-gray-900 md:text-6xl">
+      <h1 className="mb-8 text-2xl font-extrabold tracking-tight text-gray-900 md:text-3xl lg:text-6xl">
         Hình ảnh của du khách
       </h1>
       <Masonry data={data} />

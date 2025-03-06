@@ -1,9 +1,9 @@
 import Image from "next/image";
 
-import TransitionLink from "@/components/animation/TransitionLink";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function ExperienceSection() {
   const experiences = [
@@ -48,16 +48,16 @@ export default function ExperienceSection() {
   return (
     <section className="mx-auto mb-16 flex max-w-2xl px-4 flex-col gap-6 sm:pb-6 lg:max-w-6xl lg:px-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+        <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-gray-900">
           Kinh nghiệm du lịch Quy Nhơn
         </h2>
         {/* Show link only on mobile, hide on md and above */}
-        <TransitionLink href="/blog" className="text-blue-500 hidden hover:underline md:block">
+        <Link href="/blog" className="text-blue-500 hidden hover:underline md:block">
           Xem tất cả &gt;
-        </TransitionLink>
+        </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 px-12 md:px-0">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 px-4 md:px-0">
         {experiences.map((experience) => (
           <Card
             key={experience.id}
@@ -69,9 +69,8 @@ export default function ExperienceSection() {
                   <Image
                     src={experience.image}
                     alt={experience.title}
-                    layout="fill"
-                    objectFit="cover"
-                    className="transition-transform duration-300 hover:scale-105"
+                    fill
+                    className="transition-transform object-cover duration-300 hover:scale-105"
                   />
                 </div>
               </div>
@@ -138,7 +137,7 @@ export default function ExperienceSection() {
           variant="outline"
           className="w-full rounded-md border border-gray-300 bg-white py-3 text-gray-700 hover:bg-gray-50"
         >
-          <TransitionLink href="/blog">Xem tất cả</TransitionLink>
+          <Link href="/blog">Xem tất cả</Link>
         </Button>
       </div>
     </section>

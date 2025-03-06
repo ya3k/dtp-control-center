@@ -1,22 +1,14 @@
-import SubscribeSection from "@/components/sections/landing/SubscribeSection";
 import { Cloud, FlagTriangleLeft, SlidersHorizontal } from "lucide-react";
 import Image from "next/image";
 
+import SubscribeSection from "@/components/sections/landing/SubscribeSection";
+import Banner from "@/components/common/Banner";
+
+
 export default function About() {
   return (
-    <section className="pb-6 sm:pb-8 lg:pb-12">
-      <div className="relative mb-8 h-80">
-        <Image
-          src="/images/tour-qn.jpg"
-          alt="Hero Image"
-          width={500}
-          height={500}
-          className="h-full w-full object-center"
-        />
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20">
-          <h1 className="text-4xl font-bold text-white">Về Chúng Tôi</h1>
-        </div>
-      </div>
+    <main className="pb-6 sm:pb-8 lg:pb-12">
+      <Banner title2="Về chúng tôi" />
 
       <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-6 sm:px-6 md:max-w-4xl lg:max-w-6xl">
         <div className="container mx-auto px-5 py-10 md:flex">
@@ -52,7 +44,7 @@ export default function About() {
       </div>
 
       <div className="mx-auto mb-16 max-w-2xl px-5 sm:pb-6 lg:max-w-6xl">
-        <div className="container mx-auto flex w-full px-8 flex-col items-center justify-end gap-8 lg:gap-4 py-10 md:flex-row">
+        <div className="container mx-auto flex w-full flex-col items-center justify-end gap-8 px-8 py-10 md:flex-row lg:gap-4">
           <h1 className="text-3xl font-bold lg:w-1/3">
             Chúng tôi cung cấp dịch vụ tốt nhất
           </h1>
@@ -62,27 +54,33 @@ export default function About() {
                 <Cloud className="text-white" />
               </div>
               <h3 className="text-lg font-semibold">Tính toán thời tiết</h3>
-              <p className="hidden md:block">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+              <p className="hidden md:block">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit.
+              </p>
             </div>
             <div className="h-44 w-full space-y-1 rounded-2xl border-b border-r border-core bg-white p-4 md:w-64">
               <div className="w-fit rounded-full bg-core p-3">
                 <FlagTriangleLeft className="text-white" />
               </div>
               <h3 className="text-lg font-semibold">Hướng dẫn viên tốt nhất</h3>
-              <p className="hidden md:block">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+              <p className="hidden md:block">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit.
+              </p>
             </div>
             <div className="h-44 w-full space-y-1 rounded-2xl border-b border-r border-core bg-white p-4 md:w-64">
               <div className="w-fit rounded-full bg-core p-3">
                 <SlidersHorizontal className="text-white" />
               </div>
               <h3 className="text-lg font-semibold">Cá nhân hóa</h3>
-              <p className="hidden md:block">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+              <p className="hidden md:block">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit.
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       <SubscribeSection />
-    </section>
+    </main>
   );
 }
