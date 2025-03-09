@@ -1,90 +1,203 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Star } from "lucide-react"
+"use client"
 
+import { useState, useEffect, useCallback } from "react"
+import { Toaster } from "@/components/ui/sonner"
+import { toast } from "sonner"
+import LoadingSpinner from "@/components/common/LoadingSpinner"
+import OperatorToursDataTable from "../_components/table/tours/tour-data-table"
+import { operatorToursColumns } from "../_components/table/tours/tourCloumns"
+import { TourRes } from "@/types/schema/TourSchema"
+import Link from "next/link"
+import { UpdateTourDialog } from "@/components/operator/tours/edit-tour/edit-tour-dialog"
 
-// Define the tour type based on the JSON response
-interface Tour {
-  id: string
-  title: string
-  companyName: string
-  description: string
-  avgStar: number
-  totalRating: number
-  onlyFromCost: number
-}
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+// API configuration
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:7171'
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0" // Note: Only use this in development
 
-async function fetchTours(): Promise<Tour[]> {
+/**
+ * Fetches tours from the API
+ */
+const fetchTours = async (): Promise<TourRes[]> => {
   try {
-    const response = await fetch('https://localhost:7171/api/tour', { 
+    const response = await fetch(`${API_URL}/api/tour`, {
       cache: 'no-store',
       headers: { "Content-Type": "application/json" }
-    });
+    })
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch tours: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to fetch tours: ${response.status} ${response.statusText}`)
     }
-// console.log(response)
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
-    console.error('Error fetching tours:', error);
-    return [];
+    console.error('Error fetching tours:', error)
+    throw error // Let the component handle the error
   }
 }
 
+export default function TourOperator() {
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [tours, setTours] = useState<TourRes[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedTour, setSelectedTour] = useState<TourRes | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
-export default async function TourOperator() {
-  const tours = await fetchTours();
-  // console.log('Fetched tours:', JSON.stringify(tours, null, 2));
+  // Load tours data
+  const loadTours = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const toursData = await fetchTours()
+      setTours(toursData)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load tours'
+      setError(errorMessage)
+      toast.error(errorMessage)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Initialize data on component mount
+  useEffect(() => {
+    loadTours()
+  }, [loadTours])
+
+  // Handle refresh button click
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    try {
+      await loadTours()
+      toast.success('Data refreshed successfully')
+    } catch (error) {
+      // Error is already handled in loadTours
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
+
+  // Handle tour editing
+  const handleEditTour = (tour: TourRes) => {
+    setSelectedTour(tour)
+    setIsEditDialogOpen(true)
+  }
+
+  // Handle tour deletion
+  const handleDeleteTour = (tour: TourRes) => {
+    setSelectedTour(tour)
+    setIsDeleteDialogOpen(true)
+  }
+
+  // Setup data table columns with handlers
+  const columns = operatorToursColumns({
+    onEdit: handleEditTour,
+    onDelete: handleDeleteTour,
+  })
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Available Tours</h1>
-      
-      {tours.length === 0 ? (
-        <Card>
-          <CardContent className="p-6 text-center text-muted-foreground">
-            No tours available
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tours.map((tour) => (
-            <Card key={tour.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="flex justify-between items-center">
-                  <span>{tour.title}</span>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Star className="h-4 w-4 mr-1 text-yellow-500" fill="currentColor" />
-                    {tour.avgStar.toFixed(1)} ({tour.totalRating} ratings)
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4 line-clamp-2">
-                  {tour.description}
-                </p>
-                
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm font-medium">
-                      From ${tour.onlyFromCost.toFixed(2)}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {tour.companyName}
-                    </p>
-                  </div>
-                  
-                  <Button variant="outline" size="sm">
-                    View Details
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+    <div className="p-4 space-y-4">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Danh sách tour</h1>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleRefresh}
+            disabled={loading || isRefreshing}
+            className="px-4 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 transition-colors flex items-center gap-2"
+          >
+            {isRefreshing ? (
+              <>
+                <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span>Refreshing...</span>
+              </>
+            ) : (
+              <span>Refresh</span>
+            )}
+          </button>
+          {/* Uncomment when implemented */}
+          <Link href={`/operator/tours/create`}>
+            <button
+              disabled={loading || isRefreshing}
+              className="px-4 py-1.5 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 transition-colors flex items-center gap-2"
+            >
+              Tạo Tour mới
+            </button>
+          </Link>
+
+        </div>
+      </div>
+
+      {/* Error message with retry option */}
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-red-500 flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            {error}
+          </p>
+          <button onClick={loadTours} className="mt-2 text-sm text-blue-500 hover:text-blue-700">
+            Thử lại
+          </button>
         </div>
       )}
+
+      {/* Loading state */}
+      {loading && tours.length === 0 ? (
+        <div className="flex justify-center items-center h-64 bg-white rounded-lg shadow">
+          <LoadingSpinner />
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow">
+          <OperatorToursDataTable
+            columns={columns}
+            data={tours}
+          />
+          {tours.length === 0 && !loading && !error && (
+            <div className="flex justify-center items-center h-32 text-gray-500">
+              No tours found
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Edit Dialog */}
+      {selectedTour && (
+        <>
+          {/* Uncomment when implemented */}
+          {/* <EditTourDialog 
+            tour={selectedTour} 
+            open={isEditDialogOpen} 
+            onOpenChange={setIsEditDialogOpen} 
+            onTourUpdated={loadTours} 
+          /> */}
+        </>
+      )}
+
+      {/* Delete Dialog */}
+      {selectedTour && (
+        <UpdateTourDialog
+          tour={selectedTour}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          onUpdateSuccess={handleEditTour}
+        />
+      )}
+      <Toaster />
     </div>
   )
 }

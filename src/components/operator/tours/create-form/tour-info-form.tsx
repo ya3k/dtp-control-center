@@ -21,8 +21,8 @@ enum Frequency {
 
 // Predefined categories with their UUIDs
 const categoriesList = [
-  { id: "eed52b33-866d-4eaa-bc49-ec5fc264830b", name: "Adventure" },
-  { id: "abc12345-def6-7890-ghij-klmnopqrstuv", name: "Cultural" }
+  { id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "Adventure" },
+  { id: "a4ce6ec7-070a-4428-8290-c3af692a7783", name: "Cultural" }
 ]
 
 const frequencyList = [

@@ -1,15 +1,16 @@
+// useDestinationStore.ts
 import { create } from "zustand";
-import type { Destination } from "@/types/destination";
+import type { Destination, UpdateDestinationBody } from "@/types/destination";
 
 interface DestinationState {
   destinations: Destination[];
   loading: boolean;
   error: string | null;
+  currentQuery: string; // Lưu query dưới dạng chuỗi đơn giản
   fetchDestination: () => Promise<void>;
-  createDestination: (
-    destination: Omit<Destination, "id" | "createdAt" | "lastModified">
-  ) => Promise<Destination>;
-  updateDestination: (id: string, destinationData: Partial<Destination>) => Promise<Destination>;
+  setQuery: (query: string) => void;
+  createDestination: (destination: Omit<Destination, "name" | "latitude" | "longitude">) => Promise<Destination>;
+  updateDestination: (id: string, destinationData: Partial<UpdateDestinationBody>) => Promise<UpdateDestinationBody>;
   deleteDestination: (id: string) => Promise<void>;
 }
 
@@ -17,29 +18,36 @@ export const useDestinationStore = create<DestinationState>((set, get) => ({
   destinations: [],
   loading: false,
   error: null,
+  currentQuery: '',
 
-  // Fetch all destinations from the backend
+  setQuery: (query: string) => set({ currentQuery: query }),
+
   fetchDestination: async () => {
+    const query = get().currentQuery;
     set({ loading: true, error: null });
     try {
-      const response = await fetch("https://localhost:7171/api/destination");
-      if (!response.ok) {
-        throw new Error("Failed to fetch destinations");
-      }
-      const data = await response.json();
-      set({ destinations: data, loading: false });
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : "Failed to fetch destinations",
-        loading: false,
+      const response = await fetch(`https://localhost:7171/api/destination${query ? '?' + query : ''}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store',
       });
-      throw error;
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch destinations: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      set({ destinations: data.value || data, loading: false });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Unknown error', loading: false });
     }
   },
 
-  // Create a new destination
   createDestination: async (destinationData) => {
     set({ loading: true, error: null });
+    console.log(JSON.stringify(destinationData));
     try {
       const response = await fetch("https://localhost:7171/api/destination", {
         method: "POST",
@@ -48,19 +56,13 @@ export const useDestinationStore = create<DestinationState>((set, get) => ({
         },
         body: JSON.stringify({
           ...destinationData,
-          createdAt: new Date().toISOString(),
-          createdBy: "tao",
-          isDeleted: false,
         }),
       });
       if (!response.ok) {
         throw new Error("Failed to create destination");
       }
       const newDestination: Destination = await response.json();
-      set((state) => ({
-        destinations: [...state.destinations, newDestination],
-        loading: false,
-      }));
+      await get().fetchDestination();
       return newDestination;
     } catch (error) {
       set({
@@ -71,7 +73,6 @@ export const useDestinationStore = create<DestinationState>((set, get) => ({
     }
   },
 
-  // Update an existing destination
   updateDestination: async (id, destinationData) => {
     set({ loading: true, error: null });
     try {
@@ -82,8 +83,6 @@ export const useDestinationStore = create<DestinationState>((set, get) => ({
         },
         body: JSON.stringify({
           ...destinationData,
-          lastModified: new Date().toISOString(),
-          lastModifiedBy: "tao",
         }),
       });
       if (!response.ok) {
@@ -106,7 +105,6 @@ export const useDestinationStore = create<DestinationState>((set, get) => ({
     }
   },
 
-  // Delete a destination
   deleteDestination: async (id) => {
     set({ loading: true, error: null });
     try {
@@ -116,10 +114,7 @@ export const useDestinationStore = create<DestinationState>((set, get) => ({
       if (!response.ok) {
         throw new Error("Failed to delete destination");
       }
-      set((state) => ({
-        destinations: state.destinations.filter((dest) => dest.id !== id),
-        loading: false,
-      }));
+      await get().fetchDestination();
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : "Failed to delete destination",

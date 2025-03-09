@@ -11,13 +11,15 @@ import { toast } from 'sonner'
 import { useDestinationStore } from '@/store/destination/useDestinationStore'
 
 export interface Destination {
-    id: string;
-    name: string;
-    createdBy: string;
-    createdAt: string;
-    lastModified?: string;
-    lastModifiedBy?: string;
-    isDeleted: boolean;
+  id: string;
+  name: string;
+  latitude: string;
+  longitude: string
+  createdBy: string;
+  createdAt: string;
+  lastModified?: string;
+  lastModifiedBy?: string;
+  isDeleted: boolean;
 }
 
 interface EditDestinationDialogProps {
@@ -27,26 +29,32 @@ interface EditDestinationDialogProps {
 }
 
 const destinationFormSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-})
+  name: z.string().min(2, { message: "Tên điểm đến phải có ít nhất 2 ký tự." }),
+  latitude: z.string().min(-90).max(90), // Vĩ độ: -90 -> 90
+  longitude: z.string().min(-180).max(180), // Kinh độ: -180 -> 180
+});
 
 type DestinationFormValues = z.infer<typeof destinationFormSchema>
 
 function EditDestinationDialog({ destination, open, onOpenChange }: EditDestinationDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-    const { updateDestination } = useDestinationStore();
-  
+  const { updateDestination } = useDestinationStore();
+
   const form = useForm<DestinationFormValues>({
     resolver: zodResolver(destinationFormSchema),
     defaultValues: {
-      name: ""
+      name: "",
+      latitude: "", // Vĩ độ: -90 -> 90
+      longitude: "", // Kinh độ: -180 -> 180
     },
   })
 
   useEffect(() => {
     if (destination) {
       form.reset({
-        name: destination.name
+        name: destination.name,
+        latitude: destination.latitude,
+        longitude: destination.longitude,
       })
     }
   }, [destination, form]);
@@ -55,7 +63,13 @@ function EditDestinationDialog({ destination, open, onOpenChange }: EditDestinat
     if (!destination) return;
     setIsSubmitting(true);
     try {
-      await updateDestination(destination.id, data);
+      console.log(`id : ${destination.id} data : ${JSON.stringify(data)}`);
+      await updateDestination(destination.id, {
+        name: data.name,
+        latitude: data.latitude,
+        longitude: data.longitude
+      });
+
       toast.success(`${destination.name} is update to ${data.name}`);
       onOpenChange(false);
     } catch (error) {
@@ -64,7 +78,7 @@ function EditDestinationDialog({ destination, open, onOpenChange }: EditDestinat
       setIsSubmitting(false);
     }
   }
-  
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -83,6 +97,35 @@ function EditDestinationDialog({ destination, open, onOpenChange }: EditDestinat
                   <FormLabel>Name</FormLabel>
                   <FormControl>
                     <Input placeholder="Destination Name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* vi do */}
+            <FormField
+              control={form.control}
+              name="latitude"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Vĩ Độ</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nhập Vĩ Độ" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* kinh do  */}
+            <FormField
+              control={form.control}
+              name="longitude"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Kinh Độ</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nhập Kinh Độ" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

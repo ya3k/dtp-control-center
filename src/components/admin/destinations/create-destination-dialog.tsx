@@ -13,7 +13,8 @@ import { z } from "zod";
 // Định nghĩa schema validation cho Destination
 const destinationSchema = z.object({
   name: z.string().min(2, { message: "Tên điểm đến phải có ít nhất 2 ký tự." }),
-  isDeleted: z.boolean().default(false),
+  latitude: z.string().min(-90).max(90), // Vĩ độ: -90 -> 90
+  longitude: z.string().min(-180).max(180), // Kinh độ: -180 -> 180
 });
 
 type DestinationFormValues = z.infer<typeof destinationSchema>;
@@ -26,7 +27,8 @@ function CreateDestinationDialog() {
     resolver: zodResolver(destinationSchema),
     defaultValues: {
       name: "",
-      isDeleted: false,
+      latitude: "0", // Vĩ độ: -90 -> 90
+      longitude: "0", // Kinh độ: -180 -> 180
     },
   });
 
@@ -37,7 +39,7 @@ function CreateDestinationDialog() {
   async function onSubmit(data: DestinationFormValues) {
     setIsSubmitting(true);
     try {
-      console.log("New Destination:", data);
+      console.log("New Destination:", JSON.stringify(data));
       await createDestination(data);
       toast.success("Điểm đến được tạo thành công!");
       form.reset();
@@ -73,6 +75,43 @@ function CreateDestinationDialog() {
                   <FormLabel>Tên điểm đến</FormLabel>
                   <FormControl>
                     <Input placeholder="Hà Nội, Paris, Tokyo..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Vĩ độ */}
+            <FormField
+              control={form.control}
+              name="latitude"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Vĩ Độ</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Nhập Vĩ Độ"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+
+            {/* Kinh độ */}
+            <FormField
+              control={form.control}
+              name="longitude"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Kinh Độ</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Nhập Kinh Độ"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

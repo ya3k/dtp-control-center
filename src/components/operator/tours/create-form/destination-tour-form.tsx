@@ -41,7 +41,7 @@ export function DestinationForm({ data, updateData, onNext, onPrevious }: Destin
 
   const fetchDestination = async () => {
     try {
-      const response = await fetch("https://localhost:7171/api/destination",{
+      const response = await fetch("https://localhost:7171/api/destination", {
         headers: { "Content-Type": "application/json" }
       })
       const data = await response.json()
@@ -60,8 +60,8 @@ export function DestinationForm({ data, updateData, onNext, onPrevious }: Destin
       destinationId: "",
       startTime: "09:00:00",
       endTime: "10:00:00",
-      sortOrder: data.destinations?.length ? data.destinations.length + 1 : 1,
-      sortOrderByDate: data.destinations?.length ? data.destinations.length + 1 : 1,
+      sortOrder: data.destinations?.length ? data.destinations.length + 1 : 0,
+      sortOrderByDate: data.destinations?.length ? data.destinations.length + 1 : 0,
     },
   })
 
@@ -74,8 +74,8 @@ export function DestinationForm({ data, updateData, onNext, onPrevious }: Destin
       destinationId: "",
       startTime: "09:00:00",
       endTime: "10:00:00",
-      sortOrder: updatedDestinations.length + 1,
-      sortOrderByDate: updatedDestinations.length + 1,
+      sortOrder: updatedDestinations.length -1 + 1,
+      sortOrderByDate: updatedDestinations.length -1 + 1,
     })
   }
 

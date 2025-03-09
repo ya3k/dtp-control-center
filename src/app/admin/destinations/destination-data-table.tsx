@@ -1,96 +1,101 @@
+// destination-data-table.tsx
 "use client";
 
 import {
   ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
+  useReactTable,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
+  getFilteredRowModel,
+  VisibilityState,
 } from "@tanstack/react-table";
-import { ChevronDown } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { useState } from "react";
+
+interface TableState {
+  pageIndex: number;
+  pageSize: number;
+  globalFilter: string;
+  isDeletedFilter: string;
+  sorting: { id: string; desc: boolean }[];
+  columnVisibility: VisibilityState; // Thêm columnVisibility vào TableState
+}
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData>[];
   data: TData[];
+  tableState: TableState;
+  setTableState: (state: TableState) => void;
 }
 
-export default function AdminDestinationDataTable<TData>({ columns, data }: DataTableProps<TData>) {
-  // State for table features
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
-  // so we remove that if not needed.
-  const [globalFilter, setGlobalFilter] = useState<string>('');
-  // Pagination state (pageIndex starts at 0)
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-  });
+export default function AdminDestinationDataTable<TData>({ columns, data, tableState, setTableState }: DataTableProps<TData>) {
+  const { pageIndex, pageSize, globalFilter, isDeletedFilter, sorting, columnVisibility } = tableState;
 
-  // Create the table instance using TanStack Table hooks.
   const table = useReactTable({
     data,
     columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
+    state: {
+      pagination: { pageIndex, pageSize },
+      globalFilter,
+      sorting,
+      columnVisibility,
+    },
+    onPaginationChange: (updater) => {
+      const newPagination = typeof updater === "function" ? updater({ pageIndex, pageSize }) : updater;
+      setTableState({ ...tableState, pageIndex: newPagination.pageIndex, pageSize: newPagination.pageSize });
+    },
+    onGlobalFilterChange: (value) => setTableState({ ...tableState, globalFilter: value || "", pageIndex: 0 }),
+    onSortingChange: (updater) => {
+      const newSorting = typeof updater === "function" ? updater(sorting) : updater;
+      setTableState({ ...tableState, sorting: newSorting });
+    },
+    onColumnVisibilityChange: (updater) => {
+      const newVisibility = typeof updater === "function" ? updater(columnVisibility) : updater;
+      setTableState({ ...tableState, columnVisibility: newVisibility });
+    },
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    onPaginationChange: setPagination,
-    state: {
-      pagination,
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
+    manualPagination: true,
+    manualSorting: true,
+    manualFiltering: true,
   });
 
-  // Global filter handler for multi-field filtering.
-  const handleGlobalFilterChange = (value: string) => {
-    setGlobalFilter(value);
-    table.setGlobalFilter(value);
+  const handleIsDeletedFilterChange = (value: string) => {
+    setTableState({ ...tableState, isDeletedFilter: value, pageIndex: 0 });
   };
 
   return (
     <div className="w-full">
-      {/* Filters Section */}
       <div className="flex flex-wrap items-center gap-4 py-4">
-        {/* Global filter for multiple fields */}
         <Input
           placeholder="Filter name, createdBy, etc..."
           value={globalFilter}
-          onChange={(event) => handleGlobalFilterChange(event.target.value)}
+          onChange={(event) => table.setGlobalFilter(event.target.value)}
           className="max-w-sm"
         />
-        {/* Dropdown to toggle column visibility */}
+        <div className="flex items-center gap-2">
+          <span>Status: </span>
+          <select
+            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+            value={isDeletedFilter}
+            onChange={(e) => handleIsDeletedFilterChange(e.target.value)}
+          >
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="deleted">Deleted</option>
+          </select>
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -108,14 +113,15 @@ export default function AdminDestinationDataTable<TData>({ columns, data }: Data
                   checked={column.getIsVisible()}
                   onCheckedChange={(value) => column.toggleVisibility(!!value)}
                 >
-                  {column.id}
+                  {column.columnDef.header instanceof Function
+                    ? column.id
+                    : column.columnDef.header?.toString() || column.id}
                 </DropdownMenuCheckboxItem>
               ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
-      {/* Table Section */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -125,19 +131,23 @@ export default function AdminDestinationDataTable<TData>({ columns, data }: Data
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : header.column.columnDef.header instanceof Function
+                      ? header.column.columnDef.header(header.getContext())
+                      : header.column.columnDef.header}
                   </TableHead>
                 ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {typeof cell.column.columnDef.cell === "function"
+                        ? cell.column.columnDef.cell(cell.getContext())
+                        : null}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -153,30 +163,23 @@ export default function AdminDestinationDataTable<TData>({ columns, data }: Data
         </Table>
       </div>
 
-      {/* Pagination and Selection Info */}
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={data.length < pageSize}
+        >
+          Next
+        </Button>
       </div>
     </div>
   );

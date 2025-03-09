@@ -1,61 +1,97 @@
-"use client"
+// DestinationPage.tsx
+"use client";
 
-import { useEffect, useState } from "react"
-import { Toaster } from "@/components/ui/sonner"
-import LoadingSpinner from "@/components/common/LoadingSpinner"
-import { adminDestinationColumns } from "./destination-columns"
-import AdminDestinationDataTable from "./destination-data-table"
-import { Destination } from "@/types/destination"
-import { useDestinationStore } from "@/store/destination/useDestinationStore"
-import CreateDestinationDialog from "@/components/admin/destinations/create-destination-dialog"
-import EditDestinationDialog from "@/components/admin/destinations/edit-destination-dialog"
-import { DeleteDestinationDialog } from "@/components/admin/destinations/delete-destination-dialog"
+import { useEffect, useState } from "react";
+import { Toaster } from "@/components/ui/sonner";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
+import { adminDestinationColumns } from "./destination-columns";
+import AdminDestinationDataTable from "./destination-data-table";
+import { Destination } from "@/types/destination";
+import { useDestinationStore } from "@/store/destination/useDestinationStore";
+import CreateDestinationDialog from "@/components/admin/destinations/create-destination-dialog";
+import EditDestinationDialog from "@/components/admin/destinations/edit-destination-dialog";
+import { DeleteDestinationDialog } from "@/components/admin/destinations/delete-destination-dialog";
 
 export default function DestinationPage() {
-  const { destinations, error, loading, fetchDestination } = useDestinationStore();
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const { destinations, error, loading, fetchDestination, setQuery } = useDestinationStore();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [tableState, setTableState] = useState({
+    pageIndex: 0,
+    pageSize: 3,
+    globalFilter: '',
+    isDeletedFilter: 'all',
+    sorting: [{ id: "createdAt", desc: true }] as { id: string; desc: boolean }[], // Mặc định sắp xếp theo createdAt asc
+    columnVisibility: {
+      createdAt: false,
+      lastModified: false,
+    } as Record<string, boolean>,
+  });
 
+  // Build OData query as a plain string
+  const buildODataQuery = () => {
+    const { pageIndex, pageSize, globalFilter, isDeletedFilter, sorting } = tableState;
+    let query = '';
 
-  // Initial data fetch
-  useEffect(() => {
-    if (destinations.length === 0) {
-      fetchDestination()
+    // Pagination
+    query += `$top=${pageSize}&$skip=${pageIndex * pageSize}`;
+
+    // Global filter
+    if (globalFilter) {
+      query += `&$filter=contains(name, '${globalFilter}')`;
     }
-  }, [fetchDestination, destinations.length])
 
-  // Function to manually refresh data
+    // IsDeleted filter
+    if (isDeletedFilter !== 'all') {
+      const isDeletedValue = isDeletedFilter === 'deleted' ? 'true' : 'false';
+      const filterPart = `isDeleted eq ${isDeletedValue}`;
+      query += query.includes('$filter') ? ` and ${filterPart}` : `&$filter=${filterPart}`;
+    }
+
+    // Sorting (OData $orderby)
+    if (sorting.length > 0) {
+      const orderBy = sorting.map(s => `${s.id} ${s.desc ? 'desc' : 'asc'}`).join(',');
+      query += `&$orderby=${orderBy}`;
+    }
+
+    return query;
+  };
+
+  // Fetch data and update query when table state changes
+  useEffect(() => {
+    const query = buildODataQuery();
+    setQuery(query); // Lưu query OData dưới dạng chuỗi
+    fetchDestination();
+  }, [fetchDestination, setQuery, tableState]);
+
   const handleRefresh = async () => {
-    setIsRefreshing(true)
-    await fetchDestination()
-    setIsRefreshing(false)
-  }
-  // Handle viewdetail user
+    setIsRefreshing(true);
+    await fetchDestination();
+    setIsRefreshing(false);
+  };
+
   const handleViewDetail = (destination: Destination) => {
-    setSelectedDestination(destination)
-    setIsEditDialogOpen(true)
-  }
+    setSelectedDestination(destination);
+    setIsEditDialogOpen(true);
+  };
 
-  // Handle edit user
   const handleEditUser = (destination: Destination) => {
-    setSelectedDestination(destination)
-    setIsEditDialogOpen(true)
-  }
+    setSelectedDestination(destination);
+    setIsEditDialogOpen(true);
+  };
 
-  // Handle delete user
   const handleDeleteUser = (destination: Destination) => {
-    setSelectedDestination(destination)
-    setIsDeleteDialogOpen(true)
-  }
+    setSelectedDestination(destination);
+    setIsDeleteDialogOpen(true);
+  };
 
-  // Create columns with handlers
   const columns = adminDestinationColumns({
     onViewDetail: handleViewDetail,
     onEdit: handleEditUser,
     onDelete: handleDeleteUser,
-  })
+  });
 
   return (
     <div className="p-4">
@@ -76,12 +112,10 @@ export default function DestinationPage() {
               <span>Refresh</span>
             )}
           </button>
-          {/* create destination button */}
           <CreateDestinationDialog />
         </div>
       </div>
 
-      {/* Error message with retry option */}
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
           <p className="text-red-500 flex items-center gap-2">
@@ -102,31 +136,30 @@ export default function DestinationPage() {
             </svg>
             {error}
           </p>
-          <button onClick={fetchDestination} className="mt-2 text-sm text-blue-500 hover:text-blue-700">
+          <button onClick={() => fetchDestination()} className="mt-2 text-sm text-blue-500 hover:text-blue-700">
             Thử lại
           </button>
         </div>
       )}
 
-      {/* Main content with loading state */}
       {loading && destinations.length === 0 ? (
         <div className="flex justify-center items-center h-64">
           <LoadingSpinner />
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow">
-          <AdminDestinationDataTable columns={columns} data={destinations} />
+          <AdminDestinationDataTable
+            columns={columns}
+            data={destinations}
+            tableState={tableState}
+            setTableState={setTableState}
+          />
         </div>
       )}
 
-      {/* Edit Dialog */}
       <EditDestinationDialog destination={selectedDestination} open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />
-
-      {/* Delete Dialog */}
       <DeleteDestinationDialog destination={selectedDestination} open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen} />
-
       <Toaster />
     </div>
-  )
+  );
 }
-
