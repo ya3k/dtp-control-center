@@ -45,6 +45,11 @@ export default function AdminUsersDataTable<TData>({ columns, data }: DataTableP
     const [rowSelection, setRowSelection] = useState({});
     const [roleFilter, setRoleFilter] = useState<string | null>(null);
     const [globalFilter, setGlobalFilter] = useState<string>('');
+    const [pagination, setPagination] = useState({
+        pageIndex: 0, //initial page index
+        pageSize: 10, //default page size
+    });
+
     const table = useReactTable({
         data,
         columns,
@@ -56,7 +61,9 @@ export default function AdminUsersDataTable<TData>({ columns, data }: DataTableP
         getFilteredRowModel: getFilteredRowModel(),
         onColumnVisibilityChange: setColumnVisibility,
         onRowSelectionChange: setRowSelection,
+        onPaginationChange: setPagination,
         state: {
+            pagination,
             sorting,
             columnFilters,
             columnVisibility,

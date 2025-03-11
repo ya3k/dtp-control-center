@@ -17,7 +17,7 @@ const operatorItems = [
         icon: Torus,
         subItems: [
             { title: "Danh Sách Tours", url: "/operator/tours", icon: Calendar },
-            { title: "Tạo Tours", url: "/operator/dashboard/tours/locations", icon: MapPin },
+            { title: "Tạo Tours", url: "/operator/tours/create", icon: MapPin },
         ],
     },
     {
