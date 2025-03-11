@@ -13,8 +13,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import { Destination } from "@/types/destination"
 import { useDestinationStore } from "@/store/destination/useDestinationStore"
+import { Destination } from "@/schemaValidations/tour-operator.shema"
 
 interface DeleteDestinationDialogProps {
     destination: Destination | null
