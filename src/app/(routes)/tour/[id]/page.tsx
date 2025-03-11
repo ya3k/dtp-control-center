@@ -1,16 +1,10 @@
+import tourApiRequest from "@/apiRequests/tour";
 import TourDetail from "@/components/sections/tour-detail";
-import { TourData } from "@/types/tours";
+import { TourDetail as Tour } from "@/types/tours";
 
 async function fetchData(id: string) {
-  const res = await fetch(
-    `https://mock-api.autobot.site/api/@dtp/tour/f6a2f86c-549c-49d3-a894-b1e782e56df4`,
-  );
-  if (!res.ok) {
-    throw new Error("Failed to fetch data");
-  }
-  const data = await res.json();
-
-  return data;
+  const response = await tourApiRequest.getById(id);
+  return response.payload;
 }
 
 export default async function TourDetailPage({
@@ -19,8 +13,7 @@ export default async function TourDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const data: TourData = await fetchData(id);
-  console.log(data);
+  const data: Tour = await fetchData(id);
 
   return <TourDetail data={data} />;
 }

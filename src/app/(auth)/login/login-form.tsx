@@ -22,7 +22,6 @@ import { loginSchema, LoginSchemaType } from "@/schemaValidations/auth.schema";
 import LoadingButton from "@/components/common/loading/LoadingButton";
 import { useState } from "react";
 import authApiRequest from "@/apiRequests/auth";
-import { sessionToken, userRole } from "@/lib/https";
 
 export function LoginForm({
   className,
@@ -60,6 +59,7 @@ export function LoginForm({
       }
       setLoading(false);
     } catch (error: any) {
+      setLoading(false);
       console.error("Error during login:", error);
       throw error;
     }

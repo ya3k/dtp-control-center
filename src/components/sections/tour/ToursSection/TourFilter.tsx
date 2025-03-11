@@ -20,7 +20,7 @@ import {
 
 interface TourFilterProps {
   selectedFilter: string;
-  onSelectFilter: (filterId: string) => void;
+  onSelectFilter?: (filterId: string) => void;
   tourCount: number;
 }
 
@@ -29,7 +29,6 @@ const MAX = 100000000;
 
 export default function TourFilter({
   selectedFilter,
-  onSelectFilter,
   tourCount,
 }: TourFilterProps) {
   const [values, setValues] = useState([MIN, MAX]);

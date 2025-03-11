@@ -32,14 +32,8 @@ export default function ChoosingSection() {
     setIsMounted(true);
   }, []);
   return (
-    <section className="relative mx-auto mb-16 max-w-2xl px-4 sm:pb-6 lg:max-w-6xl lg:px-8">
-      <Image
-        className="absolute -right-20 top-0 max-lg:hidden"
-        width={153}
-        height={166}
-        alt=""
-        src="/images/plus.png"
-      />
+    <section className="mx-auto mb-16 max-w-2xl px-4 sm:pb-6 lg:max-w-6xl lg:px-8">
+  
       <div className="flex items-center justify-between max-lg:flex-wrap-reverse">
         <div className="relative h-[420px] w-full md:h-[540px] lg:h-[600px] lg:w-1/3">
           {isMounted && (

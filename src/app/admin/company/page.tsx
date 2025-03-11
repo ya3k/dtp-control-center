@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
+import LoadingSpinner from "@/components/common/loading/LoadingSpinner";
 
 import { useDestinationStore } from "@/store/destination/useDestinationStore";
 import { adminCompanyColumns } from "./company-column";

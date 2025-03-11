@@ -3,47 +3,50 @@ import React, { useMemo, useState } from "react";
 
 import TourCategory from "./TourCategory";
 import TourList from "./TourList";
-import { tourData } from "@/lib/data";
-import { useScroll } from "@/hooks/use-scroll";
 import TourMap from "@/components/sections/tour/ToursSection/TourMap";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import TourCard from "@/components/cards/TourCard";
 import { Button } from "@/components/ui/button";
+import { TourList as Tours } from "@/types/tours";
 
-export default function ToursSection() {
+
+interface ToursSectionProps{
+  data: Tours;
+}
+
+export default function ToursSection({data}: ToursSectionProps) {
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const { scrolled, scrollY } = useScroll(100);
 
   // Filter tours based on selected filter and category
-  const filteredTours = useMemo(() => {
-    return tourData.filter((tour) => {
-      // First, apply category filter
-      if (selectedCategory !== "all" && tour.category !== selectedCategory) {
-        return false;
-      }
+  // const filteredTours = useMemo(() => {
+  //   return data.filter((tour) => {
+  //     // First, apply category filter
+  //     if (selectedCategory !== "all" && tour.category !== selectedCategory) {
+  //       return false;
+  //     }
 
-      // Then, apply other filters
-      switch (selectedFilter) {
-        case "free-cancel":
-          return tour.freeCancel;
-        case "top-rated":
-          return tour.rating >= 4.5;
-        default:
-          return true;
-      }
-    });
-  }, [selectedFilter, selectedCategory]);
+  //     // Then, apply other filters
+  //     switch (selectedFilter) {
+  //       case "free-cancel":
+  //         return tour.freeCancel;
+  //       case "top-rated":
+  //         return tour.rating >= 4.5;
+  //       default:
+  //         return true;
+  //     }
+  //   });
+  // }, [selectedFilter, selectedCategory]);
 
-  // Handler for filter selection
-  const handleSelectFilter = (filterId: string) => {
-    setSelectedFilter(filterId);
-  };
+  // // Handler for filter selection
+  // const handleSelectFilter = (filterId: string) => {
+  //   setSelectedFilter(filterId);
+  // };
 
-  // Handler for category selection
-  const handleSelectCategory = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-  };
+  // // Handler for category selection
+  // const handleSelectCategory = (categoryId: string) => {
+  //   setSelectedCategory(categoryId);
+  // };
 
   return (
     <>
@@ -61,7 +64,7 @@ export default function ToursSection() {
                 <TourMap />
                 <TourCategory
                   selectedCategory={selectedCategory}
-                  onSelectCategory={handleSelectCategory}
+                  // onSelectCategory={handleSelectCategory}
                 />
               </div>
             </div>
@@ -69,9 +72,9 @@ export default function ToursSection() {
             {/*Right section*/}
             <div className="lg:basis-[70%]">
               <TourList
-                tours={filteredTours}
+                tours={data}
                 selectedFilter={selectedFilter}
-                onSelectFilter={handleSelectFilter}
+                // onSelectFilter={handleSelectFilter}
               />
             </div>
           </div>
@@ -87,7 +90,7 @@ export default function ToursSection() {
         <ScrollArea className="w-full rounded-md">
           {/* First row */}
           <div className="flex w-fit gap-4">
-            {filteredTours.map((tour) => (
+            {data.map((tour) => (
               <div key={tour.id} className="min-w-[250px] max-w-[300px] flex-1">
                 <TourCard key={tour.id} tour={tour} />
               </div>
@@ -97,7 +100,7 @@ export default function ToursSection() {
         </ScrollArea>
         <div className="w-full">
           <Button variant="outline" className="w-full">
-            Xem {filteredTours.length} ở Quy Nhơn
+            Xem {data.length} ở Quy Nhơn
           </Button>
         </div>
       </section>
