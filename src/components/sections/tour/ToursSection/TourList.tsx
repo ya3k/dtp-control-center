@@ -1,7 +1,6 @@
 "use client";
 import React, { useRef } from "react";
 
-import { Tour } from "@/lib/data";
 import TourFilter from "./TourFilter";
 import TourCard from "@/components/cards/TourCard";
 import {
@@ -14,18 +13,18 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TourList as Tours } from "@/types/tours";
 
 interface TourListProps {
-  tours: Tour[];
+  tours: Tours;
   selectedFilter: string;
-  onSelectFilter: (filterId: string) => void;
+  onSelectFilter?: (filterId: string) => void;
   isLoading?: boolean;
 }
 
 export default function TourList({
   tours,
   selectedFilter,
-  onSelectFilter,
   isLoading,
 }: TourListProps) {
   const listRef = useRef<HTMLDivElement>(null);
@@ -34,7 +33,7 @@ export default function TourList({
     <div ref={listRef} className="w-full">
       <TourFilter
         selectedFilter={selectedFilter}
-        onSelectFilter={onSelectFilter}
+        // onSelectFilter={onSelectFilter}
         tourCount={tours.length}
       />
 

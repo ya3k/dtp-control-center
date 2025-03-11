@@ -73,6 +73,7 @@ export function RegisterForm({
       router.push(links.login.href);
       setLoading(false);
     } catch (error) {
+      setLoading(false);
       console.error("Error during registration:", error);
       throw new Error("Registration failed");
     }

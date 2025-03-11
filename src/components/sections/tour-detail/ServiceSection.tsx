@@ -5,9 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 export default function ServiceSection() {
   const [showPackage, setShowPackage] = React.useState(false);
+  const [date, setDate] = React.useState<Date>()
+  
   return (
     <div className="space-y-8">
       <h2 className="relative pl-3 text-3xl font-bold before:absolute before:left-0 before:top-1/2 before:mr-2 before:h-8 before:w-1 before:-translate-y-1/2 before:bg-core before:content-['']">
@@ -23,10 +31,29 @@ export default function ServiceSection() {
           </div>
           <div className="space-y-2">
             <p className="text-sm">Xin chọn ngày đi tour</p>
-            <Button className="rounded-lg" variant="core">
-              <Calendar className="mr-1 h-4 w-4" />
-              <span>Xem trạng thái dịch vụ</span>
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button className="rounded-lg" variant="core">
+                  <Calendar className="mr-1 h-4 w-4" />
+                  <span>Xem trạng thái dịch vụ</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent>
+                <CalendarComponent
+                  mode="single"
+                  disabled={(date) =>
+                    date <= new Date() || date < new Date("1900-01-01")
+                  }
+                  selected={date}
+                  onSelect={setDate}
+                  initialFocus
+                />
+                <div className="mt-2 flex justify-between">
+                  <Button variant="outline" onClick={() => setDate(undefined)}>Xóa</Button>
+                  <Button variant="core" onClick={() => alert(date?.toLocaleDateString())}>Chọn</Button>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
           <div className="space-y-2">
             <p className="text-sm">Loại gói dịch vụ</p>
