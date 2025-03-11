@@ -19,11 +19,12 @@ export default function AuthLayout({
           height={400}
           src="/images/binhdinhtour3.png"
           alt="logo"
+          priority
           className="h-10 w-auto object-cover"
         />
       </Link>
       <div className="flex flex-1 items-center justify-center">
-        <div className="w-full max-w-xs">
+        <div className="w-full max-w-md">
           {children}
         </div>
       </div>
@@ -36,6 +37,7 @@ export default function AuthLayout({
         width={1000}
         height={1000}
       />
+     
     </div>
   </div>
   );

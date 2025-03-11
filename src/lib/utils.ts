@@ -12,3 +12,7 @@ export const formatPrice = (price: number) => {
     currency: "VND",
   });
 };
+
+export const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat("vi-VN").format(amount);
+};

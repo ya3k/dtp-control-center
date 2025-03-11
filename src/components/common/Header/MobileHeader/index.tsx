@@ -9,6 +9,16 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { sessionToken } from "@/lib/https";
 
 interface MobileHeaderProps {
   scrolled: boolean;
@@ -22,6 +32,10 @@ export default function MobileHeader({
   const pathname = usePathname();
   const [isOpen, setIsOpen] = React.useState(false);
   const navLinks = [links.home, links.tour, links.blog, links.about];
+
+  const handleLogOut = () => {
+    
+  }
   return (
     <header
       className={cn(
@@ -82,22 +96,44 @@ export default function MobileHeader({
               src="/images/binhdinhtour3.png"
               alt="logo"
               className="h-8 w-auto object-cover md:h-10"
+              priority
             />
           </Link>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              `${specialLinks?.includes(pathname) ? (scrolled ? "border-black text-black" : "text-white") : ""}`,
-              "md:text-sm lg:text-base",
-              `${specialLinks?.includes(pathname) ? "bg-transparent" : ""}`,
-              "sm:text-base",
-            )}
-          >
-            <Link href={links.login.href}><User /></Link>
-          </Button>
+        <div className="flex gap-2 items-center">
+          {sessionToken.value ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar>
+                  <AvatarImage src="https://github.com/shadcn.png" />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuItem>Giỏ hàng</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogOut}>Đăng xuất</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                `${specialLinks?.includes(pathname) ? (scrolled ? "border-black text-black" : "text-white") : ""}`,
+                "md:text-sm lg:text-base",
+                `${specialLinks?.includes(pathname) ? "bg-transparent" : ""}`,
+                "sm:text-base",
+              )}
+            >
+              <Link href={links.login.href}>
+                <User />
+              </Link>
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"

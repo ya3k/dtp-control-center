@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { adminUserscolumns} from "./columns";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
+import LoadingSpinner from "@/components/common/loading/LoadingSpinner";
 import { useUserStore } from "@/store/users/useUserStore";
 import AdminUsersDataTable from "./data-table";
 

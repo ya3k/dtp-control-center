@@ -55,7 +55,7 @@ export default function ToursSection() {
             {/*Left section*/}
             <div className={`w-full lg:basis-[30%]`}>
               <div
-                className={`h-[calc(100vh - 1rem)] sticky top-20 overflow-hidden px-12 transition-all duration-300 ease-in-out sm:px-0`}
+                className={`h-[calc(100vh - 1rem)] space-y-4 sticky top-20 overflow-hidden px-12 transition-all duration-300 ease-in-out sm:px-0`}
               >
                 {/*Tour Category*/}
                 <TourMap />

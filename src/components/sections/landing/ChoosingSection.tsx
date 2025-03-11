@@ -53,7 +53,7 @@ export default function ChoosingSection() {
                 loop
                 muted
                 playsInline
-                preload="auto"
+                
               >
                 <source src="/videos/choosing.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
