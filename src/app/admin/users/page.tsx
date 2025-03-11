@@ -1,10 +1,10 @@
 "use client"
 
+import LoadingSpinner from "@/components/common/loading/LoadingSpinner";
 import { useEffect, useState } from "react"
 import { useUserStore } from "@/store/users/useUserStore"
 import type { User } from "@/types/user"
 import { Toaster } from "@/components/ui/sonner"
-import LoadingSpinner from "@/components/common/LoadingSpinner"
 import { adminUserscolumns } from "./columns"
 import CreateUserDialog from "@/components/admin/users/create-user-dialog"
 import AdminUsersDataTable from "./data-table"

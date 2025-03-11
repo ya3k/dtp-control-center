@@ -38,7 +38,7 @@ export default function HeroSection() {
                 src="/images/ky-co.jpg"
                 className="h-full w-full rounded-2xl object-cover outline outline-2 outline-core transition-transform hover:scale-105"
                 alt="hero"
-                priority
+              
                 width={300}
                 height={300}
               />
@@ -49,7 +49,7 @@ export default function HeroSection() {
                 src="/images/quynhon1.jpg"
                 className="h-full w-full rounded-2xl object-cover outline outline-2 outline-core transition-transform hover:scale-105 lg:h-[90%]"
                 alt="hero"
-                priority
+                
                 width={300}
                 height={300}
               />
@@ -60,7 +60,7 @@ export default function HeroSection() {
                 className="h-full w-full rounded-2xl object-cover outline outline-2 outline-core transition-transform hover:scale-105 lg:h-[80%]"
                 src="/images/quynhon2.jpg"
                 alt="hero"
-                priority
+                
                 width={300}
                 height={300}
               />
