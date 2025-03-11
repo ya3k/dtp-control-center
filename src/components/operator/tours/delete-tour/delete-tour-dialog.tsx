@@ -15,10 +15,10 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import { TourRes } from "@/types/schema/TourSchema"
+import { TourResType } from "@/schemaValidations/tour-operator.shema"
 
 interface DeleteEmployeeDialogProps {
-    tour: TourRes | null
+    tour: TourResType | null
     open: boolean
     onOpenChange: (open: boolean) => void
 }

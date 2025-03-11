@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
 
 import OperatorToursDataTable from "../_components/table/tours/tour-data-table"
-import { operatorToursColumns } from "../_components/table/tours/tourCloumns"
+import { operatorToursColumns } from "../_components/table/tours/tourColumns"
 import Link from "next/link"
 import { UpdateTourDialog } from "@/components/operator/tours/edit-tour/edit-tour-dialog"
 import LoadingSpinner from "@/components/common/loading/LoadingSpinner"
