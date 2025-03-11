@@ -5,43 +5,24 @@ import { Input } from '@/components/ui/input'
 import { Loader2 } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from 'sonner'
 import { useDestinationStore } from '@/store/destination/useDestinationStore'
-
-export interface Destination {
-  id: string;
-  name: string;
-  latitude: string;
-  longitude: string
-  createdBy: string;
-  createdAt: string;
-  lastModified?: string;
-  lastModifiedBy?: string;
-  isDeleted: boolean;
-}
+import { DestinationType, UpdateDestinationBodySchema, UpdateDestinationBodyType } from '@/schemaValidations/admin-destination.schema'
 
 interface EditDestinationDialogProps {
-  destination: Destination | null
+  destination: DestinationType | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-const destinationFormSchema = z.object({
-  name: z.string().min(2, { message: "Tên điểm đến phải có ít nhất 2 ký tự." }),
-  latitude: z.string().min(-90).max(90), // Vĩ độ: -90 -> 90
-  longitude: z.string().min(-180).max(180), // Kinh độ: -180 -> 180
-});
-
-type DestinationFormValues = z.infer<typeof destinationFormSchema>
 
 function EditDestinationDialog({ destination, open, onOpenChange }: EditDestinationDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { updateDestination } = useDestinationStore();
 
-  const form = useForm<DestinationFormValues>({
-    resolver: zodResolver(destinationFormSchema),
+  const form = useForm<UpdateDestinationBodyType>({
+    resolver: zodResolver(UpdateDestinationBodySchema),
     defaultValues: {
       name: "",
       latitude: "", // Vĩ độ: -90 -> 90
@@ -59,7 +40,7 @@ function EditDestinationDialog({ destination, open, onOpenChange }: EditDestinat
     }
   }, [destination, form]);
 
-  async function onSubmit(data: DestinationFormValues) {
+  async function onSubmit(data: UpdateDestinationBodyType) {
     if (!destination) return;
     setIsSubmitting(true);
     try {

@@ -40,7 +40,7 @@ export const adminDestinationColumns = ({
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Name
+          Tên địa điểm
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
@@ -48,17 +48,17 @@ export const adminDestinationColumns = ({
     },
     {
       accessorKey: "latitude",
-      header: "Latitude",
+      header: "Vĩ độ",
       cell: ({ row }) => <div>{row.getValue("latitude")}</div>,
     },
     {
       accessorKey: "longitude",
-      header: "Longitude",
+      header: "Kinh độ",
       cell: ({ row }) => <div>{row.getValue("longitude")}</div>,
     },
     {
       accessorKey: "createdAt",
-      header: "Created At",
+      header: "Tạo lúc",
       cell: ({ row }) => {
         const value = row.getValue("createdAt") as string;
         return <div>{new Date(value).toLocaleString()}</div>;
@@ -66,12 +66,12 @@ export const adminDestinationColumns = ({
     },
     {
       accessorKey: "createdBy",
-      header: "Created By",
+      header: "Tạo bởi",
       cell: ({ row }) => <div>{row.getValue("createdBy") || "N/A"}</div>,
     },
     {
       accessorKey: "lastModified",
-      header: "Last Modified",
+      header: "Sửa lúc",
       cell: ({ row }) => {
         const value = row.getValue("lastModified") as string | null;
         return value ? new Date(value).toLocaleString() : "N/A";
@@ -79,13 +79,13 @@ export const adminDestinationColumns = ({
     },
     {
       accessorKey: "isDeleted",
-      header: "Is Deleted",
+      header: "Trạng Thái",
       cell: ({ row }) => {
         const isDeleted = row.getValue("isDeleted") as boolean;
         return isDeleted ? (
-          <Badge variant="destructive">Deleted</Badge>
+          <Badge variant="destructive">Xóa</Badge>
         ) : (
-          <Badge variant="active">Active</Badge>
+          <Badge variant="active">Hoạt Động</Badge>
         );
       },
     },
@@ -104,24 +104,24 @@ export const adminDestinationColumns = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>Tùy Chọn</DropdownMenuLabel>
               <DropdownMenuItem
                 onClick={() => navigator.clipboard.writeText(destination.id)}
               >
-                Copy Destination ID
+                Sao chép ID địa điểm
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => onViewDetail(destination)}>
-                View Details
+                Xem chi tiết
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onEdit(destination)}>
-                Edit Destination
+               Chỉnh sửa
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onDelete(destination)}
                 className="text-red-600 focus:text-red-600"
               >
-                Delete Destination
+                Xóa
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

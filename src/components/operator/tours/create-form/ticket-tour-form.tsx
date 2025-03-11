@@ -1,5 +1,4 @@
 "use client"
-import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus, Trash2, Loader2 } from "lucide-react"
@@ -9,21 +8,13 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tour, TicketKind } from "@/types/schema/TourSchema"
+import { TicketKind, TicketSchema, TourTicketType, TourType } from "@/schemaValidations/tour-operator.shema"
 
-// Create a schema for a single ticket using the imported TicketKind enum
-const ticketFormSchema = z.object({
-  defaultNetCost: z.coerce.number().positive("Net cost must be positive"),
-  defaultTax: z.coerce.number().nonnegative("Tax must be zero or positive"),
-  minimumPurchaseQuantity: z.coerce.number().int().positive("Minimum purchase quantity must be a positive integer"),
-  ticketKind: z.nativeEnum(TicketKind),
-})
 
-type TicketFormValues = z.infer<typeof ticketFormSchema>
 
 interface TicketFormProps {
-  data: Partial<Tour>
-  updateData: (data: Partial<Tour>) => void
+  data: Partial<TourType>
+  updateData: (data: Partial<TourType>) => void
   onPrevious: () => void
   onSubmit: () => void
   isSubmitting: boolean
@@ -35,8 +26,8 @@ const ticketKinds = Object.entries(TicketKind)
   .map(([key, value]) => ({ id: TicketKind[key as keyof typeof TicketKind], name: key }))
 
 export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmitting }: TicketFormProps) {
-  const form = useForm<TicketFormValues>({
-    resolver: zodResolver(ticketFormSchema),
+  const form = useForm<TourTicketType>({
+    resolver: zodResolver(TicketSchema),
     defaultValues: {
       defaultNetCost: 0,
       defaultTax: 0,
@@ -45,7 +36,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
     },
   })
 
-  const addTicket = (values: TicketFormValues) => {
+  const addTicket = (values: TourTicketType) => {
     const updatedTickets = [...(data.tickets || []), values]
     updateData({ tickets: updatedTickets })
 

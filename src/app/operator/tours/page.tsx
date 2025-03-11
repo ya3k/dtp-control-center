@@ -3,12 +3,13 @@
 import { useState, useEffect, useCallback } from "react"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
-import LoadingSpinner from "@/components/common/LoadingSpinner"
+
 import OperatorToursDataTable from "../_components/table/tours/tour-data-table"
 import { operatorToursColumns } from "../_components/table/tours/tourCloumns"
-import { TourRes } from "@/types/schema/TourSchema"
 import Link from "next/link"
 import { UpdateTourDialog } from "@/components/operator/tours/edit-tour/edit-tour-dialog"
+import LoadingSpinner from "@/components/common/loading/LoadingSpinner"
+import { TourResType } from "@/schemaValidations/tour-operator.shema"
 
 // API configuration
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:7171'
@@ -17,7 +18,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0" // Note: Only use this in develop
 /**
  * Fetches tours from the API
  */
-const fetchTours = async (): Promise<TourRes[]> => {
+const fetchTours = async (): Promise<TourResType[]> => {
   try {
     const response = await fetch(`${API_URL}/api/tour`, {
       cache: 'no-store',
@@ -37,10 +38,10 @@ const fetchTours = async (): Promise<TourRes[]> => {
 
 export default function TourOperator() {
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [tours, setTours] = useState<TourRes[]>([])
+  const [tours, setTours] = useState<TourResType[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedTour, setSelectedTour] = useState<TourRes | null>(null)
+  const [selectedTour, setSelectedTour] = useState<TourResType | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
@@ -80,13 +81,13 @@ export default function TourOperator() {
   }
 
   // Handle tour editing
-  const handleEditTour = (tour: TourRes) => {
+  const handleEditTour = (tour: TourResType) => {
     setSelectedTour(tour)
     setIsEditDialogOpen(true)
   }
 
   // Handle tour deletion
-  const handleDeleteTour = (tour: TourRes) => {
+  const handleDeleteTour = (tour: TourResType) => {
     setSelectedTour(tour)
     setIsDeleteDialogOpen(true)
   }
@@ -193,7 +194,12 @@ export default function TourOperator() {
         <UpdateTourDialog
           tour={selectedTour}
           open={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
+          onOpenChange={(isOpen) => {
+            setIsEditDialogOpen(isOpen);
+            if (!isOpen) {
+              loadTours(); // Reload lại dữ liệu sau khi đóng dialog
+            }
+          }}
           onUpdateSuccess={handleEditTour}
         />
       )}
