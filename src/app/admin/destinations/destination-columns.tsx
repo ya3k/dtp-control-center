@@ -12,8 +12,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Destination } from "@/types/destination";
 import { Badge } from "@/components/ui/badge";
+import { Destination } from "@/schemaValidations/tour-operator.shema";
 
 interface AdminDestinationColumnsProps {
   onViewDetail: (destination: Destination) => void;
