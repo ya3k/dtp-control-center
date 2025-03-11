@@ -4,7 +4,7 @@ import { SidebarDashboard } from "@/components/common/SideBar/SideBarDashboard";
 
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { LayoutDashboard, Map, User } from "lucide-react";
+import { Building2, LayoutDashboard, Map, User } from "lucide-react";
 const adminItems = [
     {
         title: "Dashboard",
@@ -21,6 +21,12 @@ const adminItems = [
         title: "Destinations",
         url: "/admin/destinations",
         icon: Map,
+
+    },
+    {
+        title: "Company",
+        url: "/admin/company",
+        icon: Building2,
 
     },
 ];
