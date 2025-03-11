@@ -4,11 +4,11 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { z } from "zod"
 import { toast } from "sonner"
-import { Tour, TourSchema } from "@/types/schema/TourSchema"
 import { FormStepper } from "@/components/operator/tours/create-form/tour-create-step-form"
 import { TourInfoForm } from "@/components/operator/tours/create-form/tour-info-form"
 import { DestinationForm } from "@/components/operator/tours/create-form/destination-tour-form"
 import { TicketForm } from "@/components/operator/tours/create-form/ticket-tour-form"
+import { TourSchema, TourType } from "@/schemaValidations/tour-operator.shema"
 
 
 export default function CreateTourPage() {
@@ -18,7 +18,7 @@ export default function CreateTourPage() {
 
 
   // Initialize form data with default values
-  const [formData, setFormData] = useState<Partial<Tour>>({
+  const [formData, setFormData] = useState<Partial<TourType>>({
     title: "",
     companyId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     category: "",
@@ -30,7 +30,7 @@ export default function CreateTourPage() {
     scheduleFrequency: ""
   })
 
-  const updateFormData = (data: Partial<Tour>) => {
+  const updateFormData = (data: Partial<TourType>) => {
     setFormData((prev) => ({ ...prev, ...data }))
   }
 

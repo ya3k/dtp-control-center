@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus, Trash2 } from "lucide-react"
@@ -10,22 +9,22 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tour } from "@/types/schema/TourSchema"
+import { DestinationSchema, TourDestinationType, TourType } from "@/schemaValidations/tour-operator.shema"
 
 // Create a schema for a single destination
-const destinationFormSchema = z.object({
-  destinationId: z.string().uuid("Please select a valid destination"),
-  startTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/, "Time must be in HH:MM:SS format"),
-  endTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/, "Time must be in HH:MM:SS format"),
-  sortOrder: z.coerce.number(),
-  sortOrderByDate: z.coerce.number(),
-})
+// const destinationFormSchema = z.object({
+//   destinationId: z.string().uuid("Please select a valid destination"),
+//   startTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/, "Time must be in HH:MM:SS format"),
+//   endTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/, "Time must be in HH:MM:SS format"),
+//   sortOrder: z.coerce.number(),
+//   sortOrderByDate: z.coerce.number(),
+// })
 
-type DestinationFormValues = z.infer<typeof destinationFormSchema>
+// type DestinationFormValues = z.infer<typeof destinationFormSchema>
 
 interface DestinationFormProps {
-  data: Partial<Tour>
-  updateData: (data: Partial<Tour>) => void
+  data: Partial<TourType>
+  updateData: (data: Partial<TourType>) => void
   onNext: () => void
   onPrevious: () => void
 }
@@ -54,8 +53,8 @@ export function DestinationForm({ data, updateData, onNext, onPrevious }: Destin
   useEffect(() => {
     fetchDestination()
   }, [])
-  const form = useForm<DestinationFormValues>({
-    resolver: zodResolver(destinationFormSchema),
+  const form = useForm<TourDestinationType>({
+    resolver: zodResolver(DestinationSchema),
     defaultValues: {
       destinationId: "",
       startTime: "09:00:00",
@@ -65,7 +64,7 @@ export function DestinationForm({ data, updateData, onNext, onPrevious }: Destin
     },
   })
 
-  const addDestination = (values: DestinationFormValues) => {
+  const addDestination = (values: TourDestinationType) => {
     const updatedDestinations = [...(data.destinations || []), values]
     updateData({ destinations: updatedDestinations })
 

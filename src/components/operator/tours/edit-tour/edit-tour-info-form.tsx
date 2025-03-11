@@ -1,6 +1,5 @@
 "use client"
 
-import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2 } from "lucide-react"
@@ -11,24 +10,19 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { TourInfoFormData, TourRes, UpdateTourInfoRequest } from "@/types/schema/TourSchema"
 import { toast } from "sonner"
+import {  TourInfoFormType, tourInfoSchema, TourResType, UpdateTourInfoRequest } from "@/schemaValidations/tour-operator.shema"
 
 
 // Zod schema for form validation
-const tourInfoSchema = z.object({
-    title: z.string().min(1, "Title is required"),
-    companyId: z.string().min(1, "Company ID is required"),
-    category: z.string().min(1, "Category is required"),
-    description: z.string().min(1, "Description is required"),
-})
+
 const categoriesList = [
     { id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "Adventure" },
     { id: "a4ce6ec7-070a-4428-8290-c3af692a7783", name: "Cultural" }
 ]
 interface TourInfoFormProps {
-    tour: TourRes
-    onUpdateSuccess: (updatedTour: TourRes) => void
+    tour: TourResType
+    onUpdateSuccess: (updatedTour: TourResType) => void
 }
 
 export function TourInfoForm({ tour, onUpdateSuccess }: TourInfoFormProps) {
@@ -54,7 +48,7 @@ export function TourInfoForm({ tour, onUpdateSuccess }: TourInfoFormProps) {
     }, [])
 
     // Tour Info form
-    const form = useForm<z.infer<typeof tourInfoSchema>>({
+    const form = useForm<TourInfoFormType>({
         resolver: zodResolver(tourInfoSchema),
         defaultValues: {
             title: tour.title,
@@ -67,7 +61,7 @@ export function TourInfoForm({ tour, onUpdateSuccess }: TourInfoFormProps) {
         },
     })
 
-    const onSubmit = async (data: TourInfoFormData) => {
+    const onSubmit = async (data: TourInfoFormType) => {
         setIsSubmitting(true)
         try {
             const updateData: UpdateTourInfoRequest = {

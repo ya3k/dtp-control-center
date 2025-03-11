@@ -2,29 +2,22 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { CreateDestinationBodySchema, CreateDestinationBodyType } from "@/schemaValidations/admin-destination.schema";
 import { useDestinationStore } from "@/store/destination/useDestinationStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plus } from "lucide-react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 
-// Định nghĩa schema validation cho Destination
-const destinationSchema = z.object({
-  name: z.string().min(2, { message: "Tên điểm đến phải có ít nhất 2 ký tự." }),
-  latitude: z.string().min(-90).max(90), // Vĩ độ: -90 -> 90
-  longitude: z.string().min(-180).max(180), // Kinh độ: -180 -> 180
-});
 
-type DestinationFormValues = z.infer<typeof destinationSchema>;
 
 function CreateDestinationDialog() {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createDestination } = useDestinationStore();
-  const form = useForm<DestinationFormValues>({
-    resolver: zodResolver(destinationSchema),
+  const form = useForm<CreateDestinationBodyType>({
+    resolver: zodResolver(CreateDestinationBodySchema),
     defaultValues: {
       name: "",
       latitude: "0", // Vĩ độ: -90 -> 90
@@ -36,7 +29,7 @@ function CreateDestinationDialog() {
     form.reset();
   };
 
-  async function onSubmit(data: DestinationFormValues) {
+  async function onSubmit(data: CreateDestinationBodyType) {
     setIsSubmitting(true);
     try {
       console.log("New Destination:", JSON.stringify(data));

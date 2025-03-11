@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Card, CardContent } from "@/components/ui/card"
-import { Tour } from "@/types/schema/TourSchema"
+import { TourType } from "@/schemaValidations/tour-operator.shema"
 
 // Define the Categories enum for display
 enum Frequency {
@@ -44,8 +44,8 @@ const tourInfoSchema = z.object({
 type TourInfoFormValues = z.infer<typeof tourInfoSchema>
 
 interface TourInfoFormProps {
-  data: Partial<Tour>
-  updateData: (data: Partial<Tour>) => void
+  data: Partial<TourType>
+  updateData: (data: Partial<TourType>) => void
   onNext: () => void
 }
 

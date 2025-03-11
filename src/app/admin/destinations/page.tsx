@@ -3,19 +3,19 @@
 
 import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
 import { adminDestinationColumns } from "./destination-columns";
 import AdminDestinationDataTable from "./destination-data-table";
-import { Destination } from "@/types/destination";
 import { useDestinationStore } from "@/store/destination/useDestinationStore";
 import CreateDestinationDialog from "@/components/admin/destinations/create-destination-dialog";
 import EditDestinationDialog from "@/components/admin/destinations/edit-destination-dialog";
 import { DeleteDestinationDialog } from "@/components/admin/destinations/delete-destination-dialog";
+import LoadingSpinner from "@/components/common/loading/LoadingSpinner";
+import { DestinationType } from "@/schemaValidations/admin-destination.schema";
 
 export default function DestinationPage() {
   const { destinations, error, loading, fetchDestination, setQuery } = useDestinationStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null);
+  const [selectedDestination, setSelectedDestination] = useState<DestinationType | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [tableState, setTableState] = useState({
@@ -72,17 +72,17 @@ export default function DestinationPage() {
     setIsRefreshing(false);
   };
 
-  const handleViewDetail = (destination: Destination) => {
+  const handleViewDetail = (destination: DestinationType) => {
     setSelectedDestination(destination);
     setIsEditDialogOpen(true);
   };
 
-  const handleEditUser = (destination: Destination) => {
+  const handleEditUser = (destination: DestinationType) => {
     setSelectedDestination(destination);
     setIsEditDialogOpen(true);
   };
 
-  const handleDeleteUser = (destination: Destination) => {
+  const handleDeleteUser = (destination: DestinationType) => {
     setSelectedDestination(destination);
     setIsDeleteDialogOpen(true);
   };
@@ -106,7 +106,7 @@ export default function DestinationPage() {
             {loading || isRefreshing ? (
               <>
                 <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                <span>Refreshing...</span>
+                <span>Làm mới...</span>
               </>
             ) : (
               <span>Refresh</span>
