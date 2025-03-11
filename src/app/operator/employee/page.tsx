@@ -7,9 +7,9 @@ import type { User } from "@/types/user"
 import { Toaster } from "@/components/ui/sonner"
 import { operatorUsersColumns } from "../_components/table/employee/employeeColumn"
 import LoadingSpinner from "@/components/common/loading/LoadingSpinner"
-import CreateEmployeeDialog from "@/components/common/operator/employee/create-employee-dialog"
-import EditEmployeeDialog from "@/components/common/operator/employee/edit-employee-dialog"
-import { DeleteEmployeeDialog } from "@/components/common/operator/employee/delete-employee-dialog"
+import CreateEmployeeDialog from "@/components/operator/employee/create-employee-dialog"
+import EditEmployeeDialog from "@/components/operator/employee/edit-employee-dialog"
+import { DeleteEmployeeDialog } from "@/components/operator/employee/delete-employee-dialog"
 
 export default function OperatorUsersPage() {
   const { users, loading, error, fetchUsers } = useUserStore()

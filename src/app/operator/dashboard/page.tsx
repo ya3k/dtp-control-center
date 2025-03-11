@@ -1,4 +1,4 @@
-import AdminUserChart from '@/components/common/admin/Chart/AdminUserChart'
+import AdminUserChart from '@/components/admin/Chart/AdminUserChart'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import React from 'react'
 
