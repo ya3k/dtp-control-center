@@ -36,7 +36,7 @@ export default function DestinationPage() {
     let query = '';
 
     // Pagination
-    query += `$top=${pageSize}&$skip=${pageIndex * pageSize}`;
+    query += `?$top=${pageSize}&$skip=${pageIndex * pageSize}`;
 
     // Global filter
     if (globalFilter) {

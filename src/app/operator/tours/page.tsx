@@ -1,3 +1,4 @@
+//tour page.tsx
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
@@ -10,75 +11,71 @@ import Link from "next/link"
 import { UpdateTourDialog } from "@/components/operator/tours/edit-tour/edit-tour-dialog"
 import LoadingSpinner from "@/components/common/loading/LoadingSpinner"
 import { TourResType } from "@/schemaValidations/tour-operator.shema"
-
-// API configuration
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:7171'
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0" // Note: Only use this in development
-
-/**
- * Fetches tours from the API
- */
-const fetchTours = async (): Promise<TourResType[]> => {
-  try {
-    const response = await fetch(`${API_URL}/api/tour`, {
-      cache: 'no-store',
-      headers: { "Content-Type": "application/json" }
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch tours: ${response.status} ${response.statusText}`)
-    }
-
-    return await response.json()
-  } catch (error) {
-    console.error('Error fetching tours:', error)
-    throw error // Let the component handle the error
-  }
-}
+import { useOpTourStore } from "@/store/operator/useOpTourStore"
 
 export default function TourOperator() {
+  const { tours, loading, error, fetchTour, setQuery } = useOpTourStore();
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [tours, setTours] = useState<TourResType[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [selectedTour, setSelectedTour] = useState<TourResType | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [tableState, setTableState] = useState({
+    pageIndex: 0,
+    pageSize: 3,
+    globalFilter: '',
+    isDeletedFilter: 'all',
+    sorting: [{ id: "createdAt", desc: true }] as { id: string; desc: boolean }[], // Mặc định sắp xếp theo createdAt asc
+    columnVisibility: {
+      createdAt: false,
+      lastModified: false,
+    } as Record<string, boolean>,
+  });
 
-  // Load tours data
-  const loadTours = useCallback(async () => {
-    setLoading(true)
-    setError(null)
+  // Build OData query as a plain string
+  const buildODataQuery = () => {
+    const { pageIndex, pageSize, globalFilter, isDeletedFilter, sorting } = tableState;
+    let query = '';
 
-    try {
-      const toursData = await fetchTours()
-      setTours(toursData)
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load tours'
-      setError(errorMessage)
-      toast.error(errorMessage)
-    } finally {
-      setLoading(false)
+    // Pagination
+    query += `?$top=${pageSize}&$skip=${pageIndex * pageSize}`;
+
+    // Global filter
+    if (globalFilter) {
+      query += `&$filter=contains(name, '${globalFilter}')`;
     }
-  }, [])
 
-  // Initialize data on component mount
+    // IsDeleted filter
+    if (isDeletedFilter !== 'all') {
+      const isDeletedValue = isDeletedFilter === 'deleted' ? 'true' : 'false';
+      const filterPart = `isDeleted eq ${isDeletedValue}`;
+      query += query.includes('$filter') ? ` and ${filterPart}` : `&$filter=${filterPart}`;
+    }
+
+    // Sorting (OData $orderby)
+    if (sorting.length > 0) {
+      const orderBy = sorting.map(s => `${s.id} ${s.desc ? 'desc' : 'asc'}`).join(',');
+      query += `&$orderby=${orderBy}`;
+    }
+
+    return query;
+  };
+  // Fetch data and update query when table state changes
   useEffect(() => {
-    loadTours()
-  }, [loadTours])
+    const query = buildODataQuery();
+    setQuery(query); // Lưu query OData dưới dạng chuỗi
+    fetchTour();
+  }, [fetchTour, setQuery, tableState]);
 
-  // Handle refresh button click
   const handleRefresh = async () => {
-    setIsRefreshing(true)
-    try {
-      await loadTours()
-      toast.success('Data refreshed successfully')
-    } catch (error) {
-      // Error is already handled in loadTours
-    } finally {
-      setIsRefreshing(false)
-    }
-  }
+    setIsRefreshing(true);
+    await fetchTour();
+    setIsRefreshing(false);
+  };
+
+  // const handleViewDetail = (destination: DestinationType) => {
+  //     setSelectedDestination(destination);
+  //     setIsEditDialogOpen(true);
+  //   };
 
   // Handle tour editing
   const handleEditTour = (tour: TourResType) => {
@@ -151,7 +148,7 @@ export default function TourOperator() {
             </svg>
             {error}
           </p>
-          <button onClick={loadTours} className="mt-2 text-sm text-blue-500 hover:text-blue-700">
+          <button onClick={() => fetchTour()} className="mt-2 text-sm text-blue-500 hover:text-blue-700">
             Thử lại
           </button>
         </div>
@@ -197,7 +194,7 @@ export default function TourOperator() {
           onOpenChange={(isOpen) => {
             setIsEditDialogOpen(isOpen);
             if (!isOpen) {
-              loadTours(); // Reload lại dữ liệu sau khi đóng dialog
+              fetchTour(); // Reload lại dữ liệu sau khi đóng dialog
             }
           }}
           onUpdateSuccess={handleEditTour}

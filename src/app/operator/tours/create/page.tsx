@@ -27,6 +27,7 @@ export default function CreateTourPage() {
     tickets: [],
     openDay: "",
     closeDay: "",
+    duration: 1,
     scheduleFrequency: ""
   })
 
@@ -49,7 +50,7 @@ export default function CreateTourPage() {
       // Validate the complete form data
       const validatedData = TourSchema.parse(formData)
       // Send data to the backend
-      const response = await fetch("https://localhost:7171/api/tour", {
+      const response = await fetch("http://209.97.160.178:3000/api/tour", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -3,12 +3,12 @@
 
 import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 import { useDestinationStore } from "@/store/destination/useDestinationStore";
 import { adminCompanyColumns } from "./company-column";
 import AdminCompanyDataTable from "./company-data-table";
 import CreateCompanyDialog from "@/components/admin/company/create-company-dialog";
+import LoadingSpinner from "@/components/common/loading/LoadingSpinner";
 
 interface Company {
   Id: string;

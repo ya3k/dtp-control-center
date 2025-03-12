@@ -11,7 +11,7 @@ class HttpError extends Error {
     this.status = status;
     this.payload = payload;
   }
-} 
+}
 
 class SessionToken {
   private sessionToken = "";
@@ -84,11 +84,25 @@ const request = async <Response>(
     body,
     method,
   });
-  const payload: Response = await response.json();
+  const contentType = response.headers.get("Content-Type");
+  let payload: Response | null = null;
+
+  if (response.status !== 204) {
+    const responseText = await response.text();
+    try {
+      payload = contentType && contentType.includes("application/json")
+        ? JSON.parse(responseText)
+        : responseText;
+    } catch (error) {
+      throw new HttpError({ status: response.status, payload: responseText });
+    }
+  }
+
   const data = {
     status: response.status,
     payload,
   };
+
   if (!response.ok) {
     return new HttpError(data);
   }

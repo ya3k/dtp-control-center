@@ -39,8 +39,11 @@ export const TourSchema = z.object({
   tickets: z.array(TicketSchema),
   openDay: z.string(),
   closeDay: z.string(),
+  duration: z.number(),
   scheduleFrequency: z.string(),
 });
+
+export type CreateTourBodyType = z.infer<typeof TourSchema>;
 
 // Tour response schema (includes ID)
 export const TourResSchema = TourSchema.extend({
@@ -63,13 +66,6 @@ export const DestinationUI = z.object({
 });
 export type Destination = z.infer<typeof DestinationUI>;
 
-// Form data schemas
-export const TourInfoFormSchema = TourSchema.pick({
-  title: true,
-  companyId: true,
-  category: true,
-  description: true,
-});
 
 export const tourInfoSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -80,8 +76,6 @@ export const tourInfoSchema = z.object({
 
 
 export type TourInfoFormType = z.infer<typeof tourInfoSchema>;
-
-export type TourInfoFormData = z.infer<typeof TourInfoFormSchema>;
 
 export const TicketScheduleFormSchema = z.object({
   tickets: z.array(TicketSchema),
@@ -94,7 +88,7 @@ export const TourDestinationsFormSchema = z.object({
 export type TourDestinationsFormData = z.infer<typeof TourDestinationsFormSchema>;
 
 // Update tour API schemas
-export const UpdateTourInfoRequestSchema = TourInfoFormSchema.extend({
+export const UpdateTourInfoRequestSchema = tourInfoSchema.extend({
   tourId: z.string(),
 });
 export type UpdateTourInfoRequest = z.infer<typeof UpdateTourInfoRequestSchema>;
@@ -110,3 +104,26 @@ export const UpdateTourDestinationsRequestSchema = z.object({
   destinations: z.array(DestinationSchema),
 });
 export type UpdateTourDestinationsRequest = z.infer<typeof UpdateTourDestinationsRequestSchema>;
+
+////////get for update
+export const tourInfoResSchema = z.object({
+  TourId: z.string(),
+  title: z.string().min(1, "Title is required"),
+  category: z.string().min(1, "Category is required"),
+  description: z.string().min(1, "Description is required"),
+  img: z.string()
+})
+
+export const tourDestinationResSchema = z.object({
+  id: z.string(),
+  destinationId: z.string().uuid(),
+  destinationName: z.string().uuid(),
+  startTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/), // Ensures HH:MM:SS format
+  endTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/), // Ensures HH:MM:SS format
+  sortOrder: z.number(),
+  sortOrderByDate: z?.number(),
+  img: z.string()
+})
+
+export type TourInfoResTypge = z.infer<typeof tourInfoSchema>;
+export type TourDestinationResType = z.infer<typeof tourDestinationResSchema>;
