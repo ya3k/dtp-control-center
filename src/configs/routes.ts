@@ -36,6 +36,8 @@ export const apiEndpoint = {
     profile: "/api/user",
 
     //admin destination
+    destinationOdata: `/odata/Destination`,
+    tourOdata: `/odata/Tour`,
     destination: `/api/destination`,
     tour: `/api/tour`
 }

@@ -13,14 +13,15 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { TourRes } from "@/types/schema/TourSchema"
+import { TourResType } from "@/schemaValidations/tour-operator.shema"
+import Image from "next/image"
 
 interface OperatorToursColumnsProps {
-    onEdit: (tour: TourRes) => void
-    onDelete: (tour: TourRes) => void
+    onEdit: (tour: TourResType) => void
+    onDelete: (tour: TourResType) => void
 }
 
-export const operatorToursColumns = ({ onEdit, onDelete }: OperatorToursColumnsProps): ColumnDef<TourRes>[] => [
+export const operatorToursColumns = ({ onEdit, onDelete }: OperatorToursColumnsProps): ColumnDef<TourResType>[] => [
     {
         id: "select",
         header: ({ table }) => (
@@ -48,7 +49,7 @@ export const operatorToursColumns = ({ onEdit, onDelete }: OperatorToursColumnsP
     {
         accessorKey: "thumbnailUrl",
         header: "Thumbnail",
-        cell: ({ row }) => <img src={row.getValue("thumbnailUrl")} alt="Thumbnail" className="w-16 h-16 object-cover" />,
+        cell: ({ row }) => <Image width={50} height={50} src={row.getValue("thumbnailUrl")} alt="Thumbnail" className="w-16 h-16 object-cover" />,
     },
     {
         accessorKey: "title",

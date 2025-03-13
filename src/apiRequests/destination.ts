@@ -7,20 +7,18 @@ import type {
 } from "@/schemaValidations/admin-destination.schema"
 
 interface DestinationResponse {
-  value: DestinationType[]
+  value: DestinationType[],
   "@odata.count"?: number
 }
 
 const destinationApiRequest = {
   getAll: (queryParams?: string) =>
-    http.get<DestinationResponse>(`${apiEndpoint.destination}${queryParams ? queryParams+ `&$count=true` : "?$count=true"}`),
+    http.get<DestinationResponse>(`${apiEndpoint.destinationOdata}${queryParams ? queryParams + `&$count=true` : "?$count=true"}`),
 
   getById: (id: string) => http.get<DestinationType>(`${apiEndpoint.destination}/${id}`),
 
-  create: async (data: CreateDestinationBodyType) => {
-    const response = await http.post<CreateDestinationBodyType>(apiEndpoint.destination, data)
-    return response
-  },
+  create: async (data: CreateDestinationBodyType) =>
+    http.post<CreateDestinationBodyType>(apiEndpoint.destination, data),
 
   update: (id: string, data: UpdateDestinationBodyType) =>
     http.put<DestinationType>(`${apiEndpoint.destination}/${id}`, data),

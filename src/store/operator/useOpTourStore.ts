@@ -27,7 +27,9 @@ export const useOpTourStore = create<TourState>((set, get) => ({
         set({ loading: true, error: null });
         try {
             const response = await tourApiRequest.opGetAll(query);
-            set({ tours: response.payload || [], loading: false });
+            console.log(response.payload.value)
+
+            set({ tours: response.payload.value || [], loading: false });
         } catch (err) {
             set({ error: err instanceof Error ? err.message : 'Unknown error', loading: false });
         }

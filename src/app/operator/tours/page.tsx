@@ -1,10 +1,8 @@
 //tour page.tsx
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { Toaster } from "@/components/ui/sonner"
-import { toast } from "sonner"
-
 import OperatorToursDataTable from "../_components/table/tours/tour-data-table"
 import { operatorToursColumns } from "../_components/table/tours/tourCloumns"
 import Link from "next/link"
@@ -24,7 +22,7 @@ export default function TourOperator() {
     pageSize: 3,
     globalFilter: '',
     isDeletedFilter: 'all',
-    sorting: [{ id: "createdAt", desc: true }] as { id: string; desc: boolean }[], // Mặc định sắp xếp theo createdAt asc
+    sorting: [{ id: "id", desc: true }] as { id: string; desc: boolean }[], // Mặc định sắp xếp theo createdAt asc
     columnVisibility: {
       createdAt: false,
       lastModified: false,
@@ -41,7 +39,7 @@ export default function TourOperator() {
 
     // Global filter
     if (globalFilter) {
-      query += `&$filter=contains(name, '${globalFilter}')`;
+      query += `&$filter=contains(title, '${globalFilter}')`;
     }
 
     // IsDeleted filter
@@ -52,10 +50,10 @@ export default function TourOperator() {
     }
 
     // Sorting (OData $orderby)
-    if (sorting.length > 0) {
-      const orderBy = sorting.map(s => `${s.id} ${s.desc ? 'desc' : 'asc'}`).join(',');
-      query += `&$orderby=${orderBy}`;
-    }
+    // if (sorting.length > 0) {
+    //   const orderBy = sorting.map(s => `${s.id} ${s.desc ? 'desc' : 'asc'}`).join(',');
+    //   query += `&$orderby=${orderBy}`;
+    // }
 
     return query;
   };
@@ -164,6 +162,8 @@ export default function TourOperator() {
           <OperatorToursDataTable
             columns={columns}
             data={tours}
+            tableState={tableState}
+            setTableState={setTableState}
           />
           {tours.length === 0 && !loading && !error && (
             <div className="flex justify-center items-center h-32 text-gray-500">

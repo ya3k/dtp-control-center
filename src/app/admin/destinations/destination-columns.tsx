@@ -3,7 +3,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,20 +11,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Destination } from "@/types/destination";
 import { Badge } from "@/components/ui/badge";
+import { DestinationType } from "@/schemaValidations/admin-destination.schema";
 
 interface AdminDestinationColumnsProps {
-  onViewDetail: (destination: Destination) => void;
-  onEdit: (destination: Destination) => void;
-  onDelete: (destination: Destination) => void;
+  onViewDetail: (destination: DestinationType) => void;
+  onEdit: (destination: DestinationType) => void;
+  onDelete: (destination: DestinationType) => void;
 }
 
 export const adminDestinationColumns = ({
   onViewDetail,
   onEdit,
   onDelete,
-}: AdminDestinationColumnsProps): ColumnDef<Destination>[] => [
+}: AdminDestinationColumnsProps): ColumnDef<DestinationType>[] => [
     {
       accessorKey: "id",
       header: "ID",

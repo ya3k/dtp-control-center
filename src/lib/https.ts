@@ -74,6 +74,7 @@ const request = async <Response>(
   const fullUrl = url.startsWith("/")
     ? `${baseUrl}${url}`
     : `${baseUrl}/${url}`;
+    console.log("Requesting:", fullUrl);
 
   const response = await fetch(fullUrl, {
     ...options,

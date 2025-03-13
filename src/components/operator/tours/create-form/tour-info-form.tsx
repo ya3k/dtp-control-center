@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Card, CardContent } from "@/components/ui/card"
-import { TourType } from "@/schemaValidations/tour-operator.shema"
+import { CreateTourBodyType, CreateTourInfoType, tourInfoPostSchema } from "@/schemaValidations/tour-operator.shema"
 
 // Define the Categories enum for display
 enum Frequency {
@@ -21,8 +21,8 @@ enum Frequency {
 
 // Predefined categories with their UUIDs
 const categoriesList = [
-  { id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "Adventure" },
-  { id: "a4ce6ec7-070a-4428-8290-c3af692a7783", name: "Cultural" }
+  { id: "0736d4f7-832a-4613-8d1a-c3e793a93549", name: "Adventure" },
+  { id: "19c4e172-e089-450c-891d-2d8a756b992c", name: "Cultural" }
 ]
 
 const frequencyList = [
@@ -31,38 +31,28 @@ const frequencyList = [
   { id: Frequency.Monthly, name: "Monthly" }
 ]
 
-// Create a subset schema for the tour info step
-const tourInfoSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  category: z.string().uuid("Please select a valid category"),
-  scheduleFrequency: z.nativeEnum(Frequency, { errorMap: () => ({ message: "Please select a valid frequency" }) }),
-  openDay: z.string(),
-  closeDay: z.string(),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-})
-
-type TourInfoFormValues = z.infer<typeof tourInfoSchema>
-
 interface TourInfoFormProps {
-  data: Partial<TourType>
-  updateData: (data: Partial<TourType>) => void
+  data: Partial<CreateTourBodyType>
+  updateData: (data: Partial<CreateTourBodyType>) => void
   onNext: () => void
 }
 
 export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
-  const form = useForm<TourInfoFormValues>({
-    resolver: zodResolver(tourInfoSchema),
+  const form = useForm<CreateTourInfoType>({
+    resolver: zodResolver(tourInfoPostSchema),
     defaultValues: {
       title: data.title || "",
-      category: data.category || categoriesList[0].id,
+      img: data.img || "",
+      categoryid: data.categoryid || categoriesList[0].id,
       scheduleFrequency: data.scheduleFrequency as Frequency || Frequency.Daily,
       openDay: data.openDay || "",
       closeDay: data.closeDay || "",
+      duration: data.duration || 1,
       description: data.description || "",
     },
   })
 
-  const onSubmit = (values: TourInfoFormValues) => {
+  const onSubmit = (values: CreateTourInfoType) => {
     updateData(values)
     onNext()
   }
@@ -87,10 +77,24 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
               )}
             />
 
+            {/* img */}
+            <FormField
+              control={form.control}
+              name="img"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ảnh Thumnail cho Tour</FormLabel>
+                  <FormControl>
+                    <Input placeholder="link ảnh" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             {/* category */}
             <FormField
               control={form.control}
-              name="category"
+              name="categoryid"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>

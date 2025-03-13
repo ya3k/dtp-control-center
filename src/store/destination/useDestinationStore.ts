@@ -10,7 +10,7 @@ interface DestinationState {
   currentQuery: string;
   fetchDestination: () => Promise<void>;
   setQuery: (query: string) => void;
-  createDestination: (destination: CreateDestinationBodyType) => Promise<CreateDestinationBodyType>;
+  createDestination: (destination: CreateDestinationBodyType) => Promise<void>;
   updateDestination: (id: string, destinationData: Partial<UpdateDestinationBodyType>) => Promise<DestinationType>;
   deleteDestination: (id: string) => Promise<void>;
 }
@@ -28,8 +28,10 @@ export const useDestinationStore = create<DestinationState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const response = await destinationApiRequest.getAll(query);
-      set({ destinations: response.payload || [], loading: false });
+      console.log("API Response:", response.payload); // Debugging
+      set({ destinations: response.payload.value || [], loading: false });
     } catch (err) {
+      console.error("Fetch error:", err);
       set({ error: err instanceof Error ? err.message : 'Unknown error', loading: false });
     }
   },
@@ -37,9 +39,8 @@ export const useDestinationStore = create<DestinationState>((set, get) => ({
   createDestination: async (destinationData) => {
     set({ loading: true, error: null });
     try {
-      const newDestination = await destinationApiRequest.create(destinationData);
+      await destinationApiRequest.create(destinationData);
       await get().fetchDestination();
-      return newDestination.payload;
     } catch (error) {
       set({ error: error instanceof Error ? error.message : "Failed to create destination", loading: false });
       throw error;
@@ -49,7 +50,11 @@ export const useDestinationStore = create<DestinationState>((set, get) => ({
   updateDestination: async (id, destinationData) => {
     set({ loading: true, error: null });
     try {
-      const updatedDestination = await destinationApiRequest.update(id, destinationData);
+      const updatedDestination = await destinationApiRequest.update(id, {
+        name: destinationData.name || '',
+        latitude: destinationData.latitude || '',
+        longitude: destinationData.longitude || '',
+      });
       set((state) => ({
         destinations: state.destinations.map((dest) => (dest.id === id ? updatedDestination.payload : dest)),
         loading: false,
