@@ -1,6 +1,5 @@
 "use client"
 
-import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
@@ -11,7 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Card, CardContent } from "@/components/ui/card"
 import { CreateTourBodyType, CreateTourInfoType, tourInfoPostSchema } from "@/schemaValidations/tour-operator.shema"
-
+import categoryApiRequest from "@/apiRequests/category"
+import { useEffect, useState } from "react"
+import { CategoryType } from "@/schemaValidations/category.schema"
 // Define the Categories enum for display
 enum Frequency {
   Daily = "Daily",
@@ -19,17 +20,14 @@ enum Frequency {
   Monthly = "Monthly"
 }
 
-// Predefined categories with their UUIDs
-const categoriesList = [
-  { id: "0736d4f7-832a-4613-8d1a-c3e793a93549", name: "Adventure" },
-  { id: "19c4e172-e089-450c-891d-2d8a756b992c", name: "Cultural" }
-]
+
 
 const frequencyList = [
   { id: Frequency.Daily, name: "Daily" },
   { id: Frequency.Weekly, name: "Weekly" },
   { id: Frequency.Monthly, name: "Monthly" }
 ]
+
 
 interface TourInfoFormProps {
   data: Partial<CreateTourBodyType>
@@ -38,12 +36,13 @@ interface TourInfoFormProps {
 }
 
 export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
+  const [categories, setCategories] = useState<CategoryType[]>([])
   const form = useForm<CreateTourInfoType>({
     resolver: zodResolver(tourInfoPostSchema),
     defaultValues: {
       title: data.title || "",
       img: data.img || "",
-      categoryid: data.categoryid || categoriesList[0].id,
+      categoryid: data.categoryid || "",
       scheduleFrequency: data.scheduleFrequency as Frequency || Frequency.Daily,
       openDay: data.openDay || "",
       closeDay: data.closeDay || "",
@@ -51,6 +50,21 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
       description: data.description || "",
     },
   })
+
+  const fetchCategory = async () => {
+    try {
+      const response = await categoryApiRequest.get();
+      const data = await response.payload.value;
+      setCategories(data);
+      console.log(data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    fetchCategory();
+  }, [])
 
   const onSubmit = (values: CreateTourInfoType) => {
     updateData(values)
@@ -98,16 +112,16 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a category">
-                          {categoriesList.find(cat => cat.id === field.value)?.name || "Select a category"}
+                        <SelectValue>
+                          {categories.find((cat) => cat.id === field.value)?.name || "Select a category"}
                         </SelectValue>
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {categoriesList.map((category) => (
+                      {categories.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
                           {category.name}
                         </SelectItem>

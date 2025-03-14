@@ -5,11 +5,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { Loader2 } from "lucide-react"
-import { TourInfoForm } from "./edit-tour-info-form"
-import { TourResType } from "@/schemaValidations/tour-operator.shema"
+import { tourOdataResType, TourResType } from "@/schemaValidations/tour-operator.shema"
+import { TourEditInfoForm } from "./edit-tour-info-form"
 
 interface UpdateTourDialogProps {
-    tour: TourResType
+    tour: tourOdataResType
     open: boolean
     onOpenChange: (open: boolean) => void
     onUpdateSuccess: (updatedTour: TourResType) => void
@@ -18,7 +18,7 @@ interface UpdateTourDialogProps {
 
 export function UpdateTourDialog({ tour: initialTour, open, onOpenChange, onUpdateSuccess }: UpdateTourDialogProps) {
     const [activeTab, setActiveTab] = useState("info")
-    const [tour, setTour] = useState<TourResType>(initialTour)
+    const [tour, setTour] = useState<tourOdataResType>(initialTour)
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -59,7 +59,7 @@ export function UpdateTourDialog({ tour: initialTour, open, onOpenChange, onUpda
                         </TabsList>
 
                         <TabsContent value="info" className="space-y-4">
-                            <TourInfoForm tour={tour} onUpdateSuccess={handleUpdateSuccess} />
+                            <TourEditInfoForm tour={tour} onUpdateSuccess={handleUpdateSuccess} />
                         </TabsContent>
 
                     </Tabs>

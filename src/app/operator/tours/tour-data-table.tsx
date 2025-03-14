@@ -11,15 +11,10 @@ import { Button } from "@/components/ui/button"
 import { PlusCircle, RefreshCcw } from "lucide-react"
 import Link from "next/link"
 import { UpdateTourDialog } from "@/components/operator/tours/edit-tour/edit-tour-dialog"
-import { TableFilterCard } from "@/components/admin/common-table/table-filter-card"
-import { CompanyTable } from "@/components/admin/company/company-table"
-import { TablePagination } from "@/components/admin/common-table/table-pagination"
-import companyApiRequest from "@/apiRequests/company"
-import { CompanyResType } from "@/schemaValidations/company.schema"
 
-export default function CompanyDataTable() {
+export default function OpTourDataTable() {
   // Data state
-  const [companies, setCompanies] = useState<CompanyResType[]>([])
+  const [tours, setTours] = useState<tourOdataResType[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [totalCount, setTotalCount] = useState<number>(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -36,7 +31,8 @@ export default function CompanyDataTable() {
   const [minRating, setMinRating] = useState<number>(0)
 
   //Edit state
-  const [selectedCompany, setSelectedCompany] = useState<CompanyResType | null>(null)
+  const [selectedTour, setSelectedTour] = useState<tourOdataResType | null>(null)
+  const [editTourId, setEditTourId] = useState<string | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
 
@@ -55,7 +51,7 @@ export default function CompanyDataTable() {
   }, [debouncedSearchTerm, minRating])
 
   //fetching tour
-  const fetchCompany = async () => {
+  const fetchTours = async () => {
     setLoading(true)
 
     try {
@@ -78,6 +74,11 @@ export default function CompanyDataTable() {
         filterConditions.push(`contains(title, '${debouncedSearchTerm}')`)
       }
 
+      // Rating
+      if (minRating > 0) {
+        filterConditions.push(`avgStar ge ${minRating}`)
+      }
+
       // Combine filter conditions
       if (filterConditions.length > 0) {
         params.append("$filter", filterConditions.join(" and "))
@@ -87,9 +88,9 @@ export default function CompanyDataTable() {
       const queryString = `?${params.toString()}`
 
       // Use tourApiService instead of direct fetch
-      const response = await companyApiRequest.getWithOData(queryString)
+      const response = await tourApiService.getWithOData(queryString)
 
-      setCompanies(response.payload?.value)
+      setTours(response.payload?.value)
       setTotalCount(response.payload["@odata.count"] || 0)
     } catch (error) {
       console.error("Error fetching tour data:", error)
@@ -100,23 +101,38 @@ export default function CompanyDataTable() {
 
   // Fetch data with OData parameters
   useEffect(() => {
-    fetchCompany()
+    fetchTours()
   }, [currentPage, pageSize, debouncedSearchTerm, minRating])
 
 
   //handle refresh
   const handleRefresh = async () => {
     setIsRefreshing(true)
-    fetchCompany();
+    fetchTours();
     setIsRefreshing(false)
   }
 
   //handle update success
-  const handleEditCompany = (company: CompanyResType) => {
-    setSelectedCompany(company)
+  const handleEditTour = (tour: tourOdataResType) => {
+    setSelectedTour(tour)
     setIsEditDialogOpen(true)
   }
-  
+  const handleUpdateSuccess = (updatedTour: TourResType) => {
+    setTours(prevTours =>
+      prevTours.map(tour =>
+        tour.id === updatedTour.id ? { ...tour, ...updatedTour } : tour
+      )
+    )
+    setIsEditDialogOpen(false)
+    setSelectedTour(null)
+    fetchTours() // Refresh the data
+  }
+  // Function to truncate description text
+  const truncateDescription = (text: string, maxLength = 100): string => {
+    if (!text) return ""
+    if (text.length <= maxLength) return text
+    return text.substring(0, maxLength) + "..."
+  }
 
   // Calculate total pages
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
@@ -180,19 +196,32 @@ export default function CompanyDataTable() {
 
 
         {/* Search and Rating Filter */}
-        <TableFilterCard searchTerm={searchTerm} setSearchTerm={setSearchTerm} pageSize={pageSize} setPageSize={setPageSize} />
+        <OpTourFilterCard searchTerm={searchTerm} setSearchTerm={setSearchTerm} minRating={minRating} setMinRating={setMinRating} pageSize={pageSize} setPageSize={setPageSize} />
         {/* Table */}
         <div className="rounded-md border">
-          <CompanyTable companies={companies} loading={loading} onEditCompany={handleEditCompany} resetFilters={resetFilters} />
+          <OpTourTable tours={tours} totalCount={totalCount} loading={loading} pageSize={pageSize} resetFilters={resetFilters} truncateDescription={truncateDescription} onEditTour={handleEditTour} />
         </div>
         {/* Pagination */}
-        <TablePagination currentPage={currentPage} loading={loading} onNextPage={handleNextPage}
+        <OpTourPagination currentPage={currentPage} loading={loading} onNextPage={handleNextPage}
           onPreviousPage={handlePreviousPage} totalPages={totalPages}
         />
       </Card>
 
-      {/* Edit Dialog */}
-     
+     {/* Edit Dialog */}
+     {selectedTour && (
+        <UpdateTourDialog
+          tour={selectedTour}
+          open={isEditDialogOpen}
+          onOpenChange={(isOpen) => {
+            setIsEditDialogOpen(isOpen)
+            if (!isOpen) {
+              setSelectedTour(null)
+              fetchTours()
+            }
+          }}
+          onUpdateSuccess={handleUpdateSuccess}
+        />
+      )}
     </div>
   )
 }

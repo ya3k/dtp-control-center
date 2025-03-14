@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CreateTourBodyType, DestinationSchema, TourCreateDestinationType } from "@/schemaValidations/tour-operator.shema"
 import { apiEndpoint } from "@/configs/routes"
+import destinationApiRequest from "@/apiRequests/destination"
 
 interface DestinationFormProps {
   data: Partial<CreateTourBodyType>
@@ -30,16 +31,15 @@ export function DestinationForm({ data, updateData, onNext, onPrevious }: Destin
 
   const fetchDestination = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}${apiEndpoint.destination}`, {
-        headers: { "Content-Type": "application/json" }
-      })
-      const data = await response.json()
+  
+      const response = await destinationApiRequest.getAll();
+      const data = response.payload?.value
+  
       setDestinations(data)
     } catch (error) {
       console.error("Failed to fetch destinations:", error)
     }
   }
-
   useEffect(() => {
     fetchDestination()
   }, [])

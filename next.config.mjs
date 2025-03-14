@@ -1,14 +1,16 @@
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
   images: {
-    remotePatterns: [{
-      protocol: 'https',
-      hostname: 'picsum.photos',
-      port: '',
-      pathname: '/**'
-    }]
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**', // Chấp nhận tất cả hostname
+      },
+      {
+        protocol: 'http',
+        hostname: '**', // Nếu cần hỗ trợ cả HTTP
+      }
+    ],
   },
 };
 

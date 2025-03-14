@@ -9,6 +9,7 @@ import { TourInfoForm } from "@/components/operator/tours/create-form/tour-info-
 import { DestinationForm } from "@/components/operator/tours/create-form/destination-tour-form"
 import { TicketForm } from "@/components/operator/tours/create-form/ticket-tour-form"
 import { CreateTourBodyType, TourSchema } from "@/schemaValidations/tour-operator.shema"
+import tourApiService from "@/apiRequests/tour"
 
 
 export default function CreateTourPage() {
@@ -50,19 +51,11 @@ export default function CreateTourPage() {
       // Validate the complete form data
       const validatedData = TourSchema.parse(formData)
       // Send data to the backend
-      const response = await fetch("http://209.97.160.178:3000/api/tour", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(validatedData),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
+      const response = await tourApiService.create(validatedData);
+      if (!response.payload) {
+        const errorData = await response.payload
         throw new Error(errorData.message || "Failed to create tour")
       }
-
       toast.success(`Tour ${validatedData.title} created successfully`)
       router.push("/operator/tours")
     } catch (error) {

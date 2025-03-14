@@ -39,7 +39,16 @@ export const apiEndpoint = {
     destinationOdata: `/odata/Destination`,
     tourOdata: `/odata/Tour`,
     destination: `/api/destination`,
-    tour: `/api/tour`
+
+    //tour operator
+    tour: `/api/tour`,
+    tourInfo: `/api/tourinfo`,
+
+    //category
+    categoryOdata: `/odata/category`,
+
+    //company
+    companyOdata: `/odata/company`
 }
 
 

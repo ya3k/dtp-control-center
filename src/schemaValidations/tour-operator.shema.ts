@@ -41,7 +41,7 @@ export const TourSchema = z.object({
   closeDay: z.string(),
   duration: z.number(),
   scheduleFrequency: z.string(),
- 
+
 });
 
 export const tourInfoPostSchema = z.object({
@@ -83,13 +83,17 @@ export type Destination = z.infer<typeof DestinationUI>;
 
 
 export const tourInfoSchema = z.object({
+  tourId: z.string(),
   title: z.string().min(1, "Title is required"),
   category: z.string().min(1, "Category is required"),
   description: z.string().min(1, "Description is required"),
+  img: z.string()
 })
 
 
 export type TourInfoFormType = z.infer<typeof tourInfoSchema>;
+
+export type TourInfoFormBodyType = z.infer<typeof tourInfoSchema>;
 
 export const TicketScheduleFormSchema = z.object({
   tickets: z.array(TicketSchema),
@@ -99,13 +103,7 @@ export type TicketScheduleFormData = z.infer<typeof TicketScheduleFormSchema>;
 export const TourDestinationsFormSchema = z.object({
   destinations: z.array(DestinationSchema),
 });
-export type TourDestinationsFormData = z.infer<typeof TourDestinationsFormSchema>;
-
-// Update tour API schemas
-export const UpdateTourInfoRequestSchema = tourInfoSchema.extend({
-  tourId: z.string(),
-});
-export type UpdateTourInfoRequest = z.infer<typeof UpdateTourInfoRequestSchema>;
+export type TourDestinationsFormBodyType = z.infer<typeof TourDestinationsFormSchema>;
 
 export const UpdateTicketScheduleRequestSchema = z.object({
   tourId: z.string(),
@@ -121,7 +119,7 @@ export type UpdateTourDestinationsRequest = z.infer<typeof UpdateTourDestination
 
 ////////get for update
 export const tourInfoResSchema = z.object({
-  TourId: z.string(),
+  tourId: z.string(),
   title: z.string().min(1, "Title is required"),
   category: z.string().min(1, "Category is required"),
   description: z.string().min(1, "Description is required"),
@@ -139,5 +137,19 @@ export const tourDestinationResSchema = z.object({
   img: z.string()
 })
 
-export type TourInfoResTypge = z.infer<typeof tourInfoSchema>;
+export type TourInfoResType = z.infer<typeof tourInfoResSchema>;
 export type TourDestinationResType = z.infer<typeof tourDestinationResSchema>;
+
+export const tourOdataResSchema = z.object({
+  id: z.string(),
+  thumbnailUrl: z.string(),
+  title: z.string(),
+  companyName: z.string(),
+  description: z.string(),
+  avgStar: z.number(),
+  totalRating: z.number(),
+  onlyFromCost: z.number(),
+});
+export type tourOdataResType = z.infer<typeof tourOdataResSchema>;
+
+

@@ -29,7 +29,7 @@ export const useDestinationStore = create<DestinationState>((set, get) => ({
     try {
       const response = await destinationApiRequest.getAll(query);
       console.log("API Response:", response.payload); // Debugging
-      set({ destinations: response.payload.value || [], loading: false });
+      set({ destinations: response.payload?.value || [], loading: false });
     } catch (err) {
       console.error("Fetch error:", err);
       set({ error: err instanceof Error ? err.message : 'Unknown error', loading: false });
@@ -55,10 +55,7 @@ export const useDestinationStore = create<DestinationState>((set, get) => ({
         latitude: destinationData.latitude || '',
         longitude: destinationData.longitude || '',
       });
-      set((state) => ({
-        destinations: state.destinations.map((dest) => (dest.id === id ? updatedDestination.payload : dest)),
-        loading: false,
-      }));
+      await get().fetchDestination();
       return updatedDestination.payload;
     } catch (error) {
       set({ error: error instanceof Error ? error.message : "Failed to update destination", loading: false });

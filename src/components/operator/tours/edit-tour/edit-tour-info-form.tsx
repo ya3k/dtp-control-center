@@ -11,21 +11,17 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
-import {  TourInfoFormType, tourInfoSchema, TourResType, UpdateTourInfoRequest } from "@/schemaValidations/tour-operator.shema"
+import { TourInfoFormType, tourInfoSchema, tourOdataResType, TourResType, UpdateTourInfoRequest } from "@/schemaValidations/tour-operator.shema"
+import categoryApiRequest from "@/apiRequests/category"
 
 
-// Zod schema for form validation
 
-const categoriesList = [
-    { id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "Adventure" },
-    { id: "a4ce6ec7-070a-4428-8290-c3af692a7783", name: "Cultural" }
-]
 interface TourInfoFormProps {
-    tour: TourResType
+    tour: tourOdataResType
     onUpdateSuccess: (updatedTour: TourResType) => void
 }
 
-export function TourInfoForm({ tour, onUpdateSuccess }: TourInfoFormProps) {
+export function TourEditInfoForm({ tour, onUpdateSuccess }: TourInfoFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [categories, setCategories] = useState<{ id: string; name: string }[]>([])
     const [isLoadingCategories, setIsLoadingCategories] = useState(true)
@@ -35,10 +31,13 @@ export function TourInfoForm({ tour, onUpdateSuccess }: TourInfoFormProps) {
         const fetchCategories = async () => {
             setIsLoadingCategories(true)
             try {
-                setCategories(categoriesList);
-
+                const response = await categoryApiRequest.get();
+                const data = await response.payload.value;
+                setCategories(data);
+                console.log(data)
             } catch (error) {
-                console.error("Failed to fetch categories:", error)
+                console.log(error)
+
             } finally {
                 setIsLoadingCategories(false)
             }
@@ -51,13 +50,11 @@ export function TourInfoForm({ tour, onUpdateSuccess }: TourInfoFormProps) {
     const form = useForm<TourInfoFormType>({
         resolver: zodResolver(tourInfoSchema),
         defaultValues: {
+            tourId: tour.id,
             title: tour.title,
-            companyId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
             category: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
             description: tour.description,
-            // openDay: tour.openDay,
-            // closeDay: tour.closeDay,
-            // scheduleFrequency: tour.scheduleFrequency,
+            img: tour.thumbnailUrl
         },
     })
 
@@ -65,7 +62,6 @@ export function TourInfoForm({ tour, onUpdateSuccess }: TourInfoFormProps) {
         setIsSubmitting(true)
         try {
             const updateData: UpdateTourInfoRequest = {
-                tourId: tour.id,
                 ...data,
             }
 
@@ -114,30 +110,30 @@ export function TourInfoForm({ tour, onUpdateSuccess }: TourInfoFormProps) {
                     )}
                 />
 
-                    <FormField
-                        control={form.control}
-                        name="category"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Category</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingCategories}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a category" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {categories.map((category) => (
-                                            <SelectItem key={category.id} value={category.id}>
-                                                {category.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Category</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingCategories}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a category" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {categories.map((category) => (
+                                        <SelectItem key={category.id} value={category.id}>
+                                            {category.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
 
                 <FormField
                     control={form.control}
