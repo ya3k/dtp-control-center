@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 
 export type RemoveTokenResponseType = {
   success: boolean;
@@ -6,16 +5,6 @@ export type RemoveTokenResponseType = {
 };
 
 export async function DELETE() {
-  const cookieStore = cookies();
-  // console.log("res", res);
-  const sessionToken = cookieStore.get("sessionToken");
-
-  if (!sessionToken?.value) {
-    return Response.json({
-      success: false,
-      message: "No session token found",
-    });
-  }
 
   return Response.json(
     {
@@ -25,7 +14,7 @@ export async function DELETE() {
     {
       status: 200,
       headers: {
-        "Set-Cookie": `sessionToken=; Path=/; HttpOnly`,
+        "Set-Cookie": `sessionToken=; Max-Age=0; path=/, role=; Max-Age=0; path=/`,
       },
     },
   );

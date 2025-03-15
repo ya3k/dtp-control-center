@@ -8,12 +8,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 interface TourCategoryProps {
   selectedCategory: string;
-  onSelectCategory: (categoryId: string) => void;
+  onSelectCategory?: (categoryId: string) => void;
 }
 
 export default function TourCategory({
   selectedCategory,
-  onSelectCategory,
 }: TourCategoryProps) {
   return (
     <Card className="border-t">
@@ -29,7 +28,7 @@ export default function TourCategory({
                   checked={selectedCategory === category.id}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onSelectCategory(category.id);
+                    // onSelectCategory(category.id);
                   }}
                 />
                 <Label htmlFor={category.id} className="text-base">

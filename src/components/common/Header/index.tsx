@@ -1,10 +1,12 @@
 "use client";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
+import { toast } from "sonner";
+
 
 import { links } from "@/configs/routes";
 import MobileHeader from "@/components/common/Header/MobileHeader";
@@ -20,9 +22,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { sessionToken } from "@/lib/https";
+import authApiRequest from "@/apiRequests/auth";
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const navLinks = [links.home, links.tour, links.blog, links.about];
   const specialLinks = [links.tour.href, links.blog.href, links.about.href];
   const [scrolled, setScrolled] = useState(false);
@@ -40,6 +44,25 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  async function handleLogOut() {
+    try {
+      const response = await authApiRequest.logout();
+      if(!response.payload.success) {
+        console.error(response.payload.message);
+        return;
+      }
+      const responseFromNextServer = await authApiRequest.removeToken();
+      if (responseFromNextServer.payload.success) {
+        toast.success("Đăng xuất thành công");
+        router.refresh();
+      } else {
+        console.error(responseFromNextServer.payload.message);
+      }
+    } catch (error) {
+      console.error("Failed to log out:", error);
+    }
+  }
 
   return (
     <>
@@ -122,7 +145,7 @@ export default function Header() {
                   <DropdownMenuItem>Profile</DropdownMenuItem>
                   <DropdownMenuItem>Giỏ hàng</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={()=> {}}>
+                  <DropdownMenuItem onClick={()=> handleLogOut()}>
                     Đăng xuất
                   </DropdownMenuItem>
                 </DropdownMenuContent>

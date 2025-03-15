@@ -63,14 +63,16 @@ const tours = [
 
 export default function PopulationSection() {
   return (
-    <section className="mx-auto mb-16 flex max-w-2xl flex-col gap-6 px-4 sm:pb-6 lg:max-w-6xl lg:px-8">
-      <h1 className="text-xl sm:text-3xl font-bold">Vui chơi hết cỡ tại Quy Nhơn</h1>
+    <section className="mx-auto mb-16 flex max-w-2xl flex-col gap-6 px-4 sm:pb-6 md:max-w-3xl lg:max-w-6xl lg:px-8">
+      <h1 className="text-xl font-bold sm:text-3xl">
+        Vui chơi hết cỡ tại Quy Nhơn
+      </h1>
       <Carousel className="w-full" opts={{ loop: true }}>
         <CarouselContent className="-ml-1">
           {tours.map((tour, index) => (
             <CarouselItem key={index} className="basis-1/2 pl-1 lg:basis-1/3">
               <div className="p-1 sm:p-2 md:p-4">
-                <Card className="group relative transition-transform duration-300 ease-in-out hover:scale-105">
+                <Card className="group relative min-w-[250px] max-w-[300px] transition-transform duration-300 ease-in-out hover:scale-105">
                   <div className="aspect-square h-40 w-full overflow-hidden rounded-t-xl bg-gray-200">
                     <Image
                       src={tour.imageUrl}
@@ -107,8 +109,8 @@ export default function PopulationSection() {
           ))}
         </CarouselContent>
         <div className="hidden md:block">
-          <CarouselPrevious />
-          <CarouselNext />
+          <CarouselPrevious className="md:-left-8 lg:-left-10 xl:-left-12" />
+          <CarouselNext className="xl-left-12 md:-right-8 lg:-right-10" />
         </div>
       </Carousel>
     </section>
