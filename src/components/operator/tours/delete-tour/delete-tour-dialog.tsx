@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useUserStore } from "@/store/users/useUserStore"
-import type { User } from "@/types/user"
+
 import { Button } from "@/components/ui/button"
 import {
     AlertDialog,

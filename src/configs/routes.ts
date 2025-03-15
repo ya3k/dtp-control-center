@@ -42,13 +42,15 @@ export const apiEndpoint = {
 
     //tour operator
     tour: `/api/tour`,
-    tourInfo: `/api/tourinfo`,
+    tourInfo: `/api/tour/tourinfor`,
 
     //category
     categoryOdata: `/odata/category`,
 
     //company
-    companyOdata: `/odata/company`
+    companyOdata: `/odata/company`,
+    company: `/api/company`,
+    grant: `/api/company/grant`
 }
 
 

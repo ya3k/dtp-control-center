@@ -29,9 +29,9 @@ const tourApiService = {
   },
 
 
-  getTourInfo: async () => {
+  getTourInfo: async (tourId: string) => {
     try {
-      const response = await http.get<TourInfoFormType>(`${apiEndpoint.tour}/tourInfo`)
+      const response = await http.get<TourInfoFormType>(`${apiEndpoint.tour}/tourinfor/${tourId}`)
       return response
     } catch (error) {
       console.error("Failed to fetch tour info:", error)
@@ -48,9 +48,9 @@ const tourApiService = {
       throw error
     }
   },
-  updateTourInfo: async(body: TourInfoFormBodyType) => http.post<TourInfoFormBodyType>(apiEndpoint.tourInfo,body),
+  updateTourInfo: async(id: string, body: TourInfoFormBodyType) => http.put<TourInfoFormBodyType>(`${apiEndpoint.tourInfo}/${id}`,body),
 
-  updateTourDestination: async(body: TourDestinationsFormBodyType) => http.put<TourDestinationsFormBodyType>(apiEndpoint.tourInfo,body),
+  updateTourDestination: async(id: string, body: TourDestinationsFormBodyType) => http.put<TourDestinationsFormBodyType>(`${apiEndpoint.tourInfo}/${id}`,body),
 
   delete: async (id: string) => {
     try {
@@ -65,12 +65,7 @@ const tourApiService = {
     }
   },
 
-  /**
-   * Get a single tour by ID.
-   *
-   * @param id - Tour ID to get
-   * @returns A promise that resolves to the tour data
-   */
+ 
   getById: async (id: string) => {
     try {
       const response = await http.get<TourResType>(`${apiEndpoint.tour}/${id}`, {

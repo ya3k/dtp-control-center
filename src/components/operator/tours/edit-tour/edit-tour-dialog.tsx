@@ -59,7 +59,7 @@ export function UpdateTourDialog({ tour: initialTour, open, onOpenChange, onUpda
                         </TabsList>
 
                         <TabsContent value="info" className="space-y-4">
-                            <TourEditInfoForm tour={tour} onUpdateSuccess={handleUpdateSuccess} />
+                            <TourEditInfoForm tourId={tour.id} onUpdateSuccess={handleUpdateSuccess} />
                         </TabsContent>
 
                     </Tabs>

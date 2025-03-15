@@ -115,9 +115,10 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue>
-                          {categories.find((cat) => cat.id === field.value)?.name || "Select a category"}
+                        <SelectValue placeholder="Select a category">
+                          {categories.find((cat) => cat.id === field.value)?.name ?? "Select a category"}
                         </SelectValue>
+
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
