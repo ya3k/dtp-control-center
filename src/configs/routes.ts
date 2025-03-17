@@ -34,7 +34,6 @@ export const apiEndpoint = {
     register: "/api/authentication/register",
     logout: "api/authentication/logout",
     profile: "/api/user",
-    tour: "/api/tour",
 }
 
 

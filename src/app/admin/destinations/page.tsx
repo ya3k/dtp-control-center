@@ -36,7 +36,7 @@ export default function DestinationPage() {
     let query = '';
 
     // Pagination
-    query += `$top=${pageSize}&$skip=${pageIndex * pageSize}`;
+    query += `?$top=${pageSize}&$skip=${pageIndex * pageSize}`;
 
     // Global filter
     if (globalFilter) {
@@ -64,6 +64,7 @@ export default function DestinationPage() {
     const query = buildODataQuery();
     setQuery(query); // Lưu query OData dưới dạng chuỗi
     fetchDestination();
+    console.log("Destinations:", destinations); // Debugging
   }, [fetchDestination, setQuery, tableState]);
 
   const handleRefresh = async () => {

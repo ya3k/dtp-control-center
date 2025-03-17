@@ -8,13 +8,12 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TicketKind, TicketSchema, TourTicketType, TourType } from "@/schemaValidations/tour-operator.shema"
-
+import { CreateTourBodyType, TicketKind, TicketSchema, TourCreateTicketType } from "@/schemaValidations/tour-operator.shema"
 
 
 interface TicketFormProps {
-  data: Partial<TourType>
-  updateData: (data: Partial<TourType>) => void
+  data: Partial<CreateTourBodyType>
+  updateData: (data: Partial<CreateTourBodyType>) => void
   onPrevious: () => void
   onSubmit: () => void
   isSubmitting: boolean
@@ -26,24 +25,22 @@ const ticketKinds = Object.entries(TicketKind)
   .map(([key, value]) => ({ id: TicketKind[key as keyof typeof TicketKind], name: key }))
 
 export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmitting }: TicketFormProps) {
-  const form = useForm<TourTicketType>({
+  const form = useForm<TourCreateTicketType>({
     resolver: zodResolver(TicketSchema),
     defaultValues: {
       defaultNetCost: 0,
-      defaultTax: 0,
       minimumPurchaseQuantity: 1,
       ticketKind: TicketKind.Adult,
     },
   })
 
-  const addTicket = (values: TourTicketType) => {
+  const addTicket = (values: TourCreateTicketType) => {
     const updatedTickets = [...(data.tickets || []), values]
     updateData({ tickets: updatedTickets })
 
     // Reset form
     form.reset({
       defaultNetCost: 0,
-      defaultTax: 0,
       minimumPurchaseQuantity: 1,
       ticketKind: TicketKind.Adult,
     })
@@ -124,7 +121,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
                   )}
                 />
 
-                <FormField
+                {/* <FormField
                   control={form.control}
                   name="defaultTax"
                   render={({ field }) => (
@@ -136,7 +133,8 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
                       <FormMessage />
                     </FormItem>
                   )}
-                />
+                /> */}
+
               </div>
 
               <FormField
@@ -174,7 +172,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
                   <div>
                     <p className="font-medium">{getTicketKindName(ticket.ticketKind)}</p>
                     <p className="text-sm text-muted-foreground">
-                      Price: ${ticket.defaultNetCost.toFixed(2)} + ${ticket.defaultTax.toFixed(2)} tax
+                      Price: ${ticket.defaultNetCost.toFixed(2)}
                     </p>
                     <p className="text-sm text-muted-foreground">Min. Quantity: {ticket.minimumPurchaseQuantity}</p>
                   </div>

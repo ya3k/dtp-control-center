@@ -24,10 +24,13 @@ const adminItems = [
 
     },
     {
-        title: "Company",
-        url: "/admin/company",
+        title: "Quản lý công ty",
+        url: "",
         icon: Building2,
+        subItems: [
+            { title: "Danh sách công ty", url: "/admin/company", icon: Building2 },
 
+        ],
     },
 ];
 
