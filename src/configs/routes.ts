@@ -9,7 +9,7 @@ export const links = {
     about: { href: "/about", label: "Về chúng tôi" },
     passenger: { href: "/passenger", label: "Khách hàng" },
     shoppingCart: { href: "/shoppingcart", label: "Giỏ hàng" },
-    checkout: {href: "payment/checkout", label: "Thanh toán"},
+    checkout: { href: "payment/checkout", label: "Thanh toán" },
 
 }
 
@@ -45,7 +45,21 @@ export const apiEndpoint = {
     tourSchedule: "/api/tour/schedule",
     basket: "/api/basket",
     order: "/api/order",
+    //category
+    categoryOdata: `/odata/category`,
 
+
+    //tour info
+    tourInfo: `/api/tour/tourinfor`,
+
+    //destination
+    destinationOdata: `/odata/destination`,
+    destination: `/api/destination`,
+
+    //companh
+    companyOdata: `odata/company`,
+    company: `/api/company`,
+    grant: `/api/company/grant`
 }
 
 
