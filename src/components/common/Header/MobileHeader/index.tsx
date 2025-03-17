@@ -3,22 +3,18 @@ import { Menu, ShoppingCart, User } from "lucide-react";
 import React from "react";
 
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+} from "@/components/ui/sheet";
 import { links } from "@/configs/routes";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { sessionToken } from "@/lib/https";
+import AuthMenu from "@/components/common/Header/AuthMenu";
 
 interface MobileHeaderProps {
   scrolled: boolean;
@@ -31,11 +27,9 @@ export default function MobileHeader({
 }: MobileHeaderProps) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = React.useState(false);
+  const router = useRouter();
   const navLinks = [links.home, links.tour, links.blog, links.about];
 
-  const handleLogOut = () => {
-    
-  }
   return (
     <header
       className={cn(
@@ -100,24 +94,14 @@ export default function MobileHeader({
             />
           </Link>
         </div>
-        <div className="flex gap-2 items-center">
+        <div className="flex items-center gap-2">
           {sessionToken.value ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Avatar>
-                  <AvatarImage src="https://github.com/shadcn.png" />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Giỏ hàng</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogOut}>Đăng xuất</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <AuthMenu>
+              <Avatar>
+                <AvatarImage src="https://github.com/shadcn.png" />
+                <AvatarFallback>CN</AvatarFallback>
+              </Avatar>
+            </AuthMenu>
           ) : (
             <Button
               variant="outline"
@@ -143,6 +127,7 @@ export default function MobileHeader({
               `${specialLinks?.includes(pathname) ? "bg-transparent" : ""}`,
               "sm:text-base",
             )}
+            onClick={() => router.push(links.shoppingCart.href)}
           >
             <ShoppingCart />
           </Button>

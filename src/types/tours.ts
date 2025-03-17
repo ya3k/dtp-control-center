@@ -1,46 +1,28 @@
 export interface Tour {
   id: string;
-  name: string;
-  description: string;
-  price: number;
-  duration: number; // in days
-  startDate: Date;
-  endDate: Date;
-  locations: string[];
-  maxGroupSize: number;
-  guide: string;
-  rating: number;
-  reviews: number;
-}
-
-/*--------------TourDetail-----------------------*/
-
-export interface TourData {
-  tour: TourDetail;
-  ratings: Rating[];
-  tourDestinations: TourDestination[];
-}
-
-interface TourDestination {
-  name: string;
-  imageUrls: string[];
-  startTime: string; // In "HH:MM:SS" format
-  endTime: string; // In "HH:MM:SS" format
-  sortOrder: number;
-}
-
-interface TourDetail {
-  id: string;
+  thumbnailUrl: string;
   title: string;
   companyName: string;
   description: string;
   avgStar: number;
   totalRating: number;
   onlyFromCost: number;
-  ticketTypes: TicketType[];
 }
 
-interface TicketType {
+export type TourList = Tour[];
+
+/*--------------TourDetail-----------------------*/
+
+export enum TicketKind {
+  Adult = 0,
+  Child = 1,
+  PerGroupOfThree = 2,
+  PerGroupOfFive = 3,
+  PerGroupOfSeven = 4,
+  PerGroupOfTen = 5,
+}
+
+export interface TicketType {
   id: string;
   defaultNetCost: number;
   minimumPurchaseQuantity: number;
@@ -48,15 +30,60 @@ interface TicketType {
   tourId: string;
 }
 
-enum TicketKind {
-  Adult = 0,
-  Child = 1,
-  Family = 2,
-  Group = 3,
+export interface Rating {
+  star: number;
+  comment: string;
+  createdAt: string;
 }
 
-interface Rating {
-    star: number;
-    comment: string;
-    createdAt: string; // ISO date string format
-  }
+export interface TourDestination {
+  name: string;
+  imageUrls: string[];
+  startTime: string;
+  endTime: string;
+  sortOrder: number;
+}
+
+export interface TourDetail {
+  tour: {
+    id: string;
+    title: string;
+    companyName: string;
+    description: string;
+    avgStar: number;
+    totalRating: number;
+    onlyFromCost: number;
+    ticketTypes: TicketType[];
+  };
+  ratings: Rating[];
+  tourDestinations: TourDestination[];
+}
+
+//*--------------TourSchedule-----------------------*/
+
+export interface TourScheduleDate {
+  success: boolean;
+  message: string;
+  data: string[];
+}
+
+export interface TicketSchedule {
+  ticketTypeId: string;
+  ticketKind: TicketKind;
+  netCost: number;
+  availableTicket: number;
+  tourScheduleId: string;
+}
+
+export interface DailyTicketSchedule {
+  day: string;
+  ticketSchedules: TicketSchedule[];
+}
+
+export interface TourScheduleTicket {
+  success: boolean;
+  message: string;
+  data: DailyTicketSchedule[];
+}
+
+

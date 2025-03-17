@@ -151,7 +151,7 @@ function CreateUserDialog() {
                                 value={role.label}
                                 key={role.value}
                                 onSelect={() => {
-                                  form.setValue("role", role.value as string)
+                                  form.setValue("role", role.value as "tourist" | "operator" | "manager" | "admin")
                                 }}
                               >
                                 {role.label}

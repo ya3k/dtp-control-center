@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-import { cn } from "@/lib/utils";
+import { cn, handleErrorApi } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { links } from "@/configs/routes";
@@ -22,7 +22,6 @@ import { loginSchema, LoginSchemaType } from "@/schemaValidations/auth.schema";
 import LoadingButton from "@/components/common/loading/LoadingButton";
 import { useState } from "react";
 import authApiRequest from "@/apiRequests/auth";
-import { sessionToken, userRole } from "@/lib/https";
 
 export function LoginForm({
   className,
@@ -41,27 +40,22 @@ export function LoginForm({
   const onSubmit = async (values: LoginSchemaType) => {
     try {
       setLoading(true);
-      const response = await authApiRequest.login(values);
-      if (!response.payload.success) {
-        toast.error(response.payload.message);
-        setLoading(false);
-        return;
-      }
-      const responseFromNextServer = await authApiRequest.setToken({
+      const response: any = await authApiRequest.login(values);
+      console.log("response", response);
+      const responseFromNextServer: any = await authApiRequest.setToken({
         sessionToken: response.payload?.data.accessToken,
         role: response.payload?.data.role,
       });
 
       if (responseFromNextServer.payload.success) {
-        toast.success(response.payload.message);
+        toast.success("Đăng nhập thành công");
         router.push(links.home.href);
-      } else {
-        throw new Error(responseFromNextServer.payload.message);
+        router.refresh();
       }
-      setLoading(false);
     } catch (error: any) {
-      console.error("Error during login:", error);
-      throw error;
+      handleErrorApi(error);
+    } finally {
+      setLoading(false);
     }
   };
 

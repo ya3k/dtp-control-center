@@ -20,7 +20,7 @@ import {
 
 interface TourFilterProps {
   selectedFilter: string;
-  onSelectFilter: (filterId: string) => void;
+  onSelectFilter?: (filterId: string) => void;
   tourCount: number;
 }
 
@@ -29,7 +29,6 @@ const MAX = 100000000;
 
 export default function TourFilter({
   selectedFilter,
-  onSelectFilter,
   tourCount,
 }: TourFilterProps) {
   const [values, setValues] = useState([MIN, MAX]);
@@ -56,16 +55,16 @@ export default function TourFilter({
               <Calendar
                 mode="single"
                 disabled={(date) =>
-                  date > new Date() || date < new Date("1900-01-01")
+                  date < new Date() || date < new Date("1900-01-01")
                 }
                 initialFocus
               />
               <div className="mt-2 flex justify-between">
                 <Button variant="outline">
-                  Reset
+                  Xóa
                 </Button>
                 <Button className="bg-core">
-                  Choose
+                  Chọn
                 </Button>
               </div>
             </PopoverContent>

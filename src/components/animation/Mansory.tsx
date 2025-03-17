@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useTransition, a } from "@react-spring/web";
+import { InView } from "@/components/ui/in-view";
+import { motion } from "motion/react";
 
 interface MasonryItem {
   id: string | number;
@@ -86,29 +88,56 @@ function Masonry({ data }: MasonryProps) {
   });
 
   return (
-    <div
-      ref={ref}
-      className="relative w-full h-full"
-      style={{ height: Math.max(...heights) }}
+    <InView
+      viewOptions={{ once: true, margin: "0px 0px -250px 0px" }}
+      variants={{
+        hidden: {
+          opacity: 0,
+        },
+        visible: {
+          opacity: 1,
+          transition: {
+            staggerChildren: 0.09,
+          },
+        },
+      }}
     >
-      {transitions((style, item) => (
-        <a.div
-          key={item.id}
-          style={style}
-          className="absolute p-[15px] [will-change:transform,width,height,opacity]"
-        >
-          <div
-            className="relative w-full h-full overflow-hidden uppercase text-[10px] leading-[10px] rounded-[4px] shadow-[0px_10px_50px_-10px_rgba(0,0,0,0.2)] transition duration-300 ease hover:scale-110"
-            style={{
-              backgroundColor: "#ffffff",
-              backgroundImage: `url(${item.image})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
+      <div
+        ref={ref}
+        className="relative h-full w-full"
+        style={{ height: Math.max(...heights) }}
+      >
+        {transitions((style, item) => (
+          <motion.div
+            key={item.id}
+            variants={{
+              hidden: { opacity: 0, scale: 0.8, filter: "blur(10px)" },
+              visible: {
+                opacity: 1,
+                scale: 1,
+                filter: "blur(0px)",
+              },
             }}
-          />
-        </a.div>
-      ))}
-    </div>
+          >
+            <a.div
+              key={item.id}
+              style={style}
+              className="absolute p-[15px] [will-change:transform,width,height,opacity]"
+            >
+              <div
+                className="ease relative h-full w-full overflow-hidden rounded-[4px] text-[10px] uppercase leading-[10px] shadow-[0px_10px_50px_-10px_rgba(0,0,0,0.2)] transition duration-300 hover:scale-110"
+                style={{
+                  backgroundColor: "#ffffff",
+                  backgroundImage: `url(${item.image})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
+              />
+            </a.div>
+          </motion.div>
+        ))}
+      </div>
+    </InView>
   );
 }
 

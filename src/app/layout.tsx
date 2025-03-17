@@ -1,13 +1,14 @@
   import type { Metadata } from "next";
 import { IBM_Plex_Sans } from "next/font/google";
-
+import { cookies } from "next/headers";
 import "./globals.css";
+
 import LoadingBar from "@/components/common/loading/LoadingBar";
 import PageLoader from "@/providers/LoaderProvider";
 import { Toaster } from "@/components/ui/sonner";
 import LoadingScreen from "@/components/common/loading/LoadingScreen";
 import AuthProvider from "@/providers/AuthProvider";
-import { cookies } from "next/headers";
+import { CartProvider } from "@/providers/CartProvider";
 
 const ibmPlexSans = IBM_Plex_Sans({
   variable: "--font-ibm-plex-sans",
@@ -32,17 +33,23 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body className={`${ibmPlexSans.className} antialiased`}>
-          <AuthProvider initialSessionToken={sessionToken?.value} initialRole={role?.value}>
-            <LoadingScreen>
-              <LoadingBar />
-              <PageLoader />
-              {children}
-              <Toaster closeButton richColors/>
-            </LoadingScreen>
-          </AuthProvider>
+        <AuthProvider
+          initialSessionToken={sessionToken?.value}
+          initialRole={role?.value}
+        >
+          <CartProvider>
+          <LoadingScreen>
+            <LoadingBar />
+            <PageLoader />
+            {children}
+            <Toaster closeButton richColors position="top-right" />
+          </LoadingScreen>
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

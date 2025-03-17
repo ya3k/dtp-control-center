@@ -18,6 +18,7 @@ const privatePath = [
   operatorLinks.createTour.href,
 ];
 
+
 const authPath = [links.login.href, links.register.href];
 
 // This function can be marked `async` if using `await` inside
@@ -94,6 +95,7 @@ export const config = {
   matcher: [
     links.passenger.href,
     links.login.href,
+    links.checkout.href,
     links.register.href,
 
     //admin

@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn, handleErrorApi } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { links } from "@/configs/routes";
@@ -56,25 +56,15 @@ export function RegisterForm({
   const onSubmit = async (data: RegisterSchemaType) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword, ...SubmitData } = data;
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await authApiRequest.register(SubmitData);
-      if (!response.payload.success) {
-        if (response.payload.error.length > 0) {
-          const errorMessage = response.payload.error[0];
-          toast.error(errorMessage);          
-        } else {
-          toast.error(response.payload.message);
-        }
-        setLoading(false);
-        return;
-      }
-      toast.success(response.payload.message);
+      await authApiRequest.register(SubmitData);
+      toast.success("Đăng ký thành công");
       router.push(links.login.href);
-      setLoading(false);
     } catch (error) {
-      console.error("Error during registration:", error);
-      throw new Error("Registration failed");
+      handleErrorApi(error);
+    } finally {
+      setLoading(false);
     }
   };
 

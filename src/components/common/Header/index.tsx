@@ -10,16 +10,9 @@ import { links } from "@/configs/routes";
 import MobileHeader from "@/components/common/Header/MobileHeader";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { sessionToken } from "@/lib/https";
+import AuthMenu from "@/components/common/Header/AuthMenu";
 
 export default function Header() {
   const pathname = usePathname();
@@ -51,7 +44,7 @@ export default function Header() {
         )}
       >
         <div className="mx-auto flex max-w-2xl items-center justify-between p-4 sm:px-6 md:max-w-4xl lg:max-w-6xl">
-          <Link href={links.home.href}>
+          <Link className="min-w-fit" href={links.home.href}>
             <Image
               width={400}
               height={400}
@@ -109,36 +102,24 @@ export default function Header() {
           </nav>
           {sessionToken.value ? (
             <div className="flex items-center gap-4">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Avatar>
-                    <AvatarImage src="https://github.com/shadcn.png" />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
-                  <DropdownMenuItem>Giỏ hàng</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={()=> {}}>
-                    Đăng xuất
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <AuthMenu>
+                <Avatar>
+                  <AvatarImage src="https://github.com/shadcn.png" />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+              </AuthMenu>
               <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              `${specialLinks?.includes(pathname) ? (scrolled ? "border-black text-black" : "text-white") : ""}`,
-              "md:text-sm lg:text-base",
-              `${specialLinks?.includes(pathname) ? "bg-transparent" : ""}`,
-              "sm:text-base",
-            )}
-          >
-            <ShoppingCart />
-          </Button>
+                variant="outline"
+                size="sm"
+                className={cn(
+                  `${specialLinks?.includes(pathname) ? (scrolled ? "border-black text-black" : "text-white") : ""}`,
+                  "md:text-sm lg:text-base",
+                  `${specialLinks?.includes(pathname) ? "bg-transparent" : ""}`,
+                  "sm:text-base",
+                )}
+              >
+                <Link href={links.shoppingCart.href}><ShoppingCart/></Link>
+              </Button>
             </div>
           ) : (
             <div className="flex items-center gap-4">
