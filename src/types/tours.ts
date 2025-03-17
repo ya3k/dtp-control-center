@@ -1,4 +1,4 @@
-export interface Tour  {
+export interface Tour {
   id: string;
   thumbnailUrl: string;
   title: string;
@@ -7,10 +7,9 @@ export interface Tour  {
   avgStar: number;
   totalRating: number;
   onlyFromCost: number;
-};
+}
 
 export type TourList = Tour[];
-
 
 /*--------------TourDetail-----------------------*/
 
@@ -59,3 +58,32 @@ export interface TourDetail {
   ratings: Rating[];
   tourDestinations: TourDestination[];
 }
+
+//*--------------TourSchedule-----------------------*/
+
+export interface TourScheduleDate {
+  success: boolean;
+  message: string;
+  data: string[];
+}
+
+export interface TicketSchedule {
+  ticketTypeId: string;
+  ticketKind: TicketKind;
+  netCost: number;
+  availableTicket: number;
+  tourScheduleId: string;
+}
+
+export interface DailyTicketSchedule {
+  day: string;
+  ticketSchedules: TicketSchedule[];
+}
+
+export interface TourScheduleTicket {
+  success: boolean;
+  message: string;
+  data: DailyTicketSchedule[];
+}
+
+

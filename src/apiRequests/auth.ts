@@ -13,10 +13,13 @@ const authApiRequest = {
     http.post<LoginResponseSchemaType>(apiEndpoint.login, body),
   register: (body: Omit<RegisterSchemaType, "confirmPassword">) =>
     http.post<RegisterResponseSchemaType>(apiEndpoint.register, body),
-  logout: () => http.post(apiEndpoint.logout),
+  logoutFromNextServerToServer: (sessionToken: string) =>
+    http.post(apiEndpoint.logout, {}, {
+      headers: { Authorization: `Bearer ${sessionToken}` },
+    }),
   setToken: (body: { sessionToken: string; role: string }) =>
     http.post<SetTokenResponseType>(nextServer.setToken, body, { baseUrl: "" }),
-  removeToken: () => http.delete(nextServer.removeToken, { baseUrl: "" }),
+  logoutFromNextClientToNextServer: () => http.post(nextServer.logout,{}, { baseUrl: "" }),
 };
 
 export default authApiRequest;

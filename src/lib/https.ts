@@ -1,17 +1,38 @@
 import envConfig from "@/configs/envConfig";
 import { apiEndpoint } from "@/configs/routes";
+// import { nomalizePath } from "@/lib/utils";
 import { LoginResponseSchemaType } from "@/schemaValidations/auth.schema";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-class HttpError extends Error {
+export class HttpError extends Error {
   status: number;
-  payload: any;
+  payload: { message: string; [key: string]: any };
   constructor({ status, payload }: { status: number; payload: any }) {
     super(`HTTP Error: ${status}`);
     this.status = status;
     this.payload = payload;
   }
-} 
+}
+type EntityErrorPayload = {
+  message: string;
+  error: string[];
+};
+export class EntityError extends HttpError {
+  status: 400;
+  payload: EntityErrorPayload;
+  constructor({
+    status,
+    payload,
+  }: {
+    status: 400;
+    payload: EntityErrorPayload;
+  }) {
+    super({ status: 400, payload });
+    this.status = status;
+    this.payload = payload;
+  }
+}
+
 
 class SessionToken {
   private sessionToken = "";
@@ -77,6 +98,7 @@ const request = async <Response>(
 
   const response = await fetch(fullUrl, {
     ...options,
+    cache: "no-cache",
     headers: {
       ...baseHeaders,
       ...options?.headers,
@@ -84,21 +106,36 @@ const request = async <Response>(
     body,
     method,
   });
+
   const payload: Response = await response.json();
+
   const data = {
     status: response.status,
     payload,
   };
   if (!response.ok) {
-    return new HttpError(data);
+    if (response.status === 400) {
+      throw new EntityError(
+        data as { status: 400; payload: EntityErrorPayload },
+      );
+    }
+    else {
+      throw new HttpError(data);
+    }
+
   }
+
   //automatically set/remove session token and role when login or logout on client side
-  if ([apiEndpoint.login].includes(url)) {
-    sessionToken.value = (payload as LoginResponseSchemaType).data?.accessToken;
-    userRole.value = (payload as LoginResponseSchemaType).data?.role;
-  } else if (apiEndpoint.logout.includes(url)) {
-    sessionToken.value = "";
-    userRole.value = "";
+  if (typeof window !== "undefined") {
+    if ([apiEndpoint.login].includes(url)) {
+      sessionToken.value = (
+        payload as LoginResponseSchemaType
+      ).data?.accessToken;
+      userRole.value = (payload as LoginResponseSchemaType).data?.role;
+    } else if ([apiEndpoint.logout].includes(url)) {
+      sessionToken.value = "";
+      userRole.value = "";
+    }
   }
   return data;
 };

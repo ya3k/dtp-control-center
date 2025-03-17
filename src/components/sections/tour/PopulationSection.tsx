@@ -2,17 +2,24 @@
 import Image from "next/image";
 
 import { Card, CardContent } from "@/components/ui/card";
+// import {
+//   Carousel,
+//   CarouselContent,
+//   CarouselItem,
+//   CarouselNext,
+//   CarouselPrevious,
+// } from "@/components/ui/carousel";
 import {
-  Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+  CarouselNavigation,
+  Carousel as CarouselPrimitives,
+} from "@/components/motion-primitives/carousel";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 const tours = [
   {
-    title: "Tour Riêng Tham Quan Phú Yên Trong Ngày Từ Quy Nhơn: Nhần",
+    title: "Tour Riêng Tham Quan Quy Nhơn Trong Ngày",
     price: "808,000₫",
     originalPrice: "850,000₫",
     imageUrl: "/images/quynhon.jpg", // Replace with actual image path
@@ -63,56 +70,99 @@ const tours = [
 
 export default function PopulationSection() {
   return (
-    <section className="mx-auto mb-16 flex max-w-2xl flex-col gap-6 px-4 sm:pb-6 md:max-w-3xl lg:max-w-6xl lg:px-8">
+    <section className="mx-auto mb-16 flex max-w-2xl flex-col gap-6 px-4 sm:pb-6 md:max-w-4xl lg:max-w-6xl lg:px-8">
       <h1 className="text-xl font-bold sm:text-3xl">
         Vui chơi hết cỡ tại Quy Nhơn
       </h1>
-      <Carousel className="w-full" opts={{ loop: true }}>
-        <CarouselContent className="-ml-1">
+      <ScrollArea className="w-full rounded-md md:hidden">
+        <div className="flex w-fit gap-4">
           {tours.map((tour, index) => (
-            <CarouselItem key={index} className="basis-1/2 pl-1 lg:basis-1/3">
-              <div className="p-1 sm:p-2 md:p-4">
-                <Card className="group relative min-w-[250px] max-w-[300px] transition-transform duration-300 ease-in-out hover:scale-105">
-                  <div className="aspect-square h-40 w-full overflow-hidden rounded-t-xl bg-gray-200">
-                    <Image
-                      src={tour.imageUrl}
-                      alt=""
-                      className="h-full w-full object-cover object-center"
-                      width={300}
-                      height={300}
-                    />
-                  </div>
-                  <CardContent className="sm:p-2 lg:p-6">
-                    <div className="flex flex-col gap-2">
-                      <p className="text-gray-600 sm:text-xs lg:text-sm">
-                        Tour Quy Nhơn
+            <div key={index} className="min-w-[250px] max-w-[300px] flex-1">
+              <Card className="group relative transition-transform duration-300 ease-in-out hover:scale-105 md:min-w-[250px] md:max-w-[300px]">
+                <div className="aspect-square h-40 w-full overflow-hidden rounded-t-xl bg-gray-200">
+                  <Image
+                    src={tour.imageUrl}
+                    alt=""
+                    className="h-full w-full object-cover object-center"
+                    width={300}
+                    height={300}
+                  />
+                </div>
+                <CardContent className="sm:p-2 lg:p-6">
+                  <div className="flex flex-col gap-2">
+                    <p className="text-gray-600 sm:text-xs lg:text-sm">
+                      Tour Quy Nhơn
+                    </p>
+                    <p
+                      className="line-clamp-2 text-base font-semibold lg:text-lg"
+                      title={tour.title}
+                    >
+                      {tour.title}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-black sm:text-sm lg:text-base">
+                        {tour.price}
                       </p>
-                      <p
-                        className="line-clamp-2 text-base font-semibold lg:text-lg"
-                        title={tour.title}
-                      >
-                        {tour.title}
+                      <p className="hidden text-gray-500 line-through sm:block sm:text-sm lg:text-base">
+                        {tour.originalPrice}
                       </p>
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold text-black sm:text-sm lg:text-base">
-                          {tour.price}
-                        </p>
-                        <p className="hidden text-gray-500 line-through sm:block sm:text-sm lg:text-base">
-                          {tour.originalPrice}
-                        </p>
-                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ))}
+        </div>
+        <ScrollBar orientation="horizontal" className="h-2.5" />
+      </ScrollArea>
+      <CarouselPrimitives className="hidden w-full md:block">
+        <CarouselContent>
+          {tours.map((tour, index) => (
+            <CarouselItem
+              key={index}
+              className="basis-1/3 p-1 pl-1 sm:p-2 md:p-4"
+            >
+              <Card className="group relative min-w-[200px] max-w-[250px] transition-transform duration-300 ease-in-out hover:scale-105 lg:min-w-[250px] lg:max-w-[300px]">
+                <div className="aspect-square h-40 w-full overflow-hidden rounded-t-xl bg-gray-200">
+                  <Image
+                    src={tour.imageUrl}
+                    alt=""
+                    className="h-full w-full object-cover object-center"
+                    width={300}
+                    height={300}
+                  />
+                </div>
+                <CardContent className="sm:p-2 lg:p-6">
+                  <div className="flex flex-col gap-2">
+                    <p className="text-gray-600 sm:text-xs lg:text-sm">
+                      Tour Quy Nhơn
+                    </p>
+                    <p
+                      className="line-clamp-2 text-base font-semibold lg:text-lg"
+                      title={tour.title}
+                    >
+                      {tour.title}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-black sm:text-sm lg:text-base">
+                        {tour.price}
+                      </p>
+                      <p className="hidden text-gray-500 line-through sm:block sm:text-sm lg:text-base">
+                        {tour.originalPrice}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </CarouselItem>
           ))}
         </CarouselContent>
-        <div className="hidden md:block">
-          <CarouselPrevious className="md:-left-8 lg:-left-10 xl:-left-12" />
-          <CarouselNext className="xl-left-12 md:-right-8 lg:-right-10" />
-        </div>
-      </Carousel>
+        <CarouselNavigation
+          className="absolute -bottom-12 left-auto top-auto w-full justify-end gap-2"
+          classNameButton="bg-zinc-800 *:stroke-zinc-50"
+          alwaysShow
+        />
+      </CarouselPrimitives>
     </section>
   );
 }

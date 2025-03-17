@@ -46,7 +46,7 @@ export default function ExperienceSection() {
   ];
 
   return (
-    <section className="mx-auto mb-16 flex max-w-2xl px-4 flex-col gap-6 sm:pb-6 lg:max-w-6xl lg:px-8">
+    <section className="mx-auto mb-16 flex max-w-2xl px-4 flex-col gap-6 sm:pb-6 md:max-w-4xl lg:max-w-6xl lg:px-8">
       <div className="flex items-center justify-between">
         <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-gray-900">
           Kinh nghiệm du lịch Quy Nhơn
