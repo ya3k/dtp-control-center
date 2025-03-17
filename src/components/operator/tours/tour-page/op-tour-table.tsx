@@ -6,7 +6,8 @@ import { OpTourStarRating } from "./op-tour-star-rating"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Pencil } from "lucide-react"
+import { Pencil, ImageIcon } from "lucide-react"
+import { useState } from "react"
 
 interface TourTableProps {
   tours: tourOdataResType[]
@@ -27,6 +28,17 @@ export function OpTourTable({
   truncateDescription,
   onEditTour
 }: TourTableProps) {
+  // Track images that failed to load
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+
+  // Handle image load error
+  const handleImageError = (tourId: string) => {
+    setFailedImages(prev => ({
+      ...prev,
+      [tourId]: true
+    }));
+  };
+
   return (
     <Table>
       <TableCaption>
@@ -38,6 +50,7 @@ export function OpTourTable({
           <TableHead className="min-w-[200px]">Tour Details</TableHead>
           <TableHead>Rating</TableHead>
           <TableHead className="text-right">Price</TableHead>
+          <TableHead className="w-[80px]">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -47,13 +60,21 @@ export function OpTourTable({
           tours.map((tour) => (
             <TableRow key={tour.id}>
               <TableCell>
-                <div className="relative h-16 w-24 overflow-hidden rounded-md">
-                  <Image
-                    src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTptCT4UOfGuWsfMsqfUG87MJb5JKMa7AAOHQ&s"}
-                    alt={tour.title}
-                    fill
-                    className="object-cover"
-                  />
+                <div className="relative h-16 w-24 overflow-hidden rounded-md bg-muted">
+                  {!failedImages[tour.id] && tour.thumbnailUrl ? (
+                    <Image
+                      src={tour.thumbnailUrl}
+                      alt={tour.title}
+                      fill
+                      className="object-cover"
+                      onError={() => handleImageError(tour.id)}
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <Image src={`/images/binhdinhtour.png`} alt="Default tour image" width={96}
+                        height={64}/>
+                    </div>
+                  )}
                 </div>
               </TableCell>
               <TableCell>
@@ -80,13 +101,11 @@ export function OpTourTable({
                 </Button>
               </TableCell>
             </TableRow>
-
           ))
         ) : (
           <OpTourEmptyState resetFilters={resetFilters} />
         )}
       </TableBody>
     </Table>
-
   )
 }

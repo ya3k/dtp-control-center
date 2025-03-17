@@ -13,7 +13,7 @@ const operatorItems = [
     },
     {
         title: "Tours",
-        url: "/operator/tours",
+        url: "",
         icon: Torus,
         subItems: [
             { title: "Danh Sách Tours", url: "/operator/tours", icon: Calendar },
@@ -22,7 +22,7 @@ const operatorItems = [
     },
     {
         title: "Nhân Viên",
-        url: "/operator/employee",
+        url: "",
         icon: Users,
         subItems: [
             { title: "Danh sách nhân viên", url: "/operator/employee", icon: Calendar },

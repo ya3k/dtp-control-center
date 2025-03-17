@@ -58,10 +58,15 @@ export function SidebarDashboard({ items, title = 'Dashboard' }: SideBarDashboar
                           pathname === item.url && "bg-blue-700 text-white"
                         )}
                       >
-                        <Link href={item.url} className="flex items-center gap-3 flex-1">
-                          {item.icon && <item.icon className="h-5 w-5" />}
-                          <span className="text-sm font-medium">{item.title}</span>
-                        </Link>
+                        {item.url !== '' ?
+                          <Link href={item.url} className="flex items-center gap-3 flex-1">
+                            {item.icon && <item.icon className="h-5 w-5" />}
+                            <span className="text-sm font-medium">{item.title}</span>
+                          </Link>
+                          :
+                          <> {item.icon && <item.icon className="h-5 w-5" />}
+                            <span className="text-sm font-medium">{item.title}</span>
+                          </>}
                         {item.subItems && (
                           <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                         )}
