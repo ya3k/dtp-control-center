@@ -1,18 +1,22 @@
+import { toast } from "sonner"
 import envConfig from "@/configs/envConfig";
 import { apiEndpoint } from "@/configs/routes";
-// import { nomalizePath } from "@/lib/utils";
 import { LoginResponseSchemaType } from "@/schemaValidations/auth.schema";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export class HttpError extends Error {
+class HttpError extends Error {
   status: number;
   payload: { message: string; [key: string]: any };
   constructor({ status, payload }: { status: number; payload: any }) {
-    super(`HTTP Error: ${status}`);
-    this.status = status;
-    this.payload = payload;
+    // Create a more descriptive error message
+    const message = typeof payload === "object" && payload?.message ? payload.message : `HTTP Error: ${status}`
+
+    super(message)
+    this.name = "HttpError"
+    this.status = status
+    this.payload = payload
   }
-}
+} 
 type EntityErrorPayload = {
   message: string;
   error: string[];
@@ -33,62 +37,84 @@ export class EntityError extends HttpError {
   }
 }
 
-
 class SessionToken {
-  private sessionToken = "";
+  private sessionToken = ""
+
   get value() {
-    return this.sessionToken;
+    return this.sessionToken
   }
+
   set value(token: string) {
-    //CHeck if calling from client side or server side
+    // Check if calling from client side or server side
     if (typeof window === "undefined") {
-      throw new Error("Cannot set token on server side");
+      throw new Error("Cannot set token on server side")
     }
-    this.sessionToken = token;
+    this.sessionToken = token
   }
 }
+
 class UserRole {
-  private role = "";
+  private role = ""
+
   get value() {
-    return this.role;
+    return this.role
   }
+
   set value(role: string) {
-    //CHeck if calling from client side or server side
+    // Check if calling from client side or server side
     if (typeof window === "undefined") {
-      throw new Error("Cannot set role on server side");
+      throw new Error("Cannot set role on server side")
     }
-    this.role = role;
+    this.role = role
   }
 }
 
-//only manipulate on client side
-export const sessionToken = new SessionToken();
-export const userRole = new UserRole();
+// Only manipulate on client side
+export const sessionToken = new SessionToken()
+export const userRole = new UserRole()
 
-type MethodType = "GET" | "POST" | "PUT" | "DELETE";
+export type MethodType = "GET" | "POST" | "PUT" | "DELETE"
 
-type CustomOptionsType = Omit<RequestInit, "method"> & {
-  baseUrl?: string | undefined;
-};
+export type CustomOptionsType = Omit<RequestInit, "method"> & {
+  baseUrl?: string | undefined
+  showErrorToast?: boolean // Option to show error toast
+  errorMessage?: string // Custom error message
+}
 
+/**
+ * Makes an HTTP request with the specified method, URL, and options.
+ *
+ * @param method - The HTTP method to use (GET, POST, PUT, DELETE)
+ * @param url - The URL to request
+ * @param options - Additional options for the request
+ * @returns A promise that resolves to the response data
+ * @throws HttpError if the request fails
+ */
 const request = async <Response>(
   method: MethodType,
   url: string,
   options?: CustomOptionsType | undefined,
-) => {
-  const body = options?.body ? JSON.stringify(options.body) : undefined;
+)
+: Promise<
+{
+  status: number
+  payload: Response | null
+}
+> =>
+{
+  const { baseUrl: optionsBaseUrl, showErrorToast = true, errorMessage, ...fetchOptions } = options || {}
+
+  const body = fetchOptions.body ? JSON.stringify(fetchOptions.body) : undefined
+
   const baseHeaders = {
     "Content-Type": "application/json",
     Authorization: sessionToken.value ? `Bearer ${sessionToken.value}` : "",
-  };
+  }
 
-  //Nếu không truyền baseUrl thì lấy từ envConfig
-  //Nếu truyền baseUrl thì lấy từ options
-  //Nếu truyền baseUrl là "" thì đồng nghĩa với API gọi đến Nextjs server
-  const baseUrl =
-    options?.baseUrl === undefined
-      ? envConfig.NEXT_PUBLIC_API_ENDPOINT
-      : options.baseUrl;
+  // If no baseUrl is provided, use the one from envConfig
+  // If baseUrl is provided, use it
+  // If baseUrl is "", it means the API call is to the Next.js server
+  const baseUrl = optionsBaseUrl === undefined ? envConfig.NEXT_PUBLIC_API_ENDPOINT : optionsBaseUrl
 
   // /api/tour
   // api/tour
@@ -96,57 +122,93 @@ const request = async <Response>(
     ? `${baseUrl}${url}`
     : `${baseUrl}/${url}`;
 
-  const response = await fetch(fullUrl, {
-    ...options,
-    cache: "no-cache",
-    headers: {
-      ...baseHeaders,
-      ...options?.headers,
-    },
-    body,
-    method,
-  });
-
-  const payload: Response = await response.json();
-
-  const data = {
-    status: response.status,
-    payload,
-  };
-  if (!response.ok) {
-    if (response.status === 400) {
-      throw new EntityError(
-        data as { status: 400; payload: EntityErrorPayload },
-      );
+  try {
+    const response = await fetch(fullUrl, {
+      ...fetchOptions,
+      cache: "no-cache",
+      headers: {
+        ...baseHeaders,
+        ...fetchOptions?.headers || {},
+      },
+      body,
+      method,
+    });
+    const contentType = response.headers.get("Content-Type")
+      let payload: Response | null = null
+      if (response.status !== 204) {
+        const responseText = await response.text()
+        try {
+          payload =
+            contentType && contentType.includes("application/json")
+              ? JSON.parse(responseText)
+              : (responseText as unknown as Response)
+        } catch (error) {
+          throw new HttpError({ status: response.status, payload: responseText })
+        }
+      }
+    payload: Response = await response.json();
+    const data = {
+      status: response.status,
+      payload,
+    };
+    if (!response.ok) {
+      const error = new HttpError(data)
+  
+      // Show error toast if enabled
+      if (showErrorToast) {
+        const toastMessage =
+          errorMessage ||
+          (typeof error.payload === "object" && error.payload?.message) ||
+          `Error ${error.status}: Request failed`
+  
+        toast.error(toastMessage)
+      }
+  
+      throw error
     }
-    else {
-      throw new HttpError(data);
-    }
-
-  }
-
-  //automatically set/remove session token and role when login or logout on client side
-  if (typeof window !== "undefined") {
+    //automatically set/remove session token and role when login or logout on client side
     if ([apiEndpoint.login].includes(url)) {
-      sessionToken.value = (
-        payload as LoginResponseSchemaType
-      ).data?.accessToken;
-      userRole.value = (payload as LoginResponseSchemaType).data?.role;
-    } else if ([apiEndpoint.logout].includes(url)) {
-      sessionToken.value = "";
-      userRole.value = "";
+      const loginResponse = payload as unknown as LoginResponseSchemaType
+      if (loginResponse.data?.accessToken) {
+        sessionToken.value = loginResponse.data.accessToken
+        userRole.value = loginResponse.data.role
+      }
+    } else if (apiEndpoint.logout.includes(url)) {
+      sessionToken.value = ""
+      userRole.value = ""
     }
+    return data;
+  } catch (error) {
+    if (!(error instanceof HttpError) && showErrorToast) {
+      toast.error(errorMessage || "Network error. Please check your connection.")
+    }
+    throw error
   }
-  return data;
 };
 
 const http = {
+  /**
+   * Makes a GET request to the specified URL.
+   * 
+   * @param url - The URL to request
+   * @param options - Additional options for the request
+   * @returns A promise that resolves to the response data
+   */
   get: <Response>(
     url: string,
     options?: Omit<CustomOptionsType, "body"> | undefined,
   ) => {
     return request<Response>("GET", url, options);
   },
+  
+  /**
+   * Makes a POST request to the specified URL with the provided body.
+   * 
+   * @param url - The URL to request
+   * @param body - The request body
+   * @param options - Additional options for the request
+   * @returns a promise that resolves to the response data
+   */
   post: <Response>(
     url: string,
     body?: any,
@@ -154,6 +216,15 @@ const http = {
   ) => {
     return request<Response>("POST", url, { ...options, body });
   },
+  
+  /**
+   * Makes a PUT request to the specified URL with the provided body.
+   * 
+   * @param url - The URL to request
+   * @param body - The request body
+   * @param options - Additional options for the request
+   * @returns A promise that resolves to the response data
+   */
   put: <Response>(
     url: string,
     body: any,
@@ -161,6 +232,14 @@ const http = {
   ) => {
     return request<Response>("PUT", url, { ...options, body });
   },
+  
+  /**
+   * Makes a DELETE request to the specified URL.
+   * 
+   * @param url - The URL to request
+   * @param options - Additional options for the request
+   * @returns A promise that resolves to the response data
+   */
   delete: <Response>(
     url: string,
     options?: Omit<CustomOptionsType, "body"> | undefined,
@@ -170,3 +249,4 @@ const http = {
 };
 
 export default http;
+

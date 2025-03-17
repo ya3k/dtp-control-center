@@ -9,22 +9,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { DestinationSchema, TourDestinationType, TourType } from "@/schemaValidations/tour-operator.shema"
-
-// Create a schema for a single destination
-// const destinationFormSchema = z.object({
-//   destinationId: z.string().uuid("Please select a valid destination"),
-//   startTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/, "Time must be in HH:MM:SS format"),
-//   endTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/, "Time must be in HH:MM:SS format"),
-//   sortOrder: z.coerce.number(),
-//   sortOrderByDate: z.coerce.number(),
-// })
-
-// type DestinationFormValues = z.infer<typeof destinationFormSchema>
+import { CreateTourBodyType, DestinationSchema, TourCreateDestinationType } from "@/schemaValidations/tour-operator.shema"
+import { apiEndpoint } from "@/configs/routes"
+import destinationApiRequest from "@/apiRequests/destination"
 
 interface DestinationFormProps {
-  data: Partial<TourType>
-  updateData: (data: Partial<TourType>) => void
+  data: Partial<CreateTourBodyType>
+  updateData: (data: Partial<CreateTourBodyType>) => void
   onNext: () => void
   onPrevious: () => void
 }
@@ -40,20 +31,19 @@ export function DestinationForm({ data, updateData, onNext, onPrevious }: Destin
 
   const fetchDestination = async () => {
     try {
-      const response = await fetch("https://localhost:7171/api/destination", {
-        headers: { "Content-Type": "application/json" }
-      })
-      const data = await response.json()
+  
+      const response = await destinationApiRequest.getAll();
+      const data = response.payload?.value
+  
       setDestinations(data)
     } catch (error) {
       console.error("Failed to fetch destinations:", error)
     }
   }
-
   useEffect(() => {
     fetchDestination()
   }, [])
-  const form = useForm<TourDestinationType>({
+  const form = useForm<TourCreateDestinationType>({
     resolver: zodResolver(DestinationSchema),
     defaultValues: {
       destinationId: "",
@@ -61,10 +51,11 @@ export function DestinationForm({ data, updateData, onNext, onPrevious }: Destin
       endTime: "10:00:00",
       sortOrder: data.destinations?.length ? data.destinations.length + 1 : 0,
       sortOrderByDate: data.destinations?.length ? data.destinations.length + 1 : 0,
+      img: "string"
     },
   })
 
-  const addDestination = (values: TourDestinationType) => {
+  const addDestination = (values: TourCreateDestinationType) => {
     const updatedDestinations = [...(data.destinations || []), values]
     updateData({ destinations: updatedDestinations })
 
@@ -73,8 +64,9 @@ export function DestinationForm({ data, updateData, onNext, onPrevious }: Destin
       destinationId: "",
       startTime: "09:00:00",
       endTime: "10:00:00",
-      sortOrder: updatedDestinations.length -1 + 1,
-      sortOrderByDate: updatedDestinations.length -1 + 1,
+      sortOrder: updatedDestinations.length - 1 + 1,
+      sortOrderByDate: updatedDestinations.length - 1 + 1,
+      
     })
   }
 

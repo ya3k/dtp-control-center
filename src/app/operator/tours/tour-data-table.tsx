@@ -1,20 +1,20 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import tourApiService from "@/apiRequests/tour"
+import { tourOdataResType, TourResType } from "@/schemaValidations/tour-operator.shema"
+import { OpTourFilterCard } from "@/components/operator/tours/tour-page/op-tour-filter-card"
+import { OpTourPagination } from "@/components/operator/tours/tour-page/op-tour-pagination"
+import { OpTourTable } from "@/components/operator/tours/tour-page/op-tour-table"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { PlusCircle, RefreshCcw } from "lucide-react"
-import { CompanyTable } from "@/components/admin/company/company-table"
-import { TablePagination } from "@/components/admin/common-table/table-pagination"
-import companyApiRequest from "@/apiRequests/company"
-import { CompanyResType } from "@/schemaValidations/company.schema"
-import { CompanyTableFilterCard } from "@/components/admin/company/company-table-filter"
-import { ApproveCompanyDialog } from "@/components/admin/company/company-request/company-request-list"
-import { EditCompanyDialog } from "@/components/admin/company/edit-company-dialog"
+import Link from "next/link"
+import { UpdateTourDialog } from "@/components/operator/tours/edit-tour/edit-tour-dialog"
 
-export default function CompanyDataTable() {
+export default function OpTourDataTable() {
   // Data state
-  const [companies, setCompanies] = useState<CompanyResType[]>([])
+  const [tours, setTours] = useState<tourOdataResType[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [totalCount, setTotalCount] = useState<number>(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -28,21 +28,19 @@ export default function CompanyDataTable() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("")
 
   // Filter state
-  const [licenseFilter, setLicenseFilter] = useState<string>(`all`)
+  const [minRating, setMinRating] = useState<number>(0)
 
   //Edit state
-  const [selectedCompany, setSelectedCompany] = useState<CompanyResType | null>(null)
+  const [selectedTour, setSelectedTour] = useState<tourOdataResType | null>(null)
+  const [editTourId, setEditTourId] = useState<string | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-
-  // Approval dialog state
-  const [isApprovalDialogOpen, setIsApprovalDialogOpen] = useState(false)
 
 
   // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm)
-    }, 1000)
+    }, 500)
 
     return () => clearTimeout(timer)
   }, [searchTerm])
@@ -50,10 +48,10 @@ export default function CompanyDataTable() {
   // Reset to first page when search/filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [debouncedSearchTerm, licenseFilter])
+  }, [debouncedSearchTerm, minRating])
 
   //fetching tour
-  const fetchCompany = async () => {
+  const fetchTours = async () => {
     setLoading(true)
 
     try {
@@ -62,6 +60,7 @@ export default function CompanyDataTable() {
 
       // Build OData query parameters
       const params = new URLSearchParams()
+
       // Pagination
       params.append("$top", pageSize.toString())
       params.append("$skip", skip.toString())
@@ -70,30 +69,28 @@ export default function CompanyDataTable() {
       // Filtering
       const filterConditions: string[] = []
 
-      // Search term (name, email contains)
+      // Search term (title contains)
       if (debouncedSearchTerm) {
-        filterConditions.push(`contains(name, '${debouncedSearchTerm}')`);
-        filterConditions.push(`contains(email, '${debouncedSearchTerm}')`);
+        filterConditions.push(`contains(title, '${debouncedSearchTerm}')`)
       }
 
-      // License filter
-      if (licenseFilter !== "all") {
-        filterConditions.push(`lisenced eq ${licenseFilter}`)
+      // Rating
+      if (minRating > 0) {
+        filterConditions.push(`avgStar ge ${minRating}`)
       }
-
 
       // Combine filter conditions
       if (filterConditions.length > 0) {
-        params.append("$filter", filterConditions.join(" or "))
+        params.append("$filter", filterConditions.join(" and "))
       }
 
       // Construct the OData query string
       const queryString = `?${params.toString()}`
 
       // Use tourApiService instead of direct fetch
-      const response = await companyApiRequest.getWithOData(queryString)
-      console.log(queryString)
-      setCompanies(response.payload?.value)
+      const response = await tourApiService.getWithOData(queryString)
+
+      setTours(response.payload?.value)
       setTotalCount(response.payload["@odata.count"] || 0)
     } catch (error) {
       console.error("Error fetching tour data:", error)
@@ -104,41 +101,39 @@ export default function CompanyDataTable() {
 
   // Fetch data with OData parameters
   useEffect(() => {
-    fetchCompany()
-  }, [currentPage, pageSize, debouncedSearchTerm, licenseFilter])
+    fetchTours()
+  }, [currentPage, pageSize, debouncedSearchTerm, minRating])
 
 
   //handle refresh
   const handleRefresh = async () => {
     setIsRefreshing(true)
-    fetchCompany();
+    fetchTours();
     setIsRefreshing(false)
   }
 
-  //handle update
-  const handleEditCompany = (company: CompanyResType) => {
-    setSelectedCompany(company)
+  //handle update success
+  const handleEditTour = (tour: tourOdataResType) => {
+    setSelectedTour(tour)
     setIsEditDialogOpen(true)
   }
-
-
-  const handleEditComplete = (updatedCompany: CompanyResType) => {
-    // Update the company in the local state without refetching
-    setCompanies((prevCompanies) =>
-      prevCompanies.map((company) => (company.id === updatedCompany.id ? updatedCompany : company)),
+  const handleUpdateSuccess = (updatedTour: TourResType) => {
+    setTours(prevTours =>
+      prevTours.map(tour =>
+        tour.id === updatedTour.id ? { ...tour, ...updatedTour } : tour
+      )
     )
+    setIsEditDialogOpen(false)
+    setSelectedTour(null)
+    fetchTours() // Refresh the data
+  }
+  // Function to truncate description text
+  const truncateDescription = (text: string, maxLength = 100): string => {
+    if (!text) return ""
+    if (text.length <= maxLength) return text
+    return text.substring(0, maxLength) + "..."
   }
 
-  // Handle opening the approval dialog
-  const handleOpenApprovalDialog = () => {
-    setIsApprovalDialogOpen(true)
-  }
-
-  // Handle approval completion
-  const handleApprovalComplete = () => {
-    // Refresh the main company list to reflect changes
-    fetchCompany()
-  }
   // Calculate total pages
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
 
@@ -159,14 +154,14 @@ export default function CompanyDataTable() {
   const resetFilters = () => {
     setSearchTerm("")
     setDebouncedSearchTerm("")
-    setLicenseFilter(`all`)
+    setMinRating(0)
   }
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader className="mx-4">
           <div className="flex justify-between items-center">
-            <CardTitle className="text-2xl font-bold">Quản lý danh sách công ty</CardTitle>
+            <CardTitle className="text-2xl font-bold">Tour Management</CardTitle>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -188,15 +183,11 @@ export default function CompanyDataTable() {
                 )}
               </Button>
 
-              <Button
-                variant={"core"}
-                size="default"
-                className="gap-2"
-                disabled={loading || isRefreshing}
-                onClick={handleOpenApprovalDialog}
-              >
-                <PlusCircle className="h-4 w-4" />
-                <span>Duyệt công ty</span>
+              <Button variant={"core"} asChild disabled={loading || isRefreshing} size="default" className="gap-2">
+                <Link href="/operator/tours/create">
+                  <PlusCircle className="h-4 w-4" />
+                  <span>Tạo Tour mới</span>
+                </Link>
               </Button>
             </div>
           </div>
@@ -205,31 +196,32 @@ export default function CompanyDataTable() {
 
 
         {/* Search and Rating Filter */}
-        <CompanyTableFilterCard searchTerm={searchTerm} setSearchTerm={setSearchTerm} licenseFilter={licenseFilter} setLicenseFilter={setLicenseFilter} pageSize={pageSize} setPageSize={setPageSize} />
+        <OpTourFilterCard searchTerm={searchTerm} setSearchTerm={setSearchTerm} minRating={minRating} setMinRating={setMinRating} pageSize={pageSize} setPageSize={setPageSize} />
         {/* Table */}
         <div className="rounded-md border">
-          <CompanyTable companies={companies} loading={loading} onEditCompany={handleEditCompany} resetFilters={resetFilters} />
+          <OpTourTable tours={tours} totalCount={totalCount} loading={loading} pageSize={pageSize} resetFilters={resetFilters} truncateDescription={truncateDescription} onEditTour={handleEditTour} />
         </div>
         {/* Pagination */}
-        <TablePagination currentPage={currentPage} loading={loading} onNextPage={handleNextPage}
+        <OpTourPagination currentPage={currentPage} loading={loading} onNextPage={handleNextPage}
           onPreviousPage={handlePreviousPage} totalPages={totalPages}
         />
       </Card>
 
-
-      {/* Approval Dialog */}
-      <ApproveCompanyDialog
-        open={isApprovalDialogOpen}
-        onOpenChange={setIsApprovalDialogOpen}
-        onApprovalComplete={handleApprovalComplete}
-      />
-      {/* Edit Dialog */}
-      <EditCompanyDialog
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        company={selectedCompany}
-        onEditComplete={handleEditComplete}
-      />
+     {/* Edit Dialog */}
+     {selectedTour && (
+        <UpdateTourDialog
+          tour={selectedTour}
+          open={isEditDialogOpen}
+          onOpenChange={(isOpen) => {
+            setIsEditDialogOpen(isOpen)
+            if (!isOpen) {
+              setSelectedTour(null)
+              fetchTours()
+            }
+          }}
+          onUpdateSuccess={handleUpdateSuccess}
+        />
+      )}
     </div>
   )
 }

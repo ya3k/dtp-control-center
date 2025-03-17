@@ -11,154 +11,175 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
-import {  TourInfoFormType, tourInfoSchema, TourResType, UpdateTourInfoRequest } from "@/schemaValidations/tour-operator.shema"
+import { TourInfoFormBodyType, TourInfoFormType, tourInfoSchema, TourResType } from "@/schemaValidations/tour-operator.shema"
+import categoryApiRequest from "@/apiRequests/category"
+import tourApiService from "@/apiRequests/tour"
 
-
-// Zod schema for form validation
-
-const categoriesList = [
-    { id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "Adventure" },
-    { id: "a4ce6ec7-070a-4428-8290-c3af692a7783", name: "Cultural" }
-]
 interface TourInfoFormProps {
-    tour: TourResType
-    onUpdateSuccess: (updatedTour: TourResType) => void
+    tourId: string;
+    onUpdateSuccess: (updatedTour: TourResType) => void;
 }
 
-export function TourInfoForm({ tour, onUpdateSuccess }: TourInfoFormProps) {
+export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [categories, setCategories] = useState<{ id: string; name: string }[]>([])
     const [isLoadingCategories, setIsLoadingCategories] = useState(true)
+    const [tourData, setTourData] = useState<TourInfoFormType | null>(null)
 
-    // Fetch categories
-    useEffect(() => {
-        const fetchCategories = async () => {
-            setIsLoadingCategories(true)
-            try {
-                setCategories(categoriesList);
-
-            } catch (error) {
-                console.error("Failed to fetch categories:", error)
-            } finally {
-                setIsLoadingCategories(false)
-            }
-        }
-
-        fetchCategories()
-    }, [])
-
-    // Tour Info form
-    const form = useForm<TourInfoFormType>({
+    const form = useForm<TourInfoFormBodyType>({
         resolver: zodResolver(tourInfoSchema),
         defaultValues: {
-            title: tour.title,
-            companyId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            category: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            description: tour.description,
-            // openDay: tour.openDay,
-            // closeDay: tour.closeDay,
-            // scheduleFrequency: tour.scheduleFrequency,
+            tourId: tourId,
+            title: "",
+            category: "",
+            description: "",
+            img: ""
         },
-    })
+    });
 
-    const onSubmit = async (data: TourInfoFormType) => {
-        setIsSubmitting(true)
-        try {
-            const updateData: UpdateTourInfoRequest = {
-                tourId: tour.id,
-                ...data,
+    // Fetch categories and tour data
+    useEffect(() => {
+        const fetchData = async () => {
+            setIsLoadingCategories(true)
+            try {
+                // Fetch both categories and tour data in parallel
+                const [categoryResponse, tourResponse] = await Promise.all([
+                    categoryApiRequest.get(),
+                    tourApiService.getTourInfo(tourId),
+                ]);
+
+                const categoryData = categoryResponse.payload.value;
+                const tourDetails = tourResponse.payload.data;
+
+                if (!categoryData || !tourDetails) throw new Error("Failed to fetch data");
+
+                setCategories(categoryData);
+                setTourData(tourDetails);
+
+                // Ensure the form resets only when categories are available
+                form.reset({
+                    ...tourDetails,
+                    category: tourDetails.category, // Ensure category is set correctly
+                });
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                toast.error("Failed to load tour information");
+            } finally {
+                setIsLoadingCategories(false);
             }
+        };
 
-            const response = await fetch("https://localhost:7171/api/tour/updatetourinfor", {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(updateData),
-            })
+        fetchData();
+    }, [tourId]);
 
-            if (!response.ok) {
-                throw new Error("Failed to update tour information")
-            }
-
-            const updatedTour = await response.json()
-            onUpdateSuccess({
-                ...tour,
-                ...updatedTour,
-            })
-
-            toast.success(`Tour information ${tour.id} updated successfully`)
-        } catch (error) {
-            console.error("Error updating tour info:", error)
-            toast.error("Failed to update tour!")
-
-        } finally {
-            setIsSubmitting(false)
+    // Ensure category updates when categories are available
+    useEffect(() => {
+        if (categories.length > 0 && tourData) {
+            form.setValue("category", tourData.category);
         }
-    }
+    }, [categories, tourData]);
+
+    const onSubmit = async (data: TourInfoFormBodyType) => {
+        setIsSubmitting(true);
+        try {
+            const response = await tourApiService.updateTourInfo(tourId, data);
+            if (!response.payload) throw new Error("Failed to update tour information");
+
+            const updatedTour = response.payload.data;
+            onUpdateSuccess(updatedTour);
+            toast.success("Tour information updated successfully");
+        } catch (error) {
+            console.error("Error updating tour info:", error);
+            toast.error("Failed to update tour!");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                {/* Title */}
                 <FormField
                     control={form.control}
                     name="title"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Title</FormLabel>
-                            <FormControl>
-                                <Input {...field} />
-                            </FormControl>
+                            <FormControl><Input {...field} /></FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
 
-                    <FormField
-                        control={form.control}
-                        name="category"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Category</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingCategories}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a category" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {categories.map((category) => (
-                                            <SelectItem key={category.id} value={category.id}>
-                                                {category.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                {/* Category */}
+                <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Category</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || ""} disabled={isLoadingCategories}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a category">
+                                            {categories.find((cat) => cat.id === field.value)?.name ?? "Select a category"}
+                                        </SelectValue>
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {categories.map((category) => (
+                                        <SelectItem key={category.id} value={category.id}>
+                                            {category.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
 
+                {/* Description */}
                 <FormField
                     control={form.control}
                     name="description"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Description</FormLabel>
-                            <FormControl>
-                                <Textarea {...field} className="min-h-[100px]" />
-                            </FormControl>
+                            <FormControl><Textarea {...field} className="min-h-[100px]" /></FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
 
+                {/* Image */}
+                <FormField
+                    control={form.control}
+                    name="img"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Tour Image</FormLabel>
+                            <FormControl>
+                                <Input type="text" placeholder="Enter image URL" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            {field.value && (
+                                <div className="mt-2">
+                                    <p className="text-sm text-gray-500">Current Image Preview:</p>
+                                    <img src={field.value} alt="Tour Image" className="w-full max-w-md rounded-md mt-2 shadow-md" />
+                                </div>
+                            )}
+                        </FormItem>
+                    )}
+                />
+
+                {/* Submit Button */}
                 <Button type="submit" disabled={isSubmitting || isLoadingCategories} className="w-full">
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Update Tour Information
                 </Button>
             </form>
         </Form>
-    )
-}
-
+    );
+};

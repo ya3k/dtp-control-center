@@ -8,7 +8,8 @@ import { FormStepper } from "@/components/operator/tours/create-form/tour-create
 import { TourInfoForm } from "@/components/operator/tours/create-form/tour-info-form"
 import { DestinationForm } from "@/components/operator/tours/create-form/destination-tour-form"
 import { TicketForm } from "@/components/operator/tours/create-form/ticket-tour-form"
-import { TourSchema, TourType } from "@/schemaValidations/tour-operator.shema"
+import { CreateTourBodyType, TourSchema } from "@/schemaValidations/tour-operator.shema"
+import tourApiService from "@/apiRequests/tour"
 
 
 export default function CreateTourPage() {
@@ -18,19 +19,20 @@ export default function CreateTourPage() {
 
 
   // Initialize form data with default values
-  const [formData, setFormData] = useState<Partial<TourType>>({
+  const [formData, setFormData] = useState<Partial<CreateTourBodyType>>({
     title: "",
-    companyId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    category: "",
+    img: "",
+    categoryid: "",
     description: "",
     destinations: [],
     tickets: [],
     openDay: "",
     closeDay: "",
+    duration: 1,
     scheduleFrequency: ""
   })
 
-  const updateFormData = (data: Partial<TourType>) => {
+  const updateFormData = (data: Partial<CreateTourBodyType>) => {
     setFormData((prev) => ({ ...prev, ...data }))
   }
 
@@ -49,19 +51,11 @@ export default function CreateTourPage() {
       // Validate the complete form data
       const validatedData = TourSchema.parse(formData)
       // Send data to the backend
-      const response = await fetch("https://localhost:7171/api/tour", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(validatedData),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
+      const response = await tourApiService.create(validatedData);
+      if (!response.payload) {
+        const errorData = await response.payload
         throw new Error(errorData.message || "Failed to create tour")
       }
-
       toast.success(`Tour ${validatedData.title} created successfully`)
       router.push("/operator/tours")
     } catch (error) {
