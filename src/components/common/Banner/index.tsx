@@ -15,7 +15,7 @@ export default function Banner({
   title2: string;
 }) {
   return (
-    <div className="relative mb-8 h-[calc(100vh-420px)] w-full overflow-hidden sm:h-[calc(100vh-360px)] md:h-[calc(100vh-300px)] lg:h-[calc(100vh-240px)]">
+    <div className="relative mb-8 w-full overflow-hidden h-[calc(40vh)] md:h-[calc(60vh)] lg:h-[calc(80vh)]">
 
       <div className="absolute inset-0 animate-zoom-in-out">
         <Image
@@ -31,9 +31,9 @@ export default function Banner({
         className={`absolute inset-0 flex flex-col items-center justify-center ${title1 ? "gap-4" : ""} bg-black bg-opacity-20`}
       >
         {title1 && (
-          <h1 className={`text-lg font-medium text-white`}>{title1}</h1>
+          <h1 className={`text-base md:text-lg font-medium text-white`}>{title1}</h1>
         )}
-        <h1 className={`text-6xl font-bold text-white ${dancing.className}`}>
+        <h1 className={`text-3xl md:text-6xl font-bold text-white ${dancing.className}`}>
           {title2}
         </h1>
       </div>

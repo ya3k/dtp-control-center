@@ -4,9 +4,13 @@ export const links = {
     register: { href: "/register", label: "Đăng ký" },
     home: { href: "/", label: "Trang chủ" },
     tour: { href: "/tour", label: "Tour Quy Nhơn" },
+    allTour: { href: "/tour/all", label: "Tất cả tour" },
     blog: { href: "/blog", label: "Cẩm nang du lịch" },
     about: { href: "/about", label: "Về chúng tôi" },
     passenger: { href: "/passenger", label: "Khách hàng" },
+    shoppingCart: { href: "/shoppingcart", label: "Giỏ hàng" },
+    checkout: {href: "payment/checkout", label: "Thanh toán"},
+
 }
 
 export const adminLinks = {
@@ -26,31 +30,22 @@ export const operatorLinks = {
 
 export const nextServer = {
     setToken: "/api/auth/set-token",
-    removeToken: "/api/auth/remove-token"
+    logout: "/api/auth/logout",
 }
 
 export const apiEndpoint = {
     login: "/api/authentication/login",
     register: "/api/authentication/register",
     logout: "api/authentication/logout",
-    profile: "/api/user",
+    profile: "/api/user/me",
+    tours: "/api/tour",
+    getTourCount: "/odata/tour/$count",
+    odataTour: "/odata/tour",
+    tourScheduleTicket: "/api/tour/scheduleticket",
+    tourSchedule: "/api/tour/schedule",
+    basket: "/api/basket",
+    order: "/api/order",
 
-    //admin destination
-    destinationOdata: `/odata/Destination`,
-    tourOdata: `/odata/Tour`,
-    destination: `/api/destination`,
-
-    //tour operator
-    tour: `/api/tour`,
-    tourInfo: `/api/tour/tourinfor`,
-
-    //category
-    categoryOdata: `/odata/category`,
-
-    //company
-    companyOdata: `/odata/company`,
-    company: `/api/company`,
-    grant: `/api/company/grant`
 }
 
 

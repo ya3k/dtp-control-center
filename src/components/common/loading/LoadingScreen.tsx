@@ -26,7 +26,7 @@ const LoadingScreen = ({ children }: { children: ReactNode }) => {
             src="/images/binhdinhtour3.png"
             priority
             alt="logo"
-            className="h-32 w-auto object-cover"
+            className="h-20 sm:h-28 md:h-32 w-auto object-cover"
           />
         </motion.div>
       </div>

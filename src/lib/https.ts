@@ -1,13 +1,12 @@
 import { toast } from "sonner"
-import envConfig from "@/configs/envConfig"
-import { apiEndpoint } from "@/configs/routes"
-import type { LoginResponseSchemaType } from "@/schemaValidations/auth.schema"
+import envConfig from "@/configs/envConfig";
+import { apiEndpoint } from "@/configs/routes";
+import { LoginResponseSchemaType } from "@/schemaValidations/auth.schema";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export class HttpError extends Error {
-  status: number
-  payload: any
-
+class HttpError extends Error {
+  status: number;
+  payload: { message: string; [key: string]: any };
   constructor({ status, payload }: { status: number; payload: any }) {
     // Create a more descriptive error message
     const message = typeof payload === "object" && payload?.message ? payload.message : `HTTP Error: ${status}`
@@ -16,6 +15,25 @@ export class HttpError extends Error {
     this.name = "HttpError"
     this.status = status
     this.payload = payload
+  }
+} 
+type EntityErrorPayload = {
+  message: string;
+  error: string[];
+};
+export class EntityError extends HttpError {
+  status: 400;
+  payload: EntityErrorPayload;
+  constructor({
+    status,
+    payload,
+  }: {
+    status: 400;
+    payload: EntityErrorPayload;
+  }) {
+    super({ status: 400, payload });
+    this.status = status;
+    this.payload = payload;
   }
 }
 
@@ -98,58 +116,57 @@ const request = async <Response>(
   // If baseUrl is "", it means the API call is to the Next.js server
   const baseUrl = optionsBaseUrl === undefined ? envConfig.NEXT_PUBLIC_API_ENDPOINT : optionsBaseUrl
 
-  // Ensure URL is properly formatted
-  const fullUrl = url.startsWith("/") ? `${baseUrl}${url}` : `${baseUrl}/${url}`
-console.log(`token: ${sessionToken.value}`)
+  // /api/tour
+  // api/tour
+  const fullUrl = url.startsWith("/")
+    ? `${baseUrl}${url}`
+    : `${baseUrl}/${url}`;
+
   try {
     const response = await fetch(fullUrl, {
       ...fetchOptions,
+      cache: "no-cache",
       headers: {
         ...baseHeaders,
-        ...fetchOptions.headers || {},
+        ...fetchOptions?.headers || {},
       },
       body,
       method,
-    })
-
+    });
     const contentType = response.headers.get("Content-Type")
-    let payload: Response | null = null
-
-    // Handle no content responses (204)
-    if (response.status !== 204) {
-      const responseText = await response.text()
-      try {
-        payload =
-          contentType && contentType.includes("application/json")
-            ? JSON.parse(responseText)
-            : (responseText as unknown as Response)
-      } catch (error) {
-        throw new HttpError({ status: response.status, payload: responseText })
+      let payload: Response | null = null
+      if (response.status !== 204) {
+        const responseText = await response.text()
+        try {
+          payload =
+            contentType && contentType.includes("application/json")
+              ? JSON.parse(responseText)
+              : (responseText as unknown as Response)
+        } catch (error) {
+          throw new HttpError({ status: response.status, payload: responseText })
+        }
       }
-    }
-
+    payload: Response = await response.json();
     const data = {
       status: response.status,
       payload,
-    }
-
+    };
     if (!response.ok) {
       const error = new HttpError(data)
-
+  
       // Show error toast if enabled
       if (showErrorToast) {
         const toastMessage =
           errorMessage ||
           (typeof error.payload === "object" && error.payload?.message) ||
           `Error ${error.status}: Request failed`
-
+  
         toast.error(toastMessage)
       }
-
+  
       throw error
     }
-
-    // Automatically set/remove session token and role when login or logout on client side
+    //automatically set/remove session token and role when login or logout on client side
     if ([apiEndpoint.login].includes(url)) {
       const loginResponse = payload as unknown as LoginResponseSchemaType
       if (loginResponse.data?.accessToken) {
@@ -160,20 +177,15 @@ console.log(`token: ${sessionToken.value}`)
       sessionToken.value = ""
       userRole.value = ""
     }
-
     return data;
   } catch (error) {
-    // Handle network errors or other exceptions
     if (!(error instanceof HttpError) && showErrorToast) {
       toast.error(errorMessage || "Network error. Please check your connection.")
     }
     throw error
   }
-}
+};
 
-/**
- * HTTP client with methods for making GET, POST, PUT, and DELETE requests.
- */
 const http = {
   /**
    * Makes a GET request to the specified URL.
