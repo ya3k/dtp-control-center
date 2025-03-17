@@ -54,7 +54,7 @@ export default function CreateTourPage() {
       const response = await tourApiService.create(validatedData);
       if (!response.payload) {
         const errorData = await response.payload
-        throw new Error(errorData.message || "Failed to create tour")
+        throw new Error(errorData?.message || "Failed to create tour")
       }
       toast.success(`Tour ${validatedData.title} created successfully`)
       router.push("/operator/tours")

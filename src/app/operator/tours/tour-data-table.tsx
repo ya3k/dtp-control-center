@@ -117,15 +117,10 @@ export default function OpTourDataTable() {
     setSelectedTour(tour)
     setIsEditDialogOpen(true)
   }
-  const handleUpdateSuccess = (updatedTour: TourResType) => {
-    setTours(prevTours =>
-      prevTours.map(tour =>
-        tour.id === updatedTour.id ? { ...tour, ...updatedTour } : tour
-      )
-    )
+  const handleUpdateSuccess = () => {
     setIsEditDialogOpen(false)
     setSelectedTour(null)
-    fetchTours() // Refresh the data
+    fetchTours(); // Refresh the data
   }
   // Function to truncate description text
   const truncateDescription = (text: string, maxLength = 100): string => {

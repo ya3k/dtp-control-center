@@ -13,6 +13,7 @@ import { CreateTourBodyType, CreateTourInfoType, tourInfoPostSchema } from "@/sc
 import categoryApiRequest from "@/apiRequests/category"
 import { useEffect, useState } from "react"
 import { CategoryType } from "@/schemaValidations/category.schema"
+import CategorySearch from "../categories-search"
 // Define the Categories enum for display
 enum Frequency {
   Daily = "Daily",
@@ -110,29 +111,21 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
               control={form.control}
               name="categoryid"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category">
-                          {categories.find((cat) => cat.id === field.value)?.name ?? "Select a category"}
-                        </SelectValue>
+                <FormItem className="space-y-2 animate-slide-up" style={{ animationDelay: "100ms" }}>
+                  <FormLabel className="font-medium">Category</FormLabel>
+                  <FormControl>
+                    <CategorySearch
+                      categories={categories}
+                      value={field.value}
+                      onChange={field.onChange}
 
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
 
             {/* Schedule Frequency */}
             <FormField

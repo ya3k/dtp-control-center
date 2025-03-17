@@ -19,7 +19,7 @@ const tourApiService = {
 
   getWithOData: async (queryParams?: string) => {
     try {
-      const endpoint = `${apiEndpoint.tourOdata}${queryParams ? queryParams + `` : "?$count=true"}`
+      const endpoint = `${apiEndpoint.odataTour}${queryParams ? queryParams + `` : "?$count=true"}`
       const response = await http.get<tourOdataResType>(endpoint)
       return response
     } catch (error) {
@@ -31,7 +31,7 @@ const tourApiService = {
 
   getTourInfo: async (tourId: string) => {
     try {
-      const response = await http.get<TourInfoFormType>(`${apiEndpoint.tour}/tourinfor/${tourId}`)
+      const response = await http.get<TourInfoFormType>(`${apiEndpoint.tours}/tourinfor/${tourId}`)
       return response
     } catch (error) {
       console.error("Failed to fetch tour info:", error)
@@ -41,7 +41,7 @@ const tourApiService = {
 
   create: async (body: CreateTourBodyType) => {
     try {
-      const response = await http.post<TourResType>(`${apiEndpoint.tour}`, body)
+      const response = await http.post<TourResType>(`${apiEndpoint.tours}`, body)
       return response
     } catch (error) {
       console.error("Failed to create tour:", error)
@@ -54,7 +54,7 @@ const tourApiService = {
 
   delete: async (id: string) => {
     try {
-      const response = await http.delete(`${apiEndpoint.tour}/${id}`, {
+      const response = await http.delete(`${apiEndpoint.tours}/${id}`, {
         errorMessage: "Failed to delete tour",
       })
       toast.success("Tour deleted successfully")
@@ -68,7 +68,7 @@ const tourApiService = {
  
   getById: async (id: string) => {
     try {
-      const response = await http.get<TourResType>(`${apiEndpoint.tour}/${id}`, {
+      const response = await http.get<TourResType>(`${apiEndpoint.tours}/${id}`, {
         errorMessage: "Failed to fetch tour details",
       })
       return response
