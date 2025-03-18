@@ -3,7 +3,7 @@ import NoteSection from "@/components/sections/tour/NoteSection";
 import PopulationSection from "@/components/sections/tour/PopulationSection";
 import ToursSection from "@/components/sections/tour/ToursSection";
 import Banner from "@/components/common/Banner";
-import tourApiRequest from "@/apiRequests/tour";
+import {tourApiRequest} from "@/apiRequests/tour";
 import { TourList } from "@/types/tours";
 
 async function getData() {

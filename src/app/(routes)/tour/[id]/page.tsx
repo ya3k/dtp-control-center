@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import tourApiRequest from "@/apiRequests/tour";
+import {tourApiRequest} from "@/apiRequests/tour";
 import TourDetail from "@/components/sections/tour-detail";
 import { TourDetail as Tour } from "@/types/tours";
 

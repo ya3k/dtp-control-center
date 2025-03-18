@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React from "react";
-import { useParams } from "next/navigation";
 import { Calendar, Minus, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,7 @@ import {
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import useServiceSectionStore from "@/store/client/tour-detail-service-store";
 import { TourDetail } from "@/types/tours";
-import tourApiRequest from "@/apiRequests/tour";
+import {tourApiRequest} from "@/apiRequests/tour";
 import { toast } from "sonner";
 import { useCartStore } from "@/providers/CartProvider";
 
