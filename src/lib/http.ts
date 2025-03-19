@@ -1,7 +1,9 @@
 import envConfig from "@/configs/envConfig";
-import { apiEndpoint } from "@/configs/routes";
+import { apiEndpoint, nextServer } from "@/configs/routes";
 import { LoginResponseSchemaType } from "@/schemaValidations/auth.schema";
+import { redirect } from "next/navigation";
 
+const AUTHENTICATION_STATUS = 401;
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export class HttpError extends Error {
   status: number;
@@ -55,6 +57,22 @@ class SessionToken {
   }
 }
 
+class RefreshToken {
+  private refreshToken = "";
+
+  get value() {
+    return this.refreshToken;
+  }
+
+  set value(token: string) {
+    // Check if calling from client side or server side
+    if (typeof window === "undefined") {
+      throw new Error("Cannot set token on server side");
+    }
+    this.refreshToken = token;
+  }
+}
+
 class UserRole {
   private role = "";
 
@@ -74,6 +92,7 @@ class UserRole {
 // Only manipulate on client side
 export const sessionToken = new SessionToken();
 export const userRole = new UserRole();
+export const refreshToken = new RefreshToken();
 
 export type MethodType = "GET" | "POST" | "PUT" | "DELETE";
 
@@ -82,6 +101,8 @@ export type CustomOptionsType = Omit<RequestInit, "method"> & {
   showErrorToast?: boolean; // Option to show error toast
   errorMessage?: string; // Custom error message
 };
+
+let clientLogoutRequest: null | Promise<any> = null;
 
 /**
  * Makes an HTTP request with the specified method, URL, and options.
@@ -119,7 +140,7 @@ const request = async <Response>(
 
   const response = await fetch(fullUrl, {
     ...options,
-    cache: "no-cache",
+    cache: "no-store",
     headers: {
       ...baseHeaders,
       ...options?.headers,
@@ -127,8 +148,23 @@ const request = async <Response>(
     body,
     method,
   });
+  console.log("body: ", body);
+  const contentType = response.headers.get("content-type");
+  let payload: Response | any;
 
-  const payload: Response = await response.json();
+  if (contentType && contentType.includes("application/json")) {
+    try {
+      //only parse JSON when response has content-type is application/json
+      payload = await response.json();
+    } catch (error) {
+      console.error("Failed to parse JSON response:", error);
+      payload = { message: "Invalid response format" };
+    }
+  } else {
+    //if response is not JSON, use text or default payload
+    const text = await response.text();
+    payload = { message: text || "No content" };
+  }
 
   const data = {
     status: response.status,
@@ -139,8 +175,29 @@ const request = async <Response>(
       throw new EntityError(
         data as { status: 400; payload: EntityErrorPayload },
       );
-    } else {
-      throw new HttpError(data);
+    } else if (response.status === AUTHENTICATION_STATUS) {
+      if (typeof window !== "undefined") {
+        if (!clientLogoutRequest) {
+          clientLogoutRequest = fetch(`${nextServer.logout}`, {
+            method: "POST",
+            body: JSON.stringify({ force: true }),
+            headers: {
+              ...baseHeaders,
+            },
+          });
+          await clientLogoutRequest;
+          sessionToken.value = "";
+          userRole.value = "";
+          refreshToken.value = "";
+          clientLogoutRequest = null;
+          location.href = "/login";
+        }
+      } else {
+        const sessionToken = (options?.headers as any)?.Authorization?.split(
+          "Bearer ",
+        )[1];
+        redirect("/logout?sessionToken=" + sessionToken);
+      }
     }
   }
 
@@ -151,9 +208,11 @@ const request = async <Response>(
         payload as LoginResponseSchemaType
       ).data?.accessToken;
       userRole.value = (payload as LoginResponseSchemaType).data?.role;
+      refreshToken.value = (payload as LoginResponseSchemaType).data?.refreshToken;
     } else if ([apiEndpoint.logout].includes(url)) {
       sessionToken.value = "";
       userRole.value = "";
+      refreshToken.value = "";
     }
   }
   return data;

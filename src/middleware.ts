@@ -6,6 +6,7 @@ import { UserRoleEnum } from "@/types/user";
 
 const privatePath = [
   links.passenger.href,
+  links.checkout.href,
 
   adminLinks.admin.href,
   adminLinks.dashboard.href,
@@ -93,9 +94,10 @@ export function middleware(request: NextRequest) {
 // See "Matching Paths" below to learn more
 export const config = {
   matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
     links.passenger.href,
     links.login.href,
-    links.checkout.href,
+    `${links.checkout.href}/:id*`,
     links.register.href,
 
     //admin

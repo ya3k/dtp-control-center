@@ -1,5 +1,5 @@
 import { apiEndpoint } from "@/configs/routes";
-import http from "@/lib/https";
+import http from "@/lib/http";
 
 const userApiRequest = {
   meServer: (sessionToken: string) =>

@@ -40,12 +40,13 @@ export function LoginForm({
   const onSubmit = async (values: LoginSchemaType) => {
     try {
       setLoading(true);
-      const response: any = await authApiRequest.login(values);
-      console.log("response", response);
-      const responseFromNextServer: any = await authApiRequest.setToken({
-        sessionToken: response.payload?.data.accessToken,
-        role: response.payload?.data.role,
+      const response: any = await authApiRequest.login({
+        userName: values.userName,
+        password: values.password,
       });
+      console.log("response", response);
+      const responseFromNextServer: any =
+        await authApiRequest.setToken(response);
 
       if (responseFromNextServer.payload.success) {
         toast.success("Đăng nhập thành công");
@@ -81,7 +82,7 @@ export function LoginForm({
               <FormItem>
                 <FormLabel className="text-core">Username</FormLabel>
                 <FormControl>
-                  <Input placeholder="jsfile" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -30,6 +30,7 @@ export default function RootLayout({
   const cookieStore = cookies();
   const sessionToken = cookieStore.get("sessionToken");
   const role = cookieStore.get("role");
+  const refreshToken = cookieStore.get("refreshToken");
   return (
     <html lang="en">
       <head>
@@ -40,6 +41,7 @@ export default function RootLayout({
         <AuthProvider
           initialSessionToken={sessionToken?.value}
           initialRole={role?.value}
+          initialRefreshToken={refreshToken?.value}
         >
           <CartProvider>
           <LoadingScreen>

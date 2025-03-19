@@ -16,7 +16,7 @@ interface TourState {
   setQuery: (query: string) => void
   fetchTour: () => Promise<void>
   createTour: (tour: CreateTourBodyType) => Promise<CreateTourBodyType | null>
-  updateTour: (id: string, tour: Partial<CreateTourBodyType>) => Promise<TourResType | null>
+  // updateTour: (id: string, tour: Partial<CreateTourBodyType>) => Promise<TourResType | null>
   deleteTour: (id: string) => Promise<boolean>
 }
 
@@ -66,19 +66,19 @@ export const useOpTourStore = create<TourState>((set, get) => ({
   },
 
   // Update an existing tour
-  updateTour: async (id, tourData) => {
-    set({ loading: true, error: null })
+  // updateTour: async (id, tourData) => {
+  //   set({ loading: true, error: null })
 
-    try {
-      const response = await tourApiService.update(id, tourData)
-      await get().fetchTour()
-      return response.payload.value[0]
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to update tour"
-      set({ error: errorMessage, loading: false })
-      return null
-    }
-  },
+  //   try {
+  //     const response = await tourApiService.update(id, tourData)
+  //     await get().fetchTour()
+  //     return response.payload.value[0]
+  //   } catch (error) {
+  //     const errorMessage = error instanceof Error ? error.message : "Failed to update tour"
+  //     set({ error: errorMessage, loading: false })
+  //     return null
+  //   }
+  // },
 
   // Delete a tour
   deleteTour: async (id) => {

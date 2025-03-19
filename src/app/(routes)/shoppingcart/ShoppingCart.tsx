@@ -29,6 +29,7 @@ export default function ShoppingCart() {
     selectItem,
     removeSelectedItems,
     selectForPayment,
+    removePaymentItem,
     getTotalPricePaymentItem,
     toggleSelectAll,
   } = useCartStore((state) => state);
@@ -150,7 +151,8 @@ export default function ShoppingCart() {
                                 className="flex items-center gap-2"
                               >
                                 <span className="text-nowrap text-sm">
-                                  {getTicketKind(ticket.ticketKind)} - {ticket.netCost}₫
+                                  {getTicketKind(ticket.ticketKind)} -{" "}
+                                  {ticket.netCost}₫
                                 </span>
                                 <div className="flex items-center">
                                   <Button
@@ -197,17 +199,25 @@ export default function ShoppingCart() {
                               ) : (
                                 <Button
                                   variant={
-                                    paymentItem?.tourScheduleId === item.tourScheduleId
+                                    paymentItem?.tourScheduleId ===
+                                    item.tourScheduleId
                                       ? "core"
                                       : "outline"
                                   }
                                   size="sm"
                                   className={`rounded-full ${paymentItem?.tourScheduleId === item.tourScheduleId ? "" : "text-gray-500"}`}
-                                  onClick={() =>
-                                    selectForPayment(item.tourScheduleId)
-                                  }
+                                  onClick={() => {
+                                    if (paymentItem?.tourScheduleId === item.tourScheduleId) {
+                                      // If this item is already selected, remove it
+                                      removePaymentItem();
+                                    } else {
+                                      // Otherwise, select this item
+                                      selectForPayment(item.tourScheduleId);
+                                    }
+                                  }}
                                 >
-                                  {paymentItem?.tourScheduleId === item.tourScheduleId ? (
+                                  {paymentItem?.tourScheduleId ===
+                                  item.tourScheduleId ? (
                                     <span className="flex items-center gap-1">
                                       <Check className="h-4 w-4" /> Đã chọn
                                     </span>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -12,7 +13,7 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 // import { useCartStore } from "@/store/client/cart-store";
-import { AddContactSheet } from "./add-contact-sheet";
+// import { AddContactSheet } from "./add-contact-sheet";
 import { Steps } from "./Steps";
 import { Separator } from "@/components/ui/separator";
 import { useCartStore } from "@/providers/CartProvider";
@@ -20,55 +21,55 @@ import { links } from "@/configs/routes";
 import { formatCurrency, getTicketKind } from "@/lib/utils";
 import envConfig from "@/configs/envConfig";
 import { UserProfile } from "@/types/user";
-import { sessionToken } from "@/lib/https";
+import { sessionToken } from "@/lib/http";
 import userApiRequest from "@/apiRequests/user";
 import { toast } from "sonner";
 
-
-type Contact = {
-  id: string;
-  lastName: string;
-  firstName: string;
-  phone: string;
-  email: string;
-};
+// type Contact = {
+//   id: string;
+//   lastName: string;
+//   firstName: string;
+//   phone: string;
+//   email: string;
+// };
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const [user, setUser] = useState<UserProfile>(null);;
-  const [isContactSheetOpen, setIsContactSheetOpen] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  // const [isContactSheetOpen, setIsContactSheetOpen] = useState(false);
   // const selectedTour = getPaymentItem();
   const { paymentItem, removePaymentItem } = useCartStore((state) => state);
 
-// useEffect(()=> {
-//   const getUserInfo = async () => {
-//     try {
-//       const response:any = await userApiRequest.meServer(sessionToken.value);
-//       if(!response.payload.success) {
-//         console.error("Failed to fetch user info:", response);
-//         toast.error(response.payload.message);
-//         router.push(links.login.href);
-//       }
-//       console.log(response);
-//       setUser(response.data)
-//     } catch (error) {
-//       console.error("Error fetching user info:", error);
-//     }
-//   };
-//   getUserInfo();
-// },[]);
+  useEffect(() => {
+    const getUserInfo = async () => {
+      try {
+        const response: any = await userApiRequest.me();
+        if (!response.payload.success) {
+          console.error("Failed to fetch user info:", response);
+          toast.error(response.payload.message);
+          router.push(links.login.href);
+        }
+        // console.log(response);
+        setUser(response.payload.data);
+      } catch (error) {
+        console.error("Error fetching user info:", error);
+      }
+    };
+    getUserInfo();
+  }, []);
 
+  console.log(user);
 
-  const handleAddContact = (contact: Contact) => {
-    setIsContactSheetOpen(false);
-  };
+  // const handleAddContact = (contact: Contact) => {
+  //   setIsContactSheetOpen(false);
+  // };
 
   const handlePayment = async () => {
     const orderData = {
       tourScheduleId: paymentItem?.tourScheduleId,
-      name: user.name,
-      phoneNumber: user.phoneNumber,
-      email: user.email,
+      name: user?.name,
+      phoneNumber: user?.phoneNumber,
+      email: user?.email,
       voucherCode: "",
       tickets: paymentItem?.tickets.map((ticket) => ({
         ticketTypeId: ticket.ticketTypeId,
@@ -87,11 +88,11 @@ export default function CheckoutPage() {
       },
     );
     const result = await response.json();
-    if(!response.ok) {
+    if (!response.ok) {
       console.error("Error creating order:", result.message);
       return;
     }
-    console.log(result)
+    console.log(result);
 
     alert(result);
     window.location.href = links.home.href;
@@ -103,7 +104,7 @@ export default function CheckoutPage() {
     <>
       <Steps currentStep={2} />
       <div className="w-full bg-[#f5f5f5]">
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto max-w-7xl px-4 py-6">
           <div className="mt-8 flex flex-col gap-6 lg:flex-row">
             <Card className="mb-12 w-full pb-8 lg:w-2/3">
               <CardHeader className="p-4">
@@ -154,30 +155,55 @@ export default function CheckoutPage() {
                 </p>
                 <div className="px-8">
                   <div className="flex w-full justify-between rounded-lg border border-gray-300 p-4">
-                    <div className="flex gap-2">
-                      <p className="flex w-full flex-col gap-2 text-sm">
-                        <span className="">Tên</span>
-                        <span className="">Số điện thoại</span>
-                        <span className="text-nowrap">
-                          Email (để cập nhật thông tin đơn hàng của bạn)
-                        </span>
-                      </p>
-                      {/* <p className="flex w-full flex-col gap-2 text-sm">
-                        <span className="font-semibold">{user.name}</span>
-                        <span className="font-semibold">
-                          {user.phoneNumber}
-                        </span>
-                        <span className="font-semibold">{user.email}</span>
-                      </p> */}
-                    </div>
-                    <div
-                      className="flex items-end"
-                      onClick={() => setIsContactSheetOpen(true)}
-                    >
-                      <p className="text-sm font-medium underline hover:cursor-pointer">
-                        Chỉnh sửa
-                      </p>
-                    </div>
+                    {user === null ? (
+                      <svg
+                        className="mr-3 h-5 w-5 mx-auto animate-spin text-black"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                    ) : (
+                      <>
+                        <div className="flex gap-2">
+                          <p className="flex w-full flex-col gap-2 text-sm">
+                            <span className="">Tên</span>
+                            <span className="">Số điện thoại</span>
+                            <span className="text-nowrap">
+                              Email (để cập nhật thông tin đơn hàng của bạn)
+                            </span>
+                          </p>
+                          <p className="flex w-full flex-col gap-2 text-sm">
+                            <span className="font-semibold">{user.name}</span>
+                            <span className="font-semibold">
+                              {user.phoneNumber}
+                            </span>
+                            <span className="font-semibold">{user.email}</span>
+                          </p>
+                        </div>
+                        <div
+                          className="flex items-end"
+                          // onClick={() => setIsContactSheetOpen(true)}
+                        >
+                          <p className="text-sm font-medium underline hover:cursor-pointer">
+                            Chỉnh sửa
+                          </p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -219,7 +245,7 @@ export default function CheckoutPage() {
                       <p className="text-gray-500">Ngày</p>
                       <p>{paymentItem?.day}</p>
                     </div>
-                    <div className="flex justify-between w-full text-sm">
+                    <div className="flex w-full justify-between text-sm">
                       <p className="text-gray-500">Đơn vị</p>
                       <div className="text-end">
                         {paymentItem?.tickets.map((ticket) => (
@@ -235,7 +261,7 @@ export default function CheckoutPage() {
                   <CardFooter className="flex justify-between text-sm">
                     <p className="text-gray-500">Tổng cộng</p>
                     <p className="font-medium">
-                      ₫ {formatCurrency(paymentItem?.totalPrice)}
+                      ₫ {formatCurrency(paymentItem?.totalPrice ?? 0)}
                     </p>
                   </CardFooter>
                 </Card>
@@ -244,13 +270,13 @@ export default function CheckoutPage() {
                     <div className="flex justify-between text-sm">
                       <p className="text-gray-500">Tổng cộng</p>
                       <p className="font-medium">
-                        ₫ {formatCurrency(paymentItem?.totalPrice)}
+                        ₫ {formatCurrency(paymentItem?.totalPrice ?? 0)}
                       </p>
                     </div>
                     <div className="flex justify-between text-sm">
                       <p className="text-gray-500">Số tiền phải thanh toán</p>
                       <p className="text-xl font-medium text-core">
-                        ₫ {formatCurrency(paymentItem?.totalPrice)}
+                        ₫ {formatCurrency(paymentItem?.totalPrice ?? 0)}
                       </p>
                     </div>
                   </CardContent>
@@ -258,8 +284,8 @@ export default function CheckoutPage() {
               </div>
             </div>
           </div>
-
-          {/* <AddContactSheet
+{/* 
+          <AddContactSheet
             open={isContactSheetOpen}
             user={user}
             onOpenChange={setIsContactSheetOpen}

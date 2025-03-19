@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { EntityError } from "@/lib/https";
+import { EntityError } from "@/lib/http";
 import { TicketKind } from "@/schemaValidations/tour-operator.shema";
 import { clsx, type ClassValue } from "clsx";
 import { UseFormSetError } from "react-hook-form";

@@ -31,12 +31,16 @@ export const operatorLinks = {
 export const nextServer = {
     setToken: "/api/auth/set-token",
     logout: "/api/auth/logout",
+    refreshToken: "/api/auth/refresh-token",
 }
 
 export const apiEndpoint = {
+    //authentication
     login: "/api/authentication/login",
     register: "/api/authentication/register",
     logout: "api/authentication/logout",
+    refresh: "/api/authentication/refresh",
+    //user
     profile: "/api/user/me",
     tours: "/api/tour",
     getTourCount: "/odata/tour/$count",

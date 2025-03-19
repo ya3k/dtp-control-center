@@ -3,7 +3,7 @@ import Image from "next/image";
 
 import SubscribeSection from "@/components/sections/landing/SubscribeSection";
 import Banner from "@/components/common/Banner";
-
+import TrackingToken from "@/components/common/TrackingToken";
 
 export default function About() {
   return (
@@ -76,6 +76,7 @@ export default function About() {
                 Lorem ipsum dolor sit amet consectetur adipisicing elit.
               </p>
             </div>
+            <TrackingToken />
           </div>
         </div>
       </div>

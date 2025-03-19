@@ -51,7 +51,7 @@ export default function AuthMenu({ children }: { children: React.ReactNode }) {
         return;
       }
       toast.success(response.payload.message);
-      window.location.href = links.home.href;
+      location.href = links.home.href;
     } catch (error) {
       console.error("Logout error:", error);
       handleErrorApi(error);
