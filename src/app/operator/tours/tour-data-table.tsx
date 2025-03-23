@@ -89,7 +89,7 @@ export default function OpTourDataTable() {
 
       // Use tourApiService instead of direct fetch
       const response = await tourApiService.getWithOData(queryString)
-
+      console.log(queryString)
       setTours(response.payload?.value)
       setTotalCount(response.payload["@odata.count"] || 0)
     } catch (error) {
@@ -202,8 +202,8 @@ export default function OpTourDataTable() {
         />
       </Card>
 
-     {/* Edit Dialog */}
-     {selectedTour && (
+      {/* Edit Dialog */}
+      {selectedTour && (
         <UpdateTourDialog
           tour={selectedTour}
           open={isEditDialogOpen}

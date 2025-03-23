@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useEffect, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,36 +10,41 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Card, CardContent } from "@/components/ui/card"
-import { CreateTourBodyType, CreateTourInfoType, tourInfoPostSchema } from "@/schemaValidations/tour-operator.shema"
+import {
+  type CreateTourBodyType,
+  type CreateTourInfoType,
+  tourInfoPostSchema,
+} from "@/schemaValidations/tour-operator.shema"
 import categoryApiRequest from "@/apiRequests/category"
-import { useEffect, useState } from "react"
-import { CategoryType } from "@/schemaValidations/category.schema"
+import type { CategoryType } from "@/schemaValidations/category.schema"
 import CategorySearch from "../categories-search"
-// Define the Categories enum for display
+import { toast } from "sonner"
+
+// Define the Frequency enum for display
 enum Frequency {
   Daily = "Daily",
   Weekly = "Weekly",
-  Monthly = "Monthly"
+  Monthly = "Monthly",
 }
-
-
 
 const frequencyList = [
   { id: Frequency.Daily, name: "Daily" },
   { id: Frequency.Weekly, name: "Weekly" },
-  { id: Frequency.Monthly, name: "Monthly" }
+  { id: Frequency.Monthly, name: "Monthly" },
 ]
-
 
 interface TourInfoFormProps {
   data: Partial<CreateTourBodyType>
   updateData: (data: Partial<CreateTourBodyType>) => void
   onNext: () => void
+  setTourImageFile: (file: File | null) => void
 }
 
-export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
-  const [categories, setCategories] = useState<CategoryType[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: TourInfoFormProps) {
+  const [categories, setCategories] = useState<CategoryType[]>([])
+  const [previewImage, setPreviewImage] = useState<string | null>(data.img || null)
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const form = useForm<CreateTourInfoType>({
     resolver: zodResolver(tourInfoPostSchema),
@@ -46,7 +52,7 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
       title: data.title || "",
       img: data.img || "",
       categoryid: data.categoryid || "",
-      scheduleFrequency: data.scheduleFrequency as Frequency || Frequency.Daily,
+      scheduleFrequency: (data.scheduleFrequency as Frequency) || Frequency.Daily,
       openDay: data.openDay || "",
       closeDay: data.closeDay || "",
       duration: data.duration || 1,
@@ -55,37 +61,34 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
   })
 
   const fetchCategory = async () => {
-    setIsLoading(true);
     try {
-      const response = await categoryApiRequest.get();
-      // Check if response and response.payload exist
-      if (response && response.payload && response.payload.value) {
-        const categoryData = response.payload.value;
-        if (Array.isArray(categoryData)) {
-          setCategories(categoryData);
-        } else {
-          console.error("Category data is not an array:", categoryData);
-          setCategories([]);
-        }
-      } else {
-        console.error("Invalid category response structure:", response);
-        setCategories([]);
-      }
+      const response = await categoryApiRequest.get()
+      const data = await response.payload.value
+      setCategories(data)
     } catch (error) {
-      console.error("Error fetching categories:", error);
-      setCategories([]);
-    } finally {
-      setIsLoading(false);
+      console.error("Failed to fetch categories:", error)
+      toast.error("Failed to load categories")
     }
-
   }
 
   useEffect(() => {
-    fetchCategory();
+    fetchCategory()
   }, [])
 
   const onSubmit = (values: CreateTourInfoType) => {
-    updateData(values)
+    // Ensure all values match the schema
+    const formattedValues: CreateTourInfoType = {
+      title: values.title,
+      img: values.img || "",
+      categoryid: values.categoryid,
+      description: values.description,
+      openDay: values.openDay,
+      closeDay: values.closeDay,
+      duration: values.duration,
+      scheduleFrequency: values.scheduleFrequency,
+    }
+
+    updateData(formattedValues)
     onNext()
   }
 
@@ -115,15 +118,109 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
               name="img"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ảnh Thumnail cho Tour</FormLabel>
+                  <FormLabel>Tour Thumbnail Image</FormLabel>
                   <FormControl>
-                    <Input placeholder="link ảnh" {...field} />
+                    <div className="space-y-2">
+                      {previewImage && (
+                        <div className="relative w-full h-40 overflow-hidden rounded-md">
+                          <img
+                            src={previewImage || "/placeholder.svg"}
+                            alt="Tour thumbnail preview"
+                            className="object-cover w-full h-full"
+                          />
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          ref={fileInputRef}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (file) {
+                              // Store the file for later upload
+                              setTourImageFile(file)
+
+                              // Create a preview URL
+                              const previewUrl = URL.createObjectURL(file)
+                              setPreviewImage(previewUrl)
+
+                              // Clear any existing URL input
+                              field.onChange("")
+                            }
+                          }}
+                          className="flex-1"
+                        />
+                        {previewImage && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setPreviewImage(null)
+                              setTourImageFile(null)
+                              field.onChange("")
+
+                              // Reset the file input
+                              if (fileInputRef.current) {
+                                fileInputRef.current.value = ""
+                              }
+                            }}
+                          >
+                            Clear
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* <div className="flex items-center gap-2">
+                        <Input
+                          placeholder="Or enter image URL directly"
+                          value={field.value}
+                          onChange={(e) => {
+                            field.onChange(e.target.value)
+                            if (e.target.value) {
+                              setPreviewImage(e.target.value)
+                              setTourImageFile(null)
+                              setHasLocalFile(false) // Reset file selection state
+
+                              // Clear the file input
+                              if (fileInputRef.current) {
+                                fileInputRef.current.value = ""
+                              }
+                            } else {
+                              setPreviewImage(null)
+                            }
+                          }}
+                          disabled={hasLocalFile} // Disable when a local file is selected
+                          className={hasLocalFile ? "opacity-50 cursor-not-allowed" : ""}
+                        />
+                        {field.value && !hasLocalFile && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setPreviewImage(null)
+                              field.onChange("")
+                            }}
+                          >
+                            Clear URL
+                          </Button>
+                        )}
+                      </div>
+
+                      {hasLocalFile && (
+                        <p className="text-sm text-muted-foreground">
+                          URL input is disabled while using a local file. Clear the file selection to use a URL.
+                        </p>
+                      )} */}
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-       
+
             {/* category */}
             <FormField
               control={form.control}
@@ -132,24 +229,12 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
                 <FormItem className="space-y-2 animate-slide-up" style={{ animationDelay: "100ms" }}>
                   <FormLabel className="font-medium">Category</FormLabel>
                   <FormControl>
-                    {isLoading ? (
-                      <div className="h-10 w-full flex items-center justify-center bg-muted rounded-md">
-                        Loading categories...
-                      </div>
-                    ) : (
-                      <CategorySearch
-                        categories={categories}
-                        value={field.value}
-                        onChange={field.onChange}
-                        disabled={isLoading}
-                      />
-                    )}
+                    <CategorySearch categories={categories} value={field.value} onChange={field.onChange} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
 
             {/* Schedule Frequency */}
             <FormField
@@ -162,7 +247,7 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a frequency">
-                          {frequencyList.find(freq => freq.id === field.value)?.name || "Select a frequency"}
+                          {frequencyList.find((freq) => freq.id === field.value)?.name || "Select a frequency"}
                         </SelectValue>
                       </SelectTrigger>
                     </FormControl>
@@ -209,6 +294,26 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
               )}
             />
 
+            {/* Duration */}
+            <FormField
+              control={form.control}
+              name="duration"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Duration (days)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="1"
+                      {...field}
+                      onChange={(e) => field.onChange(Number.parseInt(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {/* Description */}
             <FormField
               control={form.control}
@@ -234,5 +339,6 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
   )
 }
 
-// Export the Categories enum and frequencyList for use in other parts of the application
+// Export the Frequency enum and frequencyList for use in other parts of the application
 export { Frequency, frequencyList }
+
