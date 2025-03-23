@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { cn, handleErrorApi } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { links } from "@/configs/routes";
+import { adminLinks, links, operatorLinks } from "@/configs/routes";
 import {
   Form,
   FormControl,
@@ -22,6 +22,7 @@ import { loginSchema, LoginSchemaType } from "@/schemaValidations/auth.schema";
 import LoadingButton from "@/components/common/loading/LoadingButton";
 import { useState } from "react";
 import authApiRequest from "@/apiRequests/auth";
+import { UserRoleEnum } from "@/types/user";
 
 export function LoginForm({
   className,
@@ -40,17 +41,31 @@ export function LoginForm({
   const onSubmit = async (values: LoginSchemaType) => {
     try {
       setLoading(true);
-      const response: any = await authApiRequest.login(values);
-      console.log("response", response);
-      const responseFromNextServer: any = await authApiRequest.setToken({
-        sessionToken: response.payload?.data.accessToken,
-        role: response.payload?.data.role,
+      const response: any = await authApiRequest.login({
+        userName: values.userName,
+        password: values.password,
       });
+
+      // Check if user's role is Tourist before setting tokens
+      if (response.payload && response.payload.data.role === UserRoleEnum.Tourist) {
+        toast.error("Tài khoản của bạn không được phép đăng nhập vào hệ thống này");
+        return;
+      }
+      // Only set token if not a Tourist
+      const responseFromNextServer: any =
+        await authApiRequest.setToken(response);
 
       if (responseFromNextServer.payload.success) {
         toast.success("Đăng nhập thành công");
-        router.push(links.home.href);
-        router.refresh();
+        // Instead of router.refresh(), use router.push() to explicitly navigate
+        if (response.payload.role === UserRoleEnum.Admin) {
+          router.push(adminLinks.dashboard.href);
+        } else if (response.payload.role === UserRoleEnum.Operator) {
+          router.push(operatorLinks.dashboard.href);
+        } else {
+          router.push(links.home.href);
+        }
+
       }
     } catch (error: any) {
       handleErrorApi(error);
@@ -79,9 +94,9 @@ export function LoginForm({
             name="userName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-core">Username</FormLabel>
-                <FormControl>
-                  <Input placeholder="jsfile" {...field} />
+                <FormLabel className="text-core">Tên người dùng</FormLabel>
+                <FormControl >
+                  <Input {...field} placeholder="Nhập tên người dùng"/>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -102,7 +117,7 @@ export function LoginForm({
                   </Link>
                 </FormLabel>
                 <FormControl>
-                  <Input {...field} type={"password"} />
+                  <Input {...field} type={"password"} placeholder="Nhập mật khẩu" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -142,15 +157,6 @@ export function LoginForm({
             </svg>
             Đăng nhập bằng Google
           </Button>
-        </div>
-        <div className="text-center text-sm">
-          Chưa có tài khoản?{" "}
-          <Link
-            href={links.register.href}
-            className="underline underline-offset-4"
-          >
-            Đăng ký ngay
-          </Link>
         </div>
       </form>
     </Form>

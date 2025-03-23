@@ -8,13 +8,13 @@ import { PlusCircle, RefreshCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { UpdateTourDialog } from "@/components/operator/tours/edit-tour/edit-tour-dialog"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import type { tourOdataResType, TourResType } from "@/schemaValidations/tour-operator.shema"
+import type { tourOdataResType, /*TourResType*/ } from "@/schemaValidations/tour-operator.shema"
 import { useOpTourStore } from "@/store/operator/useOpTourStore"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
 import OperatorTourDataTable, { TableStateType } from "./tour-data-table"
-import { buildODataQuery } from "@/lib/odata-untils"
-import { operatorToursColumns } from "./tourCloumns"
+// import { buildODataQuery } from "@/lib/odata-untils"
+// import { operatorToursColumns } from "./tourCloumns"
 
 export default function TourOperator() {
   // Get tour data and actions from store
@@ -40,16 +40,16 @@ export default function TourOperator() {
   })
 
   // Fetch data when table state changes
-  useEffect(() => {
-    // Define the fields to search in for the global filter
-    const filterFields = ["title", "description", "companyName"]
+  // useEffect(() => {
+  //   // Define the fields to search in for the global filter
+  //   const filterFields = ["title", "description", "companyName"]
 
-    // Build the OData query with our enhanced function
-    const query = buildODataQuery(tableState, filterFields, "createdAt")
+  //   // Build the OData query with our enhanced function
+  //   const query = buildODataQuery(tableState, filterFields, "createdAt")
 
-    setQuery(query)
-    fetchTour()
-  }, [fetchTour, setQuery, tableState])
+  //   setQuery(query)
+  //   fetchTour()
+  // }, [fetchTour, setQuery, tableState])
 
   // Handle refresh button click
   const handleRefresh = async () => {
@@ -72,10 +72,10 @@ export default function TourOperator() {
   }
 
   // Setup data table columns with handlers
-  const columns = operatorToursColumns({
-    onEdit: handleEditTour,
-    onDelete: handleDeleteTour,
-  })
+  // const columns = operatorToursColumns({
+  //   onEdit: handleEditTour,
+  //   onDelete: handleDeleteTour,
+  // })
 
   return (
     <Card className="border-none shadow-none">
@@ -128,14 +128,14 @@ export default function TourOperator() {
         )}
 
         {/* Data Table */}
-        <OperatorTourDataTable
+        {/* <OperatorTourDataTable
           columns={columns}
           data={tours}
           tableState={tableState}
           setTableState={setTableState}
           totalCount={totalCount}
           isLoading={loading}
-        />
+        /> */}
 
         {/* Edit Dialog */}
         {selectedTour && (

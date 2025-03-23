@@ -13,7 +13,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { sessionToken } from "@/lib/https";
+import { sessionToken } from "@/lib/http";
 import AuthMenu from "@/components/common/Header/AuthMenu";
 
 interface MobileHeaderProps {

@@ -1,6 +1,4 @@
-import { links } from "@/configs/routes";
 import Image from "next/image";
-import Link from "next/link";
 
 export default function AuthLayout({
   children,
@@ -10,19 +8,6 @@ export default function AuthLayout({
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
     <div className="flex flex-col gap-4 p-6 md:p-10">
-      <Link
-        href={links.home.href}
-        className="flex items-center gap-2 font-medium"
-      >
-        <Image
-          width={400}
-          height={400}
-          src="/images/binhdinhtour3.png"
-          alt="logo"
-          priority
-          className="h-10 w-auto object-cover"
-        />
-      </Link>
       <div className="flex flex-1 items-center justify-center">
         <div className="w-full max-w-md">
           {children}

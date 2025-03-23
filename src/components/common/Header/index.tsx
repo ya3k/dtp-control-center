@@ -11,7 +11,7 @@ import MobileHeader from "@/components/common/Header/MobileHeader";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { sessionToken } from "@/lib/https";
+import { sessionToken } from "@/lib/http";
 import AuthMenu from "@/components/common/Header/AuthMenu";
 
 export default function Header() {

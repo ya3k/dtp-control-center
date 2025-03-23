@@ -24,26 +24,33 @@ interface CategorySearchProps {
   disabled?: boolean;
 }
 
-const CategorySearch = ({ categories, value, onChange, disabled = false }: CategorySearchProps) => {
+const CategorySearch = ({ categories = [], value, onChange, disabled = false }: CategorySearchProps) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [filteredCategories, setFilteredCategories] = useState(categories);
+  const [filteredCategories, setFilteredCategories] = useState<{ id: string; name: string }[]>([]);
 
   // Update filtered categories when the query or categories change
   useEffect(() => {
-    console.log(categories)
+    if (!Array.isArray(categories)) {
+      console.error("Categories is not an array:", categories);
+      setFilteredCategories([]);
+      return;
+    }
+
     if (query.trim() === '') {
       setFilteredCategories(categories);
     } else {
       const filtered = categories.filter(category => 
-        category.name.toLowerCase().includes(query.toLowerCase())
+        category && category.name && category.name.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredCategories(filtered);
     }
   }, [query, categories]);
 
   // Get the display name of the selected category
-  const selectedCategory = categories.find(category => category.id === value);
+  const selectedCategory = Array.isArray(categories) 
+    ? categories.find(category => category && category.id === value)
+    : undefined;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

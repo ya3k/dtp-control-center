@@ -1,23 +1,18 @@
 import { adminLinks, links, operatorLinks } from "@/configs/routes";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-
 import { UserRoleEnum } from "@/types/user";
 
 const privatePath = [
-  links.passenger.href,
-
   adminLinks.admin.href,
   adminLinks.dashboard.href,
   adminLinks.user.href,
-
   operatorLinks.operator.href,
   operatorLinks.dashboard.href,
   operatorLinks.employee.href,
   operatorLinks.tour.href,
   operatorLinks.createTour.href,
 ];
-
 
 const authPath = [links.login.href, links.register.href];
 
@@ -28,37 +23,46 @@ export function middleware(request: NextRequest) {
   const sessionToken = request.cookies.get("sessionToken");
   const role = request.cookies.get("role");
 
+  // Redirect unauthenticated users trying to access private paths
   if (privatePath.some((path) => pathname.startsWith(path)) && !sessionToken) {
     return NextResponse.redirect(new URL(links.login.href, request.url));
   }
-  if (authPath.some((path) => pathname.startsWith(path)) && sessionToken) {
-    return NextResponse.redirect(new URL(links.home.href, request.url));
-  }
 
+  // Redirect authenticated users trying to access auth paths
+  if (authPath.some((path) => pathname.startsWith(path)) && sessionToken) {
+    if (sessionToken && role) {
+      const userRole = role.value;
+      if (userRole === UserRoleEnum.Admin) {
+        return NextResponse.redirect(new URL(adminLinks.dashboard.href, request.url));
+      } else if (userRole === UserRoleEnum.Operator) {
+        return NextResponse.redirect(new URL(operatorLinks.dashboard.href, request.url));
+      } 
+    }
+  }
 
   // Role-based authorization
   if (sessionToken && role) {
     const userRole = role.value;
 
     // Redirect tourist trying to access admin routes
-    if (
-      userRole === UserRoleEnum.Tourist &&
-      Object.values(adminLinks).some((adminLink) =>
-        pathname.startsWith(adminLink.href)
-      )
-    ) {
-      return NextResponse.redirect(new URL(links.home.href, request.url));
-    }
+    // if (
+    //   userRole === UserRoleEnum.Tourist &&
+    //   Object.values(adminLinks).some((adminLink) =>
+    //     pathname.startsWith(adminLink.href)
+    //   )
+    // ) {
+    //   return NextResponse.redirect(new URL(links.home.href, request.url));
+    // }
 
     // Redirect tourist trying to access operator routes
-    if (
-      userRole === UserRoleEnum.Tourist &&
-      Object.values(operatorLinks).some((operatorLink) =>
-        pathname.startsWith(operatorLink.href)
-      )
-    ) {
-      return NextResponse.redirect(new URL(links.home.href, request.url));
-    }
+    // if (
+    //   userRole === UserRoleEnum.Tourist &&
+    //   Object.values(operatorLinks).some((operatorLink) =>
+    //     pathname.startsWith(operatorLink.href)
+    //   )
+    // ) {
+    //   return NextResponse.redirect(new URL(links.home.href, request.url));
+    // }
 
     // Redirect operator trying to access admin routes
     if (
@@ -67,7 +71,7 @@ export function middleware(request: NextRequest) {
         pathname.startsWith(adminLink.href)
       )
     ) {
-      return NextResponse.redirect(new URL(operatorLinks.dashboard.href, request.url));
+      return NextResponse.redirect(new URL(operatorLinks.dashboard.href, request.url), { status: 303 });
     }
 
     // Redirect admin after login
@@ -85,7 +89,7 @@ export function middleware(request: NextRequest) {
     ) {
       return NextResponse.redirect(new URL(operatorLinks.dashboard.href, request.url));
     }
-  } 
+  }
 
   return response;
 }
@@ -93,23 +97,21 @@ export function middleware(request: NextRequest) {
 // See "Matching Paths" below to learn more
 export const config = {
   matcher: [
-    links.passenger.href,
-    links.login.href,
-    links.checkout.href,
-    links.register.href,
-
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+   
+    links.login.href,    
     //admin
     adminLinks.admin.href,
     adminLinks.dashboard.href,
     adminLinks.user.href,
-
+    
     //operator
     operatorLinks.operator.href,
     operatorLinks.dashboard.href,
     operatorLinks.employee.href,
     operatorLinks.tour.href,
     operatorLinks.createTour.href,
-
+    
     // links.orders.href,
   ],
 };

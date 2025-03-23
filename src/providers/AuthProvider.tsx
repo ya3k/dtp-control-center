@@ -1,5 +1,5 @@
 "use client";
-import { sessionToken, userRole } from "@/lib/https";
+import { refreshToken, sessionToken, userRole } from "@/lib/http";
 import { useState } from "react";
 
 // const AuthContext = createContext({
@@ -21,10 +21,12 @@ export default function AuthProvider({
   children,
   initialSessionToken = "",
   initialRole = "",
+  initialRefreshToken = "",
 }: {
   children: React.ReactNode;
   initialSessionToken?: string;
   initialRole?: string;
+  initialRefreshToken?: string;
 }) {
   // const [sessionToken, setSessionToken] = useState(initialSessionToken);
   // const [role, setRole] = useState(initialRole);
@@ -32,6 +34,7 @@ export default function AuthProvider({
     if (typeof window !== "undefined") {
       sessionToken.value = initialSessionToken;
       userRole.value = initialRole;
+      refreshToken.value = initialRefreshToken;
     }
   });
 
