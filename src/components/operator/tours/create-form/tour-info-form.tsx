@@ -37,7 +37,9 @@ interface TourInfoFormProps {
 }
 
 export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
-  const [categories, setCategories] = useState<CategoryType[]>([])
+  const [categories, setCategories] = useState<CategoryType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const form = useForm<CreateTourInfoType>({
     resolver: zodResolver(tourInfoPostSchema),
     defaultValues: {
@@ -53,14 +55,29 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
   })
 
   const fetchCategory = async () => {
+    setIsLoading(true);
     try {
       const response = await categoryApiRequest.get();
-      const data = await response.payload.value;
-      setCategories(data);
-      console.log(data)
+      // Check if response and response.payload exist
+      if (response && response.payload && response.payload.value) {
+        const categoryData = response.payload.value;
+        if (Array.isArray(categoryData)) {
+          setCategories(categoryData);
+        } else {
+          console.error("Category data is not an array:", categoryData);
+          setCategories([]);
+        }
+      } else {
+        console.error("Invalid category response structure:", response);
+        setCategories([]);
+      }
     } catch (error) {
-      console.log(error)
+      console.error("Error fetching categories:", error);
+      setCategories([]);
+    } finally {
+      setIsLoading(false);
     }
+
   }
 
   useEffect(() => {
@@ -106,6 +123,7 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
                 </FormItem>
               )}
             />
+       
             {/* category */}
             <FormField
               control={form.control}
@@ -114,12 +132,18 @@ export function TourInfoForm({ data, updateData, onNext }: TourInfoFormProps) {
                 <FormItem className="space-y-2 animate-slide-up" style={{ animationDelay: "100ms" }}>
                   <FormLabel className="font-medium">Category</FormLabel>
                   <FormControl>
-                    <CategorySearch
-                      categories={categories}
-                      value={field.value}
-                      onChange={field.onChange}
-
-                    />
+                    {isLoading ? (
+                      <div className="h-10 w-full flex items-center justify-center bg-muted rounded-md">
+                        Loading categories...
+                      </div>
+                    ) : (
+                      <CategorySearch
+                        categories={categories}
+                        value={field.value}
+                        onChange={field.onChange}
+                        disabled={isLoading}
+                      />
+                    )}
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -2,14 +2,8 @@
 import { IBM_Plex_Sans } from "next/font/google";
 import { cookies } from "next/headers";
 import "./globals.css";
-
-import LoadingBar from "@/components/common/loading/LoadingBar";
-import PageLoader from "@/providers/LoaderProvider";
 import { Toaster } from "@/components/ui/sonner";
-import LoadingScreen from "@/components/common/loading/LoadingScreen";
 import AuthProvider from "@/providers/AuthProvider";
-import { CartProvider } from "@/providers/CartProvider";
-
 const ibmPlexSans = IBM_Plex_Sans({
   variable: "--font-ibm-plex-sans",
   subsets: ["vietnamese"],
@@ -42,15 +36,9 @@ export default function RootLayout({
           initialSessionToken={sessionToken?.value}
           initialRole={role?.value}
           initialRefreshToken={refreshToken?.value}
-        >
-          <CartProvider>
-          <LoadingScreen>
-            <LoadingBar />
-            <PageLoader />
+        >        
             {children}
-            <Toaster closeButton richColors position="top-right" />
-          </LoadingScreen>
-          </CartProvider>
+            <Toaster closeButton richColors position="top-right" />         
         </AuthProvider>
       </body>
     </html>

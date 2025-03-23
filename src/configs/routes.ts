@@ -63,7 +63,10 @@ export const apiEndpoint = {
     //companh
     companyOdata: `odata/company`,
     company: `/api/company`,
-    grant: `/api/company/grant`
+    grant: `/api/company/grant`,
+
+    //media
+    upload: `/api/media`
 }
 
 
