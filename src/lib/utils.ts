@@ -22,7 +22,7 @@ export function handleErrorApi(
   duration?: number,
 ) {
   if (error instanceof EntityError) {
-    error.payload.error.forEach((err) => toast.error(err));
+    error.payload.error?.forEach((err) => toast.error(err));
   }
 }
 

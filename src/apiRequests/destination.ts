@@ -12,11 +12,10 @@ interface DestinationResponse {
 }
 
 const destinationApiRequest = {
-  getAll: (queryParams?: string) =>
-    http.get<DestinationResponse>(`${apiEndpoint.destinationOdata}${queryParams ? queryParams + `&$count=true` : "?$count=true"}`),
-
-  getById: (id: string) => http.get<DestinationType>(`${apiEndpoint.destination}/${id}`),
-
+  getAll: (queryParams?: string) => {
+    const finalQuery = queryParams ? `?${queryParams}` : "";
+    return http.get<DestinationResponse>(`${apiEndpoint.destinationOdata}${finalQuery}`);
+  },
   create: async (data: CreateDestinationBodyType) =>
     http.post<CreateDestinationBodyType>(apiEndpoint.destination, data),
 
