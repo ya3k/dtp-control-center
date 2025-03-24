@@ -2,39 +2,58 @@ import envConfig from "@/configs/envConfig";
 import { apiEndpoint, nextServer } from "@/configs/routes";
 import { LoginResponseSchemaType } from "@/schemaValidations/auth.schema";
 import { redirect } from "next/navigation";
+import { toast } from "sonner"; // Import toast for showing errors
 
 const AUTHENTICATION_STATUS = 401;
+
+// Define the common API response format
+export interface ApiResponse<T = unknown> {
+  success: boolean;
+  message: string;
+  data: T;
+  error?: string[];
+}
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export class HttpError extends Error {
   status: number;
-  payload: { message: string; [key: string]: any };
+  payload: ApiResponse | { message: string; [key: string]: any };
+  
   constructor({ status, payload }: { status: number; payload: any }) {
-    // Create a more descriptive error message
-    const message =
-      typeof payload === "object" && payload?.message
-        ? payload.message
-        : `HTTP Error: ${status}`;
+    // Create a more descriptive error message based on the API response format
+    let message = `HTTP Error: ${status}`;
+    
+    if (typeof payload === 'object') {
+      if (payload?.message) {
+        message = payload.message;
+      }
+      
+      // Check for the specific error format and use the first error if available
+      if (Array.isArray(payload?.error) && payload.error.length > 0) {
+        message = payload.error[0];
+      }
+    }
 
     super(message);
     this.name = "HttpError";
     this.status = status;
     this.payload = payload;
   }
+  
+  // Helper method to get all error messages
+  get errorMessages(): string[] {
+    if (typeof this.payload === 'object' && Array.isArray(this.payload?.error)) {
+      return this.payload.error;
+    }
+    return [this.message];
+  }
 }
-type EntityErrorPayload = {
-  message: string;
-  error: string[];
-};
+
 export class EntityError extends HttpError {
   status: 400;
-  payload: EntityErrorPayload;
-  constructor({
-    status,
-    payload,
-  }: {
-    status: 400;
-    payload: EntityErrorPayload;
-  }) {
+  payload: ApiResponse;
+  
+  constructor({ status, payload }: { status: 400; payload: ApiResponse }) {
     super({ status: 400, payload });
     this.status = status;
     this.payload = payload;
@@ -124,98 +143,163 @@ const request = async <Response>(
     Authorization: sessionToken.value ? `Bearer ${sessionToken.value}` : "",
   };
 
-  //Nếu không truyền baseUrl thì lấy từ envConfig
-  //Nếu truyền baseUrl thì lấy từ options
-  //Nếu truyền baseUrl là "" thì đồng nghĩa với API gọi đến Nextjs server
+  // Build URL
   const baseUrl =
     options?.baseUrl === undefined
       ? envConfig.NEXT_PUBLIC_API_ENDPOINT
       : options.baseUrl;
 
-  // /api/tour
-  // api/tour
   const fullUrl = url.startsWith("/")
     ? `${baseUrl}${url}`
     : `${baseUrl}/${url}`;
 
-  const response = await fetch(fullUrl, {
-    ...options,
-    cache: "no-store",
-    headers: {
-      ...baseHeaders,
-      ...options?.headers,
-    },
-    body,
-    method,
-  });
-  console.log("body: ", body);
-  const contentType = response.headers.get("content-type");
-  let payload: Response | any;
+  try {
+    const response = await fetch(fullUrl, {
+      ...options,
+      cache: "no-store",
+      headers: {
+        ...baseHeaders,
+        ...options?.headers,
+      },
+      body,
+      method,
+    });
+    
+    const contentType = response.headers.get("content-type");
+    let payload: Response | ApiResponse | any;
 
-  if (contentType && contentType.includes("application/json")) {
-    try {
-      //only parse JSON when response has content-type is application/json
-      payload = await response.json();
-    } catch (error) {
-      console.error("Failed to parse JSON response:", error);
-      payload = { message: "Invalid response format" };
+    if (contentType && contentType.includes("application/json")) {
+      try {
+        payload = await response.json();
+      } catch (error) {
+        console.error("Failed to parse JSON response:", error);
+        payload = { 
+          success: false,
+          message: "Invalid response format", 
+          data: null 
+        };
+      }
+    } else {
+      const text = await response.text();
+      payload = { 
+        success: false,
+        message: text || "No content", 
+        data: null 
+      };
     }
-  } else {
-    //if response is not JSON, use text or default payload
-    const text = await response.text();
-    payload = { message: text || "No content" };
-  }
 
-  const data = {
-    status: response.status,
-    payload,
-  };
-  if (!response.ok) {
-    if (response.status === 400) {
-      throw new EntityError(
-        data as { status: 400; payload: EntityErrorPayload },
-      );
-    } else if (response.status === AUTHENTICATION_STATUS) {
-      if (typeof window !== "undefined") {
-        if (!clientLogoutRequest) {
-          clientLogoutRequest = fetch(`${nextServer.logout}`, {
-            method: "POST",
-            body: JSON.stringify({ force: true }),
-            headers: {
-              ...baseHeaders,
-            },
+    // Handle API-specific error format
+    if (payload && typeof payload === 'object') {
+      if (payload.success === false && payload.error) {
+        if (!response.ok || response.status >= 400) {
+          // Show error toast if enabled
+          if (options?.showErrorToast !== false) {
+            // Use the first error message, or fallback to the general message, or a default
+            const errorMsg = Array.isArray(payload.error) && payload.error.length > 0 
+              ? payload.error[0] 
+              : (payload.message || options?.errorMessage || "An error occurred");
+            
+            toast.error(errorMsg);
+          }
+          
+          if (response.status === 400) {
+            throw new EntityError({
+              status: 400,
+              payload: payload as ApiResponse,
+            });
+          }
+          
+          throw new HttpError({
+            status: response.status,
+            payload,
           });
-          await clientLogoutRequest;
-          sessionToken.value = "";
-          userRole.value = "";
-          refreshToken.value = "";
-          clientLogoutRequest = null;
-          location.href = "/login";
         }
-      } else {
-        const sessionToken = (options?.headers as any)?.Authorization?.split(
-          "Bearer ",
-        )[1];
-        redirect("/logout?sessionToken=" + sessionToken);
       }
     }
-  }
-
-  //automatically set/remove session token and role when login or logout on client side
-  if (typeof window !== "undefined") {
-    if ([apiEndpoint.login].includes(url)) {
-      sessionToken.value = (
-        payload as LoginResponseSchemaType
-      ).data?.accessToken;
-      userRole.value = (payload as LoginResponseSchemaType).data?.role;
-      refreshToken.value = (payload as LoginResponseSchemaType).data?.refreshToken;
-    } else if ([apiEndpoint.logout].includes(url)) {
-      sessionToken.value = "";
-      userRole.value = "";
-      refreshToken.value = "";
+    
+    if (!response.ok) {
+      if (response.status === 400) {
+        throw new EntityError({
+          status: 400,
+          payload: payload as ApiResponse,
+        });
+      } else if (response.status === AUTHENTICATION_STATUS) {
+        // Handle authentication errors
+        if (typeof window !== "undefined") {
+          if (!clientLogoutRequest) {
+            clientLogoutRequest = fetch(`${nextServer.logout}`, {
+              method: "POST",
+              body: JSON.stringify({ force: true }),
+              headers: {
+                ...baseHeaders,
+              },
+            });
+            await clientLogoutRequest;
+            sessionToken.value = "";
+            userRole.value = "";
+            refreshToken.value = "";
+            clientLogoutRequest = null;
+            location.href = "/login";
+          }
+        } else {
+          const sessionToken = (options?.headers as any)?.Authorization?.split(
+            "Bearer ",
+          )[1];
+          redirect("/logout?sessionToken=" + sessionToken);
+        }
+      } else {
+        // Show error toast for other errors if enabled
+        if (options?.showErrorToast !== false) {
+          toast.error(options?.errorMessage || payload?.message || `Error: ${response.status}`);
+        }
+        
+        throw new HttpError({
+          status: response.status,
+          payload,
+        });
+      }
     }
+
+    const data = {
+      status: response.status,
+      payload,
+    };
+
+    // Authentication related code (unchanged)
+    if (typeof window !== "undefined") {
+      if ([apiEndpoint.login].includes(url)) {
+        sessionToken.value = (
+          payload as LoginResponseSchemaType
+        ).data?.accessToken;
+        userRole.value = (payload as LoginResponseSchemaType).data?.role;
+        refreshToken.value = (payload as LoginResponseSchemaType).data?.refreshToken;
+      } else if ([apiEndpoint.logout].includes(url)) {
+        sessionToken.value = "";
+        userRole.value = "";
+        refreshToken.value = "";
+      }
+    }
+    
+    return data;
+  } catch (error) {
+    if (error instanceof HttpError) {
+      throw error;
+    }
+    
+    // Handle unexpected errors
+    if (options?.showErrorToast !== false) {
+      toast.error(options?.errorMessage || "Network or server error occurred");
+    }
+    
+    throw new HttpError({
+      status: 0,
+      payload: { 
+        success: false,
+        message: (error as Error).message || "Unknown error occurred",
+        data: null
+      }
+    });
   }
-  return data;
 };
 
 const http = {
