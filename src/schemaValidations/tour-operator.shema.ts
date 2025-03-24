@@ -10,9 +10,17 @@ export enum TicketKind {
   PerGroupOfTen = 5,
 }
 
+export const destinationActivities = z.object({
+  name: z.string(),
+  startTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/),
+  endTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/),
+  sortOrder: z.number(),
+})
+
 // Destination schema
 export const DestinationSchema = z.object({
   destinationId: z.string().uuid(),
+  destinationActivities: z.array(destinationActivities),
   startTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/), // Ensures HH:MM:SS format
   endTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/), // Ensures HH:MM:SS format
   sortOrder: z.number(),
@@ -32,7 +40,6 @@ export const TicketSchema = z.object({
 // Tour schema for creating/updating
 export const TourSchema = z.object({
   title: z.string(),
-  img: z.string(),
   categoryid: z.string().uuid(),
   description: z.string(),
   destinations: z.array(DestinationSchema),
@@ -41,6 +48,7 @@ export const TourSchema = z.object({
   closeDay: z.string(),
   duration: z.number(),
   scheduleFrequency: z.string(),
+  img: z.string(),
 
 });
 

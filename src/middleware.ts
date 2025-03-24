@@ -1,7 +1,8 @@
-import { adminLinks, links, operatorLinks } from "@/configs/routes";
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { UserRoleEnum } from "@/types/user";
+import { adminLinks, links, operatorLinks } from "./configs/routes";
 
 const privatePath = [
   adminLinks.admin.href,
