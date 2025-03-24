@@ -9,7 +9,7 @@ export const CompanySchema = z.object({
     phone: z.string(),
     email: z.string(),
     taxCode: z.string(),
-    lisenced: z.boolean(),
+    licensed: z.boolean(),
     staff: z.number(),
     tourCount: z.number()
 })

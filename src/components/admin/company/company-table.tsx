@@ -41,8 +41,8 @@ export function CompanyTable({ companies, loading, resetFilters, onEditCompany }
               <TableCell>{company.email}</TableCell>
               <TableCell>{company.taxCode}</TableCell>
               <TableCell>
-                <Badge variant={company.lisenced ? "active" : "destructive"}>
-                  {company.lisenced ? "Yes" : "No"}
+                <Badge variant={company.licensed ? "active" : "destructive"}>
+                  {company.licensed ? "Yes" : "No"}
                 </Badge>
               </TableCell>
               <TableCell>{company.staff}</TableCell>

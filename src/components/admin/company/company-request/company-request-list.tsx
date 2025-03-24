@@ -34,7 +34,7 @@ export function ApproveCompanyDialog({ open, onOpenChange, onApprovalComplete }:
     try {
       // Build OData query to get only unlicensed companies
       const params = new URLSearchParams()
-      params.append("$filter", "lisenced eq false")
+      params.append("$filter", "licensed eq false")
       params.append("$count", "true")
 
       const queryString = `?${params.toString()}`
