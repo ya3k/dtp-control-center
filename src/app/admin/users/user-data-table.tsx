@@ -5,17 +5,15 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { PlusCircle, RefreshCcw } from "lucide-react"
 import { TablePagination } from "@/components/admin/common-table/table-pagination"
-import destinationApiRequest from "@/apiRequests/destination"
-import { DestinationType } from "@/schemaValidations/admin-destination.schema"
-import { EditDestinationDialog } from "@/components/admin/destination/edit-destination-dialog"
-import { CreateDestinationDialog } from "@/components/admin/destination/create-destination-dialog"
-import { DestinationTable } from "@/components/admin/destination/destination-table"
-import { DestinationTableFilterCard } from "@/components/admin/destination/destination-table-filter"
-import { DeleteDestinationDialog } from "@/components/admin/destination/delete-destination-dialog" // Add this import
+import { UserResType } from "@/schemaValidations/admin-user.schema"
+import { UserTable } from "@/components/admin/users/user-table"
+import userApiRequest from "@/apiRequests/user"
+import { TableFilterCard } from "@/components/admin/common-table/table-filter-card"
 
-export default function DestinationDataTable() {
+
+export default function UserDataTable() {
   // Data state
-  const [destinations, setDestinations] = useState<DestinationType[]>([])
+  const [users, setUsers] = useState<UserResType[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [totalCount, setTotalCount] = useState<number>(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -28,8 +26,8 @@ export default function DestinationDataTable() {
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("")
 
-  //Edit state
-  const [selectedDestination, setSelectedDestination] = useState<DestinationType | null>(null)
+  // Edit state
+  const [selectedUser, setSelectedUser] = useState<UserResType | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   
   // Create dialog state
@@ -52,8 +50,8 @@ export default function DestinationDataTable() {
     setCurrentPage(1)
   }, [debouncedSearchTerm])
 
-  // Fetching destinations
-  const fetchDestinations = async () => {
+  // Fetching users
+  const fetchUsers = async () => {
     setLoading(true)
 
     try {
@@ -70,13 +68,10 @@ export default function DestinationDataTable() {
       // Filtering
       const filterConditions: string[] = []
 
-      // Search term (name contains)
+      // Search term (userName or email contains)
       if (debouncedSearchTerm) {
-        filterConditions.push(`contains(name, '${debouncedSearchTerm}')`)
+        filterConditions.push(`(contains(userName, '${debouncedSearchTerm}') or contains(email, '${debouncedSearchTerm}'))`)
       }
-
-      // Only show non-deleted destinations
-      filterConditions.push(`isDeleted eq false`)
 
       // Combine filter conditions
       if (filterConditions.length > 0) {
@@ -84,18 +79,19 @@ export default function DestinationDataTable() {
       }
 
       // Ordering
-      params.append("$orderby", "createdAt desc")
+      params.append("$orderby", "userName asc")
 
       // Construct the OData query string
       const queryString = `?${params.toString()}`
-console.log(queryString)
-      // Use destinationApiRequest instead of direct fetch
-      const response = await destinationApiRequest.getAll(queryString)
+      console.log(queryString)
+      
+      // Use userApi instead of direct fetch
+      const response = await userApiRequest.getWithOdata(queryString)
       console.log(JSON.stringify(response))
-      setDestinations(response.payload?.value)
+      setUsers(response.payload?.value)
       setTotalCount(response.payload["@odata.count"] || 0)
     } catch (error) {
-      console.error("Error fetching destination data:", error)
+      console.error("Error fetching user data:", error)
     } finally {
       setLoading(false)
     }
@@ -103,48 +99,62 @@ console.log(queryString)
 
   // Fetch data with OData parameters
   useEffect(() => {
-    fetchDestinations()
+    fetchUsers()
   }, [currentPage, pageSize, debouncedSearchTerm])
 
   // Handle refresh
   const handleRefresh = async () => {
     setIsRefreshing(true)
-    await fetchDestinations()
+    await fetchUsers()
     setIsRefreshing(false)
   }
 
   // Handle create
-  const handleCreateDestination = () => {
+  const handleCreateUser = () => {
     setIsCreateDialogOpen(true)
   }
 
   // Handle update
-  const handleEditDestination = (destination: DestinationType) => {
-    setSelectedDestination(destination)
+  const handleEditUser = (user: UserResType) => {
+    setSelectedUser(user)
     setIsEditDialogOpen(true)
   }
 
   const handleCreateComplete = () => {
-    fetchDestinations()
+    fetchUsers()
   }
 
-  const handleEditComplete = (updatedDestination: DestinationType) => {
-    // Update the destination in the local state without refetching
-    setDestinations((prevDestinations) =>
-      prevDestinations.map((dest) => (dest.id === updatedDestination.id ? updatedDestination : dest))
+  const handleEditComplete = (updatedUser: UserResType) => {
+    // Update the user in the local state without refetching
+    setUsers((prevUsers) =>
+      prevUsers.map((user) => (user.id === updatedUser.id ? updatedUser : user))
     )
   }
 
   // Handle delete
-  const handleDeleteDestination = (destination: DestinationType) => {
-    setSelectedDestination(destination)
+  const handleDeleteUser = (user: UserResType) => {
+    setSelectedUser(user)
     setIsDeleteDialogOpen(true)
   }
 
+  // Handle toggle user status
+  const handleToggleUserStatus = async (user: UserResType) => {
+    try {
+      const updatedUser = await userApi.toggleUserStatus(user.id, !user.isActive)
+      
+      // Update the user in the local state
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => (u.id === updatedUser.id ? updatedUser : u))
+      )
+    } catch (error) {
+      console.error("Error toggling user status:", error)
+    }
+  }
+
   const handleDeleteComplete = (deletedId: string) => {
-    // Remove the deleted destination from the local state
-    setDestinations(prevDestinations => 
-      prevDestinations.filter(dest => dest.id !== deletedId)
+    // Remove the deleted user from the local state
+    setUsers(prevUsers => 
+      prevUsers.filter(user => user.id !== deletedId)
     )
     
     // Update total count
@@ -178,7 +188,7 @@ console.log(queryString)
       <Card>
         <CardHeader className="mx-4">
           <div className="flex justify-between items-center">
-            <CardTitle className="text-2xl font-bold">Quản lý danh sách điểm đến</CardTitle>
+            <CardTitle className="text-2xl font-bold">Quản lý người dùng</CardTitle>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -205,17 +215,17 @@ console.log(queryString)
                 size="default"
                 className="gap-2"
                 disabled={loading || isRefreshing}
-                onClick={handleCreateDestination}
+                onClick={handleCreateUser}
               >
                 <PlusCircle className="h-4 w-4" />
-                <span>Thêm điểm đến</span>
+                <span>Thêm người dùng</span>
               </Button>
             </div>
           </div>
         </CardHeader>
 
         {/* Search and Filters */}
-        <DestinationTableFilterCard
+        <TableFilterCard
           searchTerm={searchTerm} 
           setSearchTerm={setSearchTerm}
           pageSize={pageSize} 
@@ -224,11 +234,12 @@ console.log(queryString)
         
         {/* Table */}
         <div className="rounded-md border">
-          <DestinationTable
-            destinations={destinations}
+          <UserTable
+            users={users}
             loading={loading}
-            onEditDestination={handleEditDestination}
-            onDeleteDestination={handleDeleteDestination} // Add this prop
+            onEditUser={handleEditUser}
+            onDeleteUser={handleDeleteUser}
+            onToggleUserStatus={handleToggleUserStatus}
             resetFilters={resetFilters}
           />
         </div>
@@ -244,27 +255,27 @@ console.log(queryString)
       </Card>
 
       {/* Create Dialog */}
-      <CreateDestinationDialog
+      {/* <CreateUserDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         onCreateComplete={handleCreateComplete}
-      />
+      /> */}
       
       {/* Edit Dialog */}
-      <EditDestinationDialog
+      {/* <EditUserDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
-        destination={selectedDestination}
+        user={selectedUser}
         onEditComplete={handleEditComplete}
-      />
+      /> */}
       
       {/* Delete Dialog */}
-      <DeleteDestinationDialog
+      {/* <DeleteUserDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
-        destination={selectedDestination}
+        user={selectedUser}
         onDeleteComplete={handleDeleteComplete}
-      />
+      /> */}
     </div>
   )
 }

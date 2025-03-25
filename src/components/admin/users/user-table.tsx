@@ -10,81 +10,88 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Edit, Loader2, Trash2 } from "lucide-react"
-import { DestinationType } from "@/schemaValidations/admin-destination.schema"
+import { Edit, Loader2, Trash2, UserCheck, UserX } from "lucide-react"
 import { ColumnDef, ColumnToggleDropdown } from "@/components/common/table/column-toggle-dropdown"
+import { UserResType } from "@/schemaValidations/admin-user.schema"
 
-interface DestinationTableProps {
-  destinations: DestinationType[]
+interface UserTableProps {
+  users: UserResType[]
   loading: boolean
-  onEditDestination: (destination: DestinationType) => void
-  onDeleteDestination: (destination: DestinationType) => void
+  onEditUser: (user: UserResType) => void
+  onDeleteUser: (user: UserResType) => void
+  onToggleUserStatus: (user: UserResType) => void
   resetFilters: () => void
 }
 
-export function DestinationTable({
-  destinations,
+export function UserTable({
+  users,
   loading,
-  onEditDestination,
-  onDeleteDestination,
+  onEditUser,
+  onDeleteUser,
+  onToggleUserStatus,
   resetFilters,
-}: DestinationTableProps) {
+}: UserTableProps) {
   // Define column configuration with all needed properties
-  const columns: ColumnDef<DestinationType>[] = [
+  const columns: ColumnDef<UserResType>[] = [
     {
       id: "id",
       header: "ID",
       accessorKey: "id",
-      cell: (destination) => <span className="font-medium truncate max-w-[120px]">{destination.id.split('-')[0]}...</span>,
+      cell: (user) => <span className="font-medium truncate max-w-[120px]">{user.id.split('-')[0]}...</span>,
       enableHiding: true,
       className: "w-[120px]",
       defaultHidden: true, // Ẩn mặc định
     },
     {
-      id: "name",
-      header: "Tên điểm đến",
-      accessorKey: "name",
-      cell: (destination) => destination.name,
+      id: "userName",
+      header: "Tên người dùng",
+      accessorKey: "userName",
+      cell: (user) => user.userName,
       enableHiding: false, // Cột bắt buộc, không thể ẩn
     },
     {
-      id: "latitude",
-      header: "Vĩ độ",
-      accessorKey: "latitude",
-      cell: (destination) => destination.latitude,
+      id: "email",
+      header: "Email",
+      accessorKey: "email",
+      cell: (user) => user.email,
+      enableHiding: false, // Cột bắt buộc, không thể ẩn
+    },
+    {
+      id: "companyName",
+      header: "Công ty",
+      accessorKey: "companyName",
+      cell: (user) => user.companyName,
       enableHiding: true,
     },
     {
-      id: "longitude",
-      header: "Kinh độ",
-      accessorKey: "longitude",
-      cell: (destination) => destination.longitude,
+      id: "roleName",
+      header: "Vai trò",
+      accessorKey: "roleName",
+      cell: (user) => user.roleName,
       enableHiding: true,
     },
     {
-      id: "createdBy",
-      header: "Người tạo",
-      accessorKey: "createdBy",
-      cell: (destination) => destination.createdBy,
-      enableHiding: true,
-      defaultHidden: true, // Ẩn mặc định
-    },
-    {
-      id: "createdAt",
-      header: "Ngày tạo",
-      accessorKey: "createdAt",
-      cell: (destination) => new Date(destination.createdAt).toLocaleDateString(),
+      id: "isActive",
+      header: "Trạng thái",
+      accessorKey: "isActive",
+      cell: (user) => (
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          user.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+        }`}>
+          {user.isActive ? "Hoạt động" : "Vô hiệu hóa"}
+        </span>
+      ),
       enableHiding: true,
     },
     {
       id: "actions",
       header: "Thao tác",
-      cell: (destination) => (
+      cell: (user) => (
         <div className="flex justify-end gap-2">
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onEditDestination(destination)}
+            onClick={() => onEditUser(user)}
             title="Chỉnh sửa"
           >
             <Edit className="h-4 w-4" />
@@ -92,8 +99,19 @@ export function DestinationTable({
           <Button
             variant="ghost"
             size="icon"
+            onClick={() => onToggleUserStatus(user)}
+            title={user.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
+            className={user.isActive ? 
+              "text-amber-500 hover:text-amber-600 hover:bg-amber-100" : 
+              "text-green-500 hover:text-green-600 hover:bg-green-100"}
+          >
+            {user.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
-            onClick={() => onDeleteDestination(destination)}
+            onClick={() => onDeleteUser(user)}
             title="Xóa"
           >
             <Trash2 className="h-4 w-4" />
@@ -121,10 +139,10 @@ export function DestinationTable({
     )
   }
 
-  if (destinations.length === 0) {
+  if (users.length === 0) {
     return (
       <div className="text-center p-8">
-        <h3 className="text-lg font-medium">Không tìm thấy điểm đến nào</h3>
+        <h3 className="text-lg font-medium">Không tìm thấy người dùng nào</h3>
         <p className="text-sm text-muted-foreground mt-2">
           Thử thay đổi bộ lọc hoặc tìm kiếm để xem nhiều kết quả hơn.
         </p>
@@ -165,14 +183,14 @@ export function DestinationTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {destinations.map((destination) => (
-              <TableRow key={destination.id}>
+            {users.map((user) => (
+              <TableRow key={user.id}>
                 {visibleColumnDefs.map((column) => (
                   <TableCell 
-                    key={`${destination.id}-${column.id}`}
+                    key={`${user.id}-${column.id}`}
                     className={column.align === "right" ? "text-right" : undefined}
                   >
-                    {column.cell(destination)}
+                    {column.cell(user)}
                   </TableCell>
                 ))}
               </TableRow>

@@ -13,7 +13,7 @@ interface DestinationResponse {
 
 const destinationApiRequest = {
   getAll: (queryParams?: string) => {
-    const finalQuery = queryParams ? `?${queryParams}` : "";
+    const finalQuery = queryParams ? `${queryParams}` : "";
     return http.get<DestinationResponse>(`${apiEndpoint.destinationOdata}${finalQuery}`);
   },
   create: async (data: CreateDestinationBodyType) =>

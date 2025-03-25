@@ -1,8 +1,9 @@
 import React from 'react'
+import UserDataTable from './user-data-table'
 
 function UserAdmin() {
   return (
-    <div>UserAdmin</div>
+    <UserDataTable/>
   )
 }
 
