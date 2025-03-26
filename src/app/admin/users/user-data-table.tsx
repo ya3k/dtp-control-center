@@ -7,9 +7,9 @@ import { PlusCircle, RefreshCcw } from "lucide-react"
 import { TablePagination } from "@/components/admin/common-table/table-pagination"
 import { UserResType } from "@/schemaValidations/admin-user.schema"
 import { UserTable } from "@/components/admin/users/user-table"
+import { UserTableFilterCard } from "@/components/admin/users/user-table-filter"
 import userApiRequest from "@/apiRequests/user"
-import { TableFilterCard } from "@/components/admin/common-table/table-filter-card"
-
+import { CreateUserDialog } from "@/components/admin/users/create-user-dialog"
 
 export default function UserDataTable() {
   // Data state
@@ -22,17 +22,19 @@ export default function UserDataTable() {
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
 
-  // Search state
+  // Search and filter state
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("")
+  const [roleFilter, setRoleFilter] = useState<string>("all")
+  const [companyFilter, setCompanyFilter] = useState<string>("all")
 
   // Edit state
   const [selectedUser, setSelectedUser] = useState<UserResType | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  
+
   // Create dialog state
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  
+
   // Delete dialog state
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
@@ -45,10 +47,10 @@ export default function UserDataTable() {
     return () => clearTimeout(timer)
   }, [searchTerm])
 
-  // Reset to first page when search changes
+  // Reset to first page when search or filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [debouncedSearchTerm])
+  }, [debouncedSearchTerm, roleFilter, companyFilter])
 
   // Fetching users
   const fetchUsers = async () => {
@@ -73,6 +75,16 @@ export default function UserDataTable() {
         filterConditions.push(`(contains(userName, '${debouncedSearchTerm}') or contains(email, '${debouncedSearchTerm}'))`)
       }
 
+      // Role filter
+      if (roleFilter && roleFilter !== "all") {
+        filterConditions.push(`roleName eq '${roleFilter}'`)
+      }
+
+      // Company filter
+      if (companyFilter && companyFilter !== "all") {
+        filterConditions.push(`companyName eq '${companyFilter}'`)
+      }
+
       // Combine filter conditions
       if (filterConditions.length > 0) {
         params.append("$filter", filterConditions.join(" and "))
@@ -84,8 +96,8 @@ export default function UserDataTable() {
       // Construct the OData query string
       const queryString = `?${params.toString()}`
       console.log(queryString)
-      
-      // Use userApi instead of direct fetch
+
+      // Use userApiRequest instead of userApi
       const response = await userApiRequest.getWithOdata(queryString)
       console.log(JSON.stringify(response))
       setUsers(response.payload?.value)
@@ -100,7 +112,7 @@ export default function UserDataTable() {
   // Fetch data with OData parameters
   useEffect(() => {
     fetchUsers()
-  }, [currentPage, pageSize, debouncedSearchTerm])
+  }, [currentPage, pageSize, debouncedSearchTerm, roleFilter, companyFilter])
 
   // Handle refresh
   const handleRefresh = async () => {
@@ -140,8 +152,8 @@ export default function UserDataTable() {
   // Handle toggle user status
   const handleToggleUserStatus = async (user: UserResType) => {
     try {
-      const updatedUser = await userApi.toggleUserStatus(user.id, !user.isActive)
-      
+      const updatedUser = await userApiRequest.toggleUserStatus(user.id, !user.isActive)
+
       // Update the user in the local state
       setUsers((prevUsers) =>
         prevUsers.map((u) => (u.id === updatedUser.id ? updatedUser : u))
@@ -153,10 +165,10 @@ export default function UserDataTable() {
 
   const handleDeleteComplete = (deletedId: string) => {
     // Remove the deleted user from the local state
-    setUsers(prevUsers => 
+    setUsers(prevUsers =>
       prevUsers.filter(user => user.id !== deletedId)
     )
-    
+
     // Update total count
     setTotalCount(prevCount => prevCount - 1)
   }
@@ -176,11 +188,15 @@ export default function UserDataTable() {
       setCurrentPage(currentPage + 1)
     }
   }
-
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
   // Reset filters
   const resetFilters = () => {
     setSearchTerm("")
     setDebouncedSearchTerm("")
+    setRoleFilter("all")
+    setCompanyFilter("all")
   }
 
   return (
@@ -200,18 +216,18 @@ export default function UserDataTable() {
                 {isRefreshing ? (
                   <>
                     <RefreshCcw className="h-4 w-4 animate-spin" />
-                    <span>Refreshing...</span>
+                    <span>Làm mới...</span>
                   </>
                 ) : (
                   <>
                     <RefreshCcw className="h-4 w-4" />
-                    <span>Refresh</span>
+                    <span>Đang làm mới</span>
                   </>
                 )}
               </Button>
 
               <Button
-                variant="default"
+                variant="core"
                 size="default"
                 className="gap-2"
                 disabled={loading || isRefreshing}
@@ -225,15 +241,20 @@ export default function UserDataTable() {
         </CardHeader>
 
         {/* Search and Filters */}
-        <TableFilterCard
-          searchTerm={searchTerm} 
+        <UserTableFilterCard
+          searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
-          pageSize={pageSize} 
+          pageSize={pageSize}
           setPageSize={setPageSize}
+          roleFilter={roleFilter}
+          setRoleFilter={setRoleFilter}
+          companyFilter={companyFilter}
+          setCompanyFilter={setCompanyFilter}
+          onClearFilters={resetFilters}
         />
-        
+
         {/* Table */}
-        <div className="rounded-md border">
+        <div className="rounded-md border px-3">
           <UserTable
             users={users}
             loading={loading}
@@ -243,24 +264,25 @@ export default function UserDataTable() {
             resetFilters={resetFilters}
           />
         </div>
-        
+
         {/* Pagination */}
         <TablePagination
           currentPage={currentPage}
           loading={loading}
           onNextPage={handleNextPage}
           onPreviousPage={handlePreviousPage}
+          onPageChange={handlePageChange}
           totalPages={totalPages}
         />
       </Card>
 
       {/* Create Dialog */}
-      {/* <CreateUserDialog
+      <CreateUserDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         onCreateComplete={handleCreateComplete}
-      /> */}
-      
+      />
+
       {/* Edit Dialog */}
       {/* <EditUserDialog
         open={isEditDialogOpen}
@@ -268,7 +290,7 @@ export default function UserDataTable() {
         user={selectedUser}
         onEditComplete={handleEditComplete}
       /> */}
-      
+
       {/* Delete Dialog */}
       {/* <DeleteUserDialog
         open={isDeleteDialogOpen}

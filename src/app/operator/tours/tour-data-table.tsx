@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { PlusCircle, RefreshCcw } from "lucide-react"
 import Link from "next/link"
 import { UpdateTourDialog } from "@/components/operator/tours/edit-tour/edit-tour-dialog"
+import { TablePagination } from "@/components/admin/common-table/table-pagination"
 
 export default function OpTourDataTable() {
   // Data state
@@ -144,7 +145,9 @@ export default function OpTourDataTable() {
       setCurrentPage(currentPage + 1)
     }
   }
-
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
   // Reset filters
   const resetFilters = () => {
     setSearchTerm("")
@@ -197,8 +200,15 @@ export default function OpTourDataTable() {
           <OpTourTable tours={tours} totalCount={totalCount} loading={loading} pageSize={pageSize} resetFilters={resetFilters} truncateDescription={truncateDescription} onEditTour={handleEditTour} />
         </div>
         {/* Pagination */}
-        <OpTourPagination currentPage={currentPage} loading={loading} onNextPage={handleNextPage}
-          onPreviousPage={handlePreviousPage} totalPages={totalPages}
+        <TablePagination
+          currentPage={currentPage}
+          loading={loading}
+          onNextPage={handleNextPage}
+          onPreviousPage={handlePreviousPage}
+          onPageChange={handlePageChange}
+          totalPages={totalPages}
+
+
         />
       </Card>
 

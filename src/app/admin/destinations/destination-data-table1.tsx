@@ -166,7 +166,9 @@ console.log(queryString)
       setCurrentPage(currentPage + 1)
     }
   }
-
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
   // Reset filters
   const resetFilters = () => {
     setSearchTerm("")
@@ -201,7 +203,7 @@ console.log(queryString)
               </Button>
 
               <Button
-                variant="default"
+                variant="core"
                 size="default"
                 className="gap-2"
                 disabled={loading || isRefreshing}
@@ -223,7 +225,7 @@ console.log(queryString)
         />
         
         {/* Table */}
-        <div className="rounded-md border">
+        <div className="rounded-md border px-2">
           <DestinationTable
             destinations={destinations}
             loading={loading}
@@ -239,6 +241,7 @@ console.log(queryString)
           loading={loading}
           onNextPage={handleNextPage}
           onPreviousPage={handlePreviousPage}
+          onPageChange={handlePageChange}
           totalPages={totalPages}
         />
       </Card>

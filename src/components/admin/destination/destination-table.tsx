@@ -115,8 +115,9 @@ export function DestinationTable({
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center p-8">
+      <div className="flex flex-col justify-center  items-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="mt-2">Đang tải</div>
       </div>
     )
   }

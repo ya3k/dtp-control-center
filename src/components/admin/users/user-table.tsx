@@ -75,13 +75,16 @@ export function UserTable({
       header: "Trạng thái",
       accessorKey: "isActive",
       cell: (user) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          user.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-        }`}>
-          {user.isActive ? "Hoạt động" : "Vô hiệu hóa"}
-        </span>
+        <div className="flex justify-center">
+          <span className={`px-2 py-1 rounded-full text-xs font-medium text-center ${user.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+            }`}>
+            {user.isActive ? "Hoạt động" : "Vô hiệu hóa"}
+          </span>
+        </div>
       ),
-      enableHiding: true,
+      enableHiding: false,
+      align: "center", // Add center alignment
+      className: "text-center", // Add text-center class
     },
     {
       id: "actions",
@@ -101,8 +104,8 @@ export function UserTable({
             size="icon"
             onClick={() => onToggleUserStatus(user)}
             title={user.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
-            className={user.isActive ? 
-              "text-amber-500 hover:text-amber-600 hover:bg-amber-100" : 
+            className={user.isActive ?
+              "text-amber-500 hover:text-amber-600 hover:bg-amber-100" :
               "text-green-500 hover:text-green-600 hover:bg-green-100"}
           >
             {user.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
@@ -119,7 +122,7 @@ export function UserTable({
         </div>
       ),
       enableHiding: true,
-      align: "right",
+      align: "center",
     },
   ]
 
@@ -146,8 +149,8 @@ export function UserTable({
         <p className="text-sm text-muted-foreground mt-2">
           Thử thay đổi bộ lọc hoặc tìm kiếm để xem nhiều kết quả hơn.
         </p>
-        <Button variant="link" onClick={resetFilters} className="mt-2">
-          Reset filters
+        <Button variant="destructive" onClick={resetFilters} className="mt-2">
+          Xóa bộ lọc
         </Button>
       </div>
     )
@@ -173,9 +176,14 @@ export function UserTable({
           <TableHeader>
             <TableRow>
               {visibleColumnDefs.map((column) => (
-                <TableHead 
+                <TableHead
                   key={column.id}
-                  className={column.className || (column.align === "right" ? "text-right" : undefined)}
+                  className={`text-gray-800 font-bold text-sm
+                    ${column.className ||
+                    (column.align === "right" ? "text-right" :
+                      (column.align === "center" ? "text-center" : undefined))}                   
+                    `
+                  }
                 >
                   {column.header}
                 </TableHead>
@@ -186,9 +194,12 @@ export function UserTable({
             {users.map((user) => (
               <TableRow key={user.id}>
                 {visibleColumnDefs.map((column) => (
-                  <TableCell 
+                  <TableCell
                     key={`${user.id}-${column.id}`}
-                    className={column.align === "right" ? "text-right" : undefined}
+                    className={
+                      column.align === "right" ? "text-right" :
+                        (column.align === "center" ? "text-center" : undefined)
+                    }
                   >
                     {column.cell(user)}
                   </TableCell>

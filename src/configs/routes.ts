@@ -41,6 +41,7 @@ export const apiEndpoint = {
     logout: "api/authentication/logout",
     refresh: "/api/authentication/refresh",
     //user
+    user: `/api/user`,
     profile: "/api/user/me",
     odataUser: `/odata/user`,
     //tour

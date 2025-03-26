@@ -1,11 +1,15 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { TableSearchBar } from "@/components/admin/common-table/table-search-bar"
 import { TablePageSizeSelector } from "@/components/admin/common-table/table-page-size"
+import { Role } from "@/schemaValidations/admin-user.schema"
+import companyApiRequest from "@/apiRequests/company"
+import { Button } from "@/components/ui/button"
+import { RefreshCw } from "lucide-react"
 
 interface FilterCardProps {
     searchTerm: string
@@ -16,6 +20,7 @@ interface FilterCardProps {
     setRoleFilter?: (value: string) => void
     companyFilter?: string
     setCompanyFilter?: (value: string) => void
+    onClearFilters?: () => void
 }
 
 export function UserTableFilterCard({
@@ -26,32 +31,45 @@ export function UserTableFilterCard({
     roleFilter = "",
     setRoleFilter = () => {},
     companyFilter = "",
-    setCompanyFilter = () => {}
+    setCompanyFilter = () => {},
+    onClearFilters
 }: FilterCardProps) {
-    const [roles, setRoles] = useState<{id: string, name: string}[]>([])
     const [companies, setCompanies] = useState<{id: string, name: string}[]>([])
     const [loading, setLoading] = useState(false)
 
+    // Get all roles from the Role enum
+    const roleOptions = Object.values(Role)
+
     useEffect(() => {
-        const fetchFilterData = async () => {
+        const fetchCompanies = async () => {
             setLoading(true)
             try {
-                // Fetch roles for dropdown
-                const rolesResponse = await userApi.getRoles()
-                setRoles(rolesResponse?.payload || [])
-                
                 // Fetch companies for dropdown
-                const companiesResponse = await userApi.getCompanies()
-                setCompanies(companiesResponse?.payload || [])
+                const companiesResponse = await companyApiRequest.getWithOData();
+                console.log(JSON.stringify(companiesResponse.payload.value))
+                setCompanies(companiesResponse?.payload.value || [])
             } catch (error) {
-                console.error("Error fetching filter data:", error)
+                console.error("Error fetching companies:", error)
             } finally {
                 setLoading(false)
             }
         }
 
-        fetchFilterData()
+        fetchCompanies()
     }, [])
+
+    // Handle clearing all filters
+    const handleClearFilters = () => {
+        setSearchTerm("")
+        setRoleFilter("all")
+        setCompanyFilter("all")
+        setPageSize(10)
+        
+        // Call external handler if provided
+        if (onClearFilters) {
+            onClearFilters()
+        }
+    }
 
     return (
         <Card>
@@ -71,16 +89,15 @@ export function UserTableFilterCard({
                         <Select
                             value={roleFilter}
                             onValueChange={setRoleFilter}
-                            disabled={loading || roles.length === 0}
                         >
                             <SelectTrigger id="role-filter">
                                 <SelectValue placeholder="Tất cả vai trò" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">Tất cả vai trò</SelectItem>
-                                {roles.map((role) => (
-                                    <SelectItem key={role.id} value={role.id}>
-                                        {role.name}
+                                <SelectItem value="all">Tất cả vai trò</SelectItem>
+                                {roleOptions.map((role) => (
+                                    <SelectItem key={role} value={role}>
+                                        {role}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -98,9 +115,9 @@ export function UserTableFilterCard({
                                 <SelectValue placeholder="Tất cả công ty" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">Tất cả công ty</SelectItem>
+                                <SelectItem value="all">Tất cả công ty</SelectItem>
                                 {companies.map((company) => (
-                                    <SelectItem key={company.id} value={company.id}>
+                                    <SelectItem key={company.id} value={company.name}>
                                         {company.name}
                                     </SelectItem>
                                 ))}
@@ -111,6 +128,17 @@ export function UserTableFilterCard({
                     <TablePageSizeSelector pageSize={pageSize} setPageSize={setPageSize} />
                 </div>
             </CardContent>
+            <CardFooter className="flex justify-end">
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleClearFilters}
+                    className="flex items-center gap-1"
+                >
+                    <RefreshCw className="h-4 w-4" />
+                    <span>Xóa bộ lọc</span>
+                </Button>
+            </CardFooter>
         </Card>
     )
 }

@@ -1,43 +1,15 @@
 'use client'
-import LoadingAni from "@/components/common/loading/LoadingAni";
-import LoadingScreen from "@/components/common/loading/LoadingScreen";
 import SidebarBreadcrumb from "@/components/common/SideBar/SidebarBreadcrumb";
 import { SidebarDashboard } from "@/components/common/SideBar/SideBarDashboard";
 
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Building2, LayoutDashboard, Map, User } from "lucide-react";
-import { Suspense } from "react";
-const adminItems = [
-    {
-        title: "Dashboard",
-        url: "/admin/dashboard",
-        icon: LayoutDashboard,
-    },
-    {
-        title: "Users",
-        url: "/admin/users",
-        icon: User,
+import { adminItems } from "@/lib/admin-layout-constants";
 
-    },
-    {
-        title: "Destinations",
-        url: "/admin/destinations",
-        icon: Map,
 
-    },
-    {
-        title: "Quản lý công ty",
-        url: "",
-        icon: Building2,
-        subItems: [
-            { title: "Danh sách công ty", url: "/admin/company", icon: Building2 },
-
-        ],
-    },
-];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+   
 
     return (
             <SidebarProvider>

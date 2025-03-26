@@ -1,6 +1,6 @@
 import { apiEndpoint } from "@/configs/routes";
 import http from "@/lib/http";
-import { UserResType } from "@/schemaValidations/admin-user.schema";
+import { PostUserBodyType, UserResType } from "@/schemaValidations/admin-user.schema";
 interface UserOdataResponse {
   value: UserResType[],
   "@odata.count"?: number
@@ -13,7 +13,8 @@ const userApiRequest = {
   getWithOdata: (queryParams?: string) => {
     const finalQuery = queryParams ? `${queryParams}` : "";
     return http.get<UserOdataResponse>(`${apiEndpoint.odataUser}${finalQuery}`);
-  }
+  },
+  create: (body: PostUserBodyType) => http.post(apiEndpoint.user, body)
 };
 
 export default userApiRequest;

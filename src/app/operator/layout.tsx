@@ -4,32 +4,11 @@ import { SidebarDashboard } from "@/components/common/SideBar/SideBarDashboard";
 
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Calendar, Home, MapPin, Torus, Users } from "lucide-react";
-const operatorItems = [
-    {
-        title: "Dashboard",
-        url: "/operator/dashboard",
-        icon: Home,
-    },
-    {
-        title: "Tours",
-        url: "",
-        icon: Torus,
-        subItems: [
-            { title: "Danh Sách Tours", url: "/operator/tours", icon: Calendar },
-            { title: "Tạo Tours", url: "/operator/tours/create", icon: MapPin },
-        ],
-    },
-    {
-        title: "Nhân Viên",
-        url: "",
-        icon: Users,
-        subItems: [
-            { title: "Danh sách nhân viên", url: "/operator/employee", icon: Calendar },
+import { operatorItems } from "@/lib/operator-layout-constants";
 
-        ],
-    }
-];
+
+
+
 export default function OperatorLayout({ children }: { children: React.ReactNode }) {
     return (
         <SidebarProvider>

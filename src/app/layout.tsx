@@ -1,9 +1,10 @@
-  import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { IBM_Plex_Sans } from "next/font/google";
 import { cookies } from "next/headers";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import AuthProvider from "@/providers/AuthProvider";
+import { ReactScan } from "@/components/common/ReactScanComponent";
 const ibmPlexSans = IBM_Plex_Sans({
   variable: "--font-ibm-plex-sans",
   subsets: ["vietnamese"],
@@ -28,17 +29,20 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <script src="https://unpkg.com/react-scan/dist/auto.global.js" />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+
       </head>
+      <ReactScan />
       <body className={`${ibmPlexSans.className} antialiased`}>
         <AuthProvider
           initialSessionToken={sessionToken?.value}
           initialRole={role?.value}
           initialRefreshToken={refreshToken?.value}
-        >        
-            {children}
-            <Toaster closeButton richColors position="top-right" />         
+        >
+          {children}
+          <Toaster closeButton richColors position="top-right" />
         </AuthProvider>
       </body>
     </html>
