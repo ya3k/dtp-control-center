@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Edit, Loader2, Trash2, UserCheck, UserX } from "lucide-react"
+import { Edit, Loader2, Trash2 } from "lucide-react"
 import { ColumnDef, ColumnToggleDropdown } from "@/components/common/table/column-toggle-dropdown"
 import { UserResType } from "@/schemaValidations/admin-user.schema"
 
@@ -19,7 +19,6 @@ interface UserTableProps {
   loading: boolean
   onEditUser: (user: UserResType) => void
   onDeleteUser: (user: UserResType) => void
-  onToggleUserStatus: (user: UserResType) => void
   resetFilters: () => void
 }
 
@@ -28,7 +27,6 @@ export function UserTable({
   loading,
   onEditUser,
   onDeleteUser,
-  onToggleUserStatus,
   resetFilters,
 }: UserTableProps) {
   // Define column configuration with all needed properties
@@ -99,17 +97,7 @@ export function UserTable({
           >
             <Edit className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onToggleUserStatus(user)}
-            title={user.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
-            className={user.isActive ?
-              "text-amber-500 hover:text-amber-600 hover:bg-amber-100" :
-              "text-green-500 hover:text-green-600 hover:bg-green-100"}
-          >
-            {user.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-          </Button>
+         
           <Button
             variant="ghost"
             size="icon"

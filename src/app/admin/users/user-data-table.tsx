@@ -149,20 +149,8 @@ export default function UserDataTable() {
     setIsDeleteDialogOpen(true)
   }
 
-  // Handle toggle user status
-  const handleToggleUserStatus = async (user: UserResType) => {
-    try {
-      const updatedUser = await userApiRequest.toggleUserStatus(user.id, !user.isActive)
 
-      // Update the user in the local state
-      setUsers((prevUsers) =>
-        prevUsers.map((u) => (u.id === updatedUser.id ? updatedUser : u))
-      )
-    } catch (error) {
-      console.error("Error toggling user status:", error)
-    }
-  }
-
+  
   const handleDeleteComplete = (deletedId: string) => {
     // Remove the deleted user from the local state
     setUsers(prevUsers =>
@@ -260,7 +248,6 @@ export default function UserDataTable() {
             loading={loading}
             onEditUser={handleEditUser}
             onDeleteUser={handleDeleteUser}
-            onToggleUserStatus={handleToggleUserStatus}
             resetFilters={resetFilters}
           />
         </div>
