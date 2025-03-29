@@ -19,6 +19,7 @@ import categoryApiRequest from "@/apiRequests/category"
 import type { CategoryType } from "@/schemaValidations/category.schema"
 import CategorySearch from "../categories-search"
 import { toast } from "sonner"
+import { TiptapEditor } from "@/components/common/tiptap-editor"
 
 // Define the Frequency enum for display
 enum Frequency {
@@ -315,7 +316,7 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
             />
 
             {/* Description */}
-            <FormField
+            {/* <FormField
               control={form.control}
               name="description"
               render={({ field }) => (
@@ -323,6 +324,25 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea placeholder="Enter tour description" className="min-h-32" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            /> */}
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <TiptapEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Enter tour description with rich formatting..."
+                      className="min-h-[250px]"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
