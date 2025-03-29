@@ -1,6 +1,6 @@
 "use client"
 
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import TextAlign from '@tiptap/extension-text-align'
@@ -55,11 +55,12 @@ export function TiptapEditor({ value, onChange, placeholder, className }: Tiptap
       TextAlign.configure({
         types: ['heading', 'paragraph'],
         defaultAlignment: 'left',
+        
       }),
       Image.configure({
         HTMLAttributes: {
           class: 'rounded max-w-full mx-auto my-4 border border-gray-200 dark:border-gray-700',
-    style: 'max-height: 300px; object-fit: contain;'
+          style: 'max-height: 300px; object-fit: contain;'
         },
       }),
     ],
@@ -68,7 +69,14 @@ export function TiptapEditor({ value, onChange, placeholder, className }: Tiptap
       attributes: {
         class: cn(
           "prose dark:prose-invert prose-sm max-w-none focus:outline-none min-h-[150px] p-4",
-          !value && !isFocused && "before:content-[attr(data-placeholder)] before:text-gray-400 before:float-left"
+          !value && !isFocused && "before:content-[attr(data-placeholder)] before:text-gray-400 before:float-left",
+          // Add custom styling for different content types
+          "prose-headings:border-b prose-headings:border-gray-200 dark:prose-headings:border-gray-700 prose-headings:pb-1 prose-headings:mb-3",
+          "prose-h1:text-2xl prose-h1:font-bold prose-h1:text-primary",
+          "prose-h2:text-xl prose-h2:font-semibold prose-h2:text-primary/90",
+          "prose-p:my-2 prose-p:leading-relaxed",
+          "prose-ol:pl-6 prose-ol:my-3 prose-ol:list-decimal prose-ol:marker:text-muted-foreground",
+          "prose-ul:pl-6 prose-ul:my-3 prose-ul:list-disc prose-ul:marker:text-muted-foreground"
         ),
         'data-placeholder': placeholder || 'Enter description...',
       },
@@ -150,6 +158,60 @@ export function TiptapEditor({ value, onChange, placeholder, className }: Tiptap
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
     >
+      {editor && (
+        <BubbleMenu 
+          editor={editor} 
+          tippyOptions={{ duration: 100 }}
+          className="bg-background rounded-md shadow-md border border-border flex overflow-hidden"
+        >
+          <Button
+            type="button"
+            variant={editor.isActive('bold') ? "default" : "ghost"}
+            size="sm"
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            className="h-8 px-2 py-1"
+          >
+            <Bold className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant={editor.isActive('italic') ? "default" : "ghost"}
+            size="sm"
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            className="h-8 px-2 py-1"
+          >
+            <Italic className="h-4 w-4" />
+          </Button>
+          
+          <div className="border-l h-8"></div>
+          
+          {/* Text styles */}
+          
+          
+          <div className="border-l h-8"></div>
+          
+          {/* List buttons */}
+          <Button
+            type="button"
+            variant={editor.isActive('bulletList') ? "default" : "ghost"}
+            size="sm"
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            className="h-8 px-2 py-1"
+          >
+            <List className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant={editor.isActive('orderedList') ? "default" : "ghost"}
+            size="sm"
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            className="h-8 px-2 py-1"
+          >
+            <ListOrdered className="h-4 w-4" />
+          </Button>
+        </BubbleMenu>
+      )}
+
       <div className="flex flex-wrap gap-1 p-1 border-b bg-muted/50">
         {/* Text Size Dropdown with tooltip */}
         <TooltipProvider>
@@ -169,7 +231,7 @@ export function TiptapEditor({ value, onChange, placeholder, className }: Tiptap
                       <ChevronDown className="h-3 w-3 opacity-50" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
+                  <DropdownMenuContent align="center" sideOffset={5}>
                     {textSizes.map((size, index) => (
                       <DropdownMenuItem
                         key={index}
@@ -177,8 +239,7 @@ export function TiptapEditor({ value, onChange, placeholder, className }: Tiptap
                         className={cn(
                           "flex items-center gap-1 cursor-pointer",
                           getCurrentTextStyle() === size.name && "bg-accent font-medium"
-                        )}
-                      >
+                        )}>
                         {size.name}
                       </DropdownMenuItem>
                     ))}
