@@ -29,8 +29,8 @@ export default function CreateTourPage() {
     tickets: [],
     openDay: "",
     closeDay: "",
-    duration: 1,
     scheduleFrequency: "",
+    about: ""
   })
 
   const updateFormData = (data: Partial<CreateTourBodyType>) => {
@@ -159,8 +159,9 @@ export default function CreateTourPage() {
         tickets: updatedFormData.tickets || [],
         openDay: updatedFormData.openDay || "",
         closeDay: updatedFormData.closeDay || "",
-        duration: updatedFormData.duration || 1,
         scheduleFrequency: updatedFormData.scheduleFrequency || "",
+        about: updatedFormData.about || "",
+
       }
 
       // Ensure destinations have all required fields including activities

@@ -56,8 +56,8 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
       scheduleFrequency: (data.scheduleFrequency as Frequency) || Frequency.Daily,
       openDay: data.openDay || "",
       closeDay: data.closeDay || "",
-      duration: data.duration || 1,
       description: data.description || "",
+      about: data.about || ""
     },
   })
 
@@ -85,8 +85,8 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
       description: values.description,
       openDay: values.openDay,
       closeDay: values.closeDay,
-      duration: values.duration,
       scheduleFrequency: values.scheduleFrequency,
+      about: values.about || ""
     }
 
     updateData(formattedValues)
@@ -95,7 +95,7 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
 
   return (
     <Card>
-      <CardContent className="pt-6">
+      <CardContent className="pt-6 ">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* title */}
@@ -295,52 +295,53 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
               )}
             />
 
-            {/* Duration */}
-            <FormField
-              control={form.control}
-              name="duration"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Duration (days)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min="1"
-                      {...field}
-                      onChange={(e) => field.onChange(Number.parseInt(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             {/* Description */}
-            {/* <FormField
+            <FormField
               control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Điểm nổi bật</FormLabel>
                   <FormControl>
                     <Textarea placeholder="Enter tour description" className="min-h-32" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
-            /> */}
+            />
 
-            <FormField
+            {/* <FormField
               control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Điểm nổi bật</FormLabel>
                   <FormControl>
                     <TiptapEditor
                       value={field.value}
                       onChange={field.onChange}
-                      placeholder="Enter tour description with rich formatting..."
+                      placeholder="Nhập một số điểm nổi bật của tour..."
+                      className="min-h-[250px]"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            /> */}
+
+            {/* about */}
+            <FormField
+              control={form.control}
+              name="about"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Về dịch vụ này</FormLabel>
+                  <FormControl>
+                    <TiptapEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Thông tin thêm về dịch vụ này..."
                       className="min-h-[250px]"
                     />
                   </FormControl>
@@ -348,7 +349,6 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
                 </FormItem>
               )}
             />
-
             <div className="flex justify-end">
               <Button type="submit">Next: Destinations</Button>
             </div>

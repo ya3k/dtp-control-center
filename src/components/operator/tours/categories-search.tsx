@@ -66,7 +66,7 @@ const CategorySearch = ({ categories = [], value, onChange, disabled = false }: 
           disabled={disabled}
         >
           <span className="truncate">
-            {selectedCategory ? selectedCategory.name : "Select a category"}
+            {selectedCategory ? selectedCategory.name : "Chọn..."}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -76,7 +76,7 @@ const CategorySearch = ({ categories = [], value, onChange, disabled = false }: 
           <div className="flex items-center border-b px-3">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <CommandInput 
-              placeholder="Search categories..." 
+              placeholder="Tìm kiếm..." 
               className="flex h-9 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
               value={query}
               onValueChange={setQuery}
@@ -84,7 +84,7 @@ const CategorySearch = ({ categories = [], value, onChange, disabled = false }: 
           </div>
           <CommandList>
             <CommandEmpty className="py-6 text-center text-sm">
-              No categories found.
+              Không tìm thấy thể loại.
             </CommandEmpty>
             <CommandGroup>
               {filteredCategories.map((category) => (

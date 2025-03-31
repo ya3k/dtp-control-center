@@ -46,10 +46,9 @@ export const TourSchema = z.object({
   tickets: z.array(TicketSchema),
   openDay: z.string(),
   closeDay: z.string(),
-  duration: z.number(),
   scheduleFrequency: z.string(),
   img: z.string(),
-
+  about: z.string()
 });
 
 export const tourInfoPostSchema = z.object({
@@ -59,9 +58,8 @@ export const tourInfoPostSchema = z.object({
   description: z.string().min(1, "Description is required"),
   openDay: z.string(),
   closeDay: z.string(),
-  duration: z.number(),
   scheduleFrequency: z.string(),
-
+  about: z.string()
 })
 
 export type CreateTourInfoType = z.infer<typeof tourInfoPostSchema>;
@@ -98,32 +96,12 @@ export const tourInfoSchema = z.object({
   img: z.string()
 })
 
-
-export type TourInfoFormType = z.infer<typeof tourInfoSchema>;
-
-export type TourInfoFormBodyType = z.infer<typeof tourInfoSchema>;
+export type PUTTourInfoBodyType = z.infer<typeof tourInfoSchema>;
 
 export const TicketScheduleFormSchema = z.object({
   tickets: z.array(TicketSchema),
 });
 export type TicketScheduleFormData = z.infer<typeof TicketScheduleFormSchema>;
-
-export const TourDestinationsFormSchema = z.object({
-  destinations: z.array(DestinationSchema),
-});
-export type TourDestinationsFormBodyType = z.infer<typeof TourDestinationsFormSchema>;
-
-export const UpdateTicketScheduleRequestSchema = z.object({
-  tourId: z.string(),
-  tickets: z.array(TicketSchema),
-});
-export type UpdateTicketScheduleRequest = z.infer<typeof UpdateTicketScheduleRequestSchema>;
-
-export const UpdateTourDestinationsRequestSchema = z.object({
-  tourId: z.string(),
-  destinations: z.array(DestinationSchema),
-});
-export type UpdateTourDestinationsRequest = z.infer<typeof UpdateTourDestinationsRequestSchema>;
 
 ////////get for update
 export const tourInfoResSchema = z.object({
@@ -133,6 +111,7 @@ export const tourInfoResSchema = z.object({
   description: z.string().min(1, "Description is required"),
   img: z.string()
 })
+export type TourInfoResType = z.infer<typeof tourInfoResSchema>;
 
 export const tourDestinationResSchema = z.object({
   id: z.string(),
@@ -145,7 +124,6 @@ export const tourDestinationResSchema = z.object({
   img: z.string()
 })
 
-export type TourInfoResType = z.infer<typeof tourInfoResSchema>;
 export type TourDestinationResType = z.infer<typeof tourDestinationResSchema>;
 
 export const tourOdataResSchema = z.object({
@@ -160,4 +138,19 @@ export const tourOdataResSchema = z.object({
 });
 export type tourOdataResType = z.infer<typeof tourOdataResSchema>;
 
+export const POSTtourScheduleSchema = z.object({
+  tourId: z.string(),
+  openDay: z.string(),
+  closeDay: z.string(),
+  scheduleFrequency: z.string()
+})
 
+export type POSTTourScheduleBodyType = z.infer<typeof POSTtourScheduleSchema>;
+
+export const DELETEtourScheduleSchema = z.object({
+  tourId: z.string(),
+  startDay: z.string(),
+  endDay: z.string()
+})
+
+export type DELETETourScheduleBodyType = z.infer<typeof DELETEtourScheduleSchema>;
