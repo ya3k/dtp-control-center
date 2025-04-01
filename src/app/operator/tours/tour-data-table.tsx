@@ -119,7 +119,7 @@ export default function OpTourDataTable() {
     setIsEditDialogOpen(true)
   }
   const handleUpdateSuccess = () => {
-    setIsEditDialogOpen(false)
+    // setIsEditDialogOpen(false)
     setSelectedTour(null)
     fetchTours(); // Refresh the data
   }

@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react"
 import { tourOdataResType, TourResType } from "@/schemaValidations/tour-operator.shema"
 import { TourEditInfoForm } from "./edit-tour-info-form"
 import TourEditScheduleForm from "./edit-tour-schedule"
+import TourEditDestination from "./edit-tour-destination"
 
 interface UpdateTourDialogProps {
     tour: tourOdataResType
@@ -36,7 +37,15 @@ export function UpdateTourDialog({ tour: initialTour, open, onOpenChange, onUpda
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[850px]">
+            <DialogContent className="sm:max-w-[850px] sm:max-h-full" onInteractOutside={(e) => {
+                // Prevent interaction outside from closing the dialog
+                e.preventDefault();
+            }}
+                onEscapeKeyDown={(e) => {
+                    // Optionally prevent Escape key from closing the dialog too
+                    e.preventDefault();
+                }}
+            >
                 <DialogHeader>
                     <DialogTitle>Chỉnh sửa thông tin Tour</DialogTitle>
                     <DialogDescription>Chọn thông tin bạn muốn chỉnh sửa</DialogDescription>
@@ -64,6 +73,7 @@ export function UpdateTourDialog({ tour: initialTour, open, onOpenChange, onUpda
 
                         <TabsContent value="destinations" className="space-y-4">
                             {/* Destinations edit form will go here */}
+                            <TourEditDestination tourId={tour.id} onUpdateSuccess={handleUpdateSuccess} />
                         </TabsContent>
 
                         <TabsContent value="schedule" className="space-y-4">

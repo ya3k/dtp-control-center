@@ -4,7 +4,9 @@ import type {
   CreateTourBodyType,
   DELETETourScheduleBodyType,
   POSTTourScheduleBodyType,
+  PUTTourDestinationBodyType,
   PUTTourInfoBodyType,
+  TourDestinationResType,
   TourInfoFormBodyType,
   TourInfoResType,
   tourOdataResType,
@@ -49,9 +51,14 @@ const tourApiService = {
   },
 
   getTourDestination: async (tourId: string) => {
-    const response = await http.get<TourInfoResType>(`${apiEndpoint.tourDestination}/${tourId}`)
+    const response = await http.get<TourDestinationResType>(`${apiEndpoint.tourDestination}/${tourId}`)
     return response
   },
+  putTourDesitnation: async (tourId: string, body: PUTTourDestinationBodyType) => {
+    const response = await http.put(`${apiEndpoint.tourDestination}/${tourId}`, body)
+    return response
+  }
+  ,
   getTourSchedule: async (tourId: string) => {
     const response = await http.get<TourInfoResType>(`${apiEndpoint.tourSchedule}/${tourId}`)
     return response

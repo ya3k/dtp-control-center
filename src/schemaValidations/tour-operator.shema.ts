@@ -113,18 +113,43 @@ export const tourInfoResSchema = z.object({
 })
 export type TourInfoResType = z.infer<typeof tourInfoResSchema>;
 
-export const tourDestinationResSchema = z.object({
-  id: z.string(),
-  destinationId: z.string().uuid(),
-  destinationName: z.string().uuid(),
-  startTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/), // Ensures HH:MM:SS format
-  endTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/), // Ensures HH:MM:SS format
+// Schema cho từng hoạt động trong destinationActivities
+export const destinationActivitySchema = z.object({
+  name: z.string(),
+  startTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/), // Định dạng HH:MM:SS
+  endTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/), // Định dạng HH:MM:SS
   sortOrder: z.number(),
-  sortOrderByDate: z?.number(),
-  img: z.string()
-})
+});
+
+// Schema chính cho tourDestinationRes
+export const tourDestinationResSchema = z.object({
+  id: z.string().uuid(),
+  destinationId: z.string().uuid(),
+  destinationName: z.string(), // Là tên địa điểm, không phải UUID
+  startTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/), // Định dạng HH:MM:SS
+  endTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/), // Định dạng HH:MM:SS
+  sortOrder: z.number(),
+  sortOrderByDate: z.number(),
+  img: z.string().url(), // Kiểm tra URL hợp lệ
+  destinationActivities: z.array(destinationActivitySchema), // Dùng schema đã tách
+});
 
 export type TourDestinationResType = z.infer<typeof tourDestinationResSchema>;
+
+// Schema cho từng điểm đến trong tour
+export const PUTdestinationSchema = z.object({
+  destinationId: z.string().uuid(),
+  destinationActivities: z.array(destinationActivitySchema),
+  startTime: z.string(),
+  endTime: z.string(),
+  sortOrder: z.number(),
+  sortOrderByDate: z.number(),
+  img: z.string(),
+});
+
+export type PUTTourDestinationBodyType = z.infer<typeof PUTdestinationSchema>;
+
+
 
 export const tourOdataResSchema = z.object({
   id: z.string(),
@@ -154,3 +179,4 @@ export const DELETEtourScheduleSchema = z.object({
 })
 
 export type DELETETourScheduleBodyType = z.infer<typeof DELETEtourScheduleSchema>;
+
