@@ -2,9 +2,14 @@ import { apiEndpoint } from "@/configs/routes";
 import http from "@/lib/http";
 import type {
   CreateTourBodyType,
-  TourDestinationsFormBodyType,
+  DELETETourScheduleBodyType,
+  POSTTourScheduleBodyType,
+  PUTTourDestinationBodyType,
+  PUTTourInfoBodyType,
+  tourByCompanyRestType,
+  TourDestinationResType,
   TourInfoFormBodyType,
-  TourInfoFormType,
+  TourInfoResType,
   tourOdataResType,
   TourResType,
 } from "@/schemaValidations/tour-operator.shema";
@@ -33,10 +38,20 @@ const tourApiService = {
       throw error;
     }
   },
+  getTourByCompany: async () => {
+    try {
+      const response = await http.get<tourByCompanyRestType>(apiEndpoint.tourByCompany);
+      return response;
+    } catch (error) {
+      console.error("Failed to fetch tours bycompany:", error);
+      throw error;
+    }
+  }
+  ,
 
   getTourInfo: async (tourId: string) => {
     try {
-      const response = await http.get<TourInfoFormType>(
+      const response = await http.get<TourInfoResType>(
         `${apiEndpoint.tours}/tourinfor/${tourId}`,
       );
       return response;
@@ -44,6 +59,29 @@ const tourApiService = {
       console.error("Failed to fetch tour info:", error);
       throw error;
     }
+  },
+
+  getTourDestination: async (tourId: string) => {
+    const response = await http.get<TourDestinationResType>(`${apiEndpoint.tourDestination}/${tourId}`)
+    return response
+  },
+  putTourDesitnation: async (tourId: string, body: PUTTourDestinationBodyType) => {
+    const response = await http.put(`${apiEndpoint.tourDestination}/${tourId}`, body)
+    return response
+  }
+  ,
+  getTourSchedule: async (tourId: string) => {
+    const response = await http.get<TourInfoResType>(`${apiEndpoint.tourSchedule}/${tourId}`)
+    return response
+  },
+  postTourSchedule: async (tourId: string, body: POSTTourScheduleBodyType) => {
+    const response = await http.post(`${apiEndpoint.postTourSchedule}/${tourId}`, body)
+    return response
+  },
+
+  deleteTourSchedule: async (tourId: string, body: DELETETourScheduleBodyType) => {
+    const response = await http.delete(`${apiEndpoint.delTourSchedule}/${tourId}`, body)
+    return response
   },
 
   create: async (body: CreateTourBodyType) => {
@@ -58,17 +96,8 @@ const tourApiService = {
       throw error;
     }
   },
-  updateTourInfo: async (id: string, body: TourInfoFormBodyType) =>
-    http.put<TourInfoFormBodyType>(`${apiEndpoint.tourInfo}/${id}`, body),
-
-  updateTourDestination: async (
-    id: string,
-    body: TourDestinationsFormBodyType,
-  ) =>
-    http.put<TourDestinationsFormBodyType>(
-      `${apiEndpoint.tourInfo}/${id}`,
-      body,
-    ),
+  updateTourInfo: async (id: string, body: PUTTourInfoBodyType) =>
+    http.put<PUTTourInfoBodyType>(`${apiEndpoint.tourInfo}/${id}`, body),
 
   delete: async (id: string) => {
     try {

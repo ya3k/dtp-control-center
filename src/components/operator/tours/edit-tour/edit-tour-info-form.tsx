@@ -3,17 +3,17 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2 } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
-import { TourInfoFormBodyType, TourInfoFormType, tourInfoSchema } from "@/schemaValidations/tour-operator.shema"
+import { PUTTourInfoBodyType, TourInfoResType, tourInfoSchema } from "@/schemaValidations/tour-operator.shema"
 import categoryApiRequest from "@/apiRequests/category"
 import tourApiService from "@/apiRequests/tour"
+import uploadApiRequest from "@/apiRequests/upload"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import Image from "next/image"
 import CategorySearch from "../categories-search"
@@ -27,9 +27,12 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [categories, setCategories] = useState<{ id: string; name: string }[]>([])
     const [isLoading, setIsLoading] = useState(true)
-    const [tourData, setTourData] = useState<TourInfoFormType | null>(null)
+    const [tourData, setTourData] = useState<TourInfoResType | null>(null)
+    const [previewImage, setPreviewImage] = useState<string | null>(null)
+    const [tourImageFile, setTourImageFile] = useState<File | null>(null)
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
-    const form = useForm<TourInfoFormBodyType>({
+    const form = useForm<PUTTourInfoBodyType>({
         resolver: zodResolver(tourInfoSchema),
         defaultValues: {
             tourId: tourId,
@@ -40,64 +43,86 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
         },
     });
 
-    // Fetch categories and tour data
     useEffect(() => {
-        const fetchData = async () => {
-            setIsLoading(true);
+        const fetchTourInfo = async () => {
             try {
-                // Get categories first
-                const categoryResponse = await categoryApiRequest.get();
-                const categoryData = categoryResponse.payload.value;
-
-                if (!categoryData) throw new Error("Failed to fetch categories");
-                setCategories(categoryData);
-
-                // Then get tour data
-                const tourResponse = await tourApiService.getTourInfo(tourId);
-                const tourDetails = tourResponse.payload.data;
-
-                if (!tourDetails) throw new Error("Failed to fetch tour");
-                setTourData(tourDetails);
-
-                // Set form values after both are loaded
+                setIsLoading(true);
+                const resTourInfo = await tourApiService.getTourInfo(tourId);
+                const editableInfo = resTourInfo.payload.data;
+                setTourData(editableInfo);
+                setPreviewImage(editableInfo.img || null);
+                
                 form.reset({
-                    ...tourDetails,
-                    category: tourDetails.category,
+                    tourId: tourId,
+                    title: editableInfo.title || '',
+                    category: editableInfo.category || '',
+                    description: editableInfo.description || '',
+                    img: editableInfo.img || '',
                 });
-
             } catch (error) {
-                console.error("Error fetching data:", error);
-                toast.error("Failed to load tour information");
+                console.error("Failed to fetch tour info:", error);
+                toast.error("Failed to load tour information.");
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchData();
-    }, [tourId]);
+        fetchTourInfo();
+    }, [tourId, form]);
 
-    // Ensure category updates when categories are available
     useEffect(() => {
-        if (categories.length > 0 && tourData) {
-            // Force a re-render of the form with the updated category
-            form.setValue("category", tourData.category);
+        const fetchCategories = async () => {
+            try {
+                const categoriesData = await categoryApiRequest.get();
+                const transformedCategories = categoriesData.payload.value.map(item => ({
+                    id: item.categoryId || item.id,
+                    name: item.categoryName || item.name
+                }));
+                setCategories(transformedCategories);
+            } catch (error) {
+                console.error("Failed to fetch categories:", error);
+                toast.error("Failed to load categories");
+            }
+        };
 
-            // This line is important to trigger re-render
-            form.trigger("category");
-        }
-    }, [categories, tourData, form]);
-    const onSubmit = async (data: TourInfoFormBodyType) => {
-        setIsSubmitting(true);
+        fetchCategories();
+    }, []);
+
+    const onSubmit = async (values: PUTTourInfoBodyType) => {
         try {
-            const response = await tourApiService.updateTourInfo(tourId, data);
-            if (!response.payload) throw new Error("Failed to update tour information");
+            setIsSubmitting(true);
+            
+            // Create a copy of the values for updating and ensure tourId is included
+            const updatedFormData = { 
+                ...values,
+                tourId: tourId
+            };
 
-            const updatedTour = response.payload.data;
-            onUpdateSuccess();
-            toast.success("Tour information updated successfully");
+            // Handle image upload if a file is selected
+            if (tourImageFile) {
+                try {
+                    const response = await uploadApiRequest.uploadTourImage(tourImageFile);
+                    if (response.urls && response.urls.length > 0) {
+                        updatedFormData.img = response.urls[0];
+                    } else {
+                        throw new Error("No URL returned from tour image upload");
+                    }
+                } catch (error) {
+                    console.error("Error uploading tour image:", error);
+                    toast.error("Failed to upload tour image");
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+
+            // Call API to update tour info with possibly new image URL
+            const response = await tourApiService.updateTourInfo(tourId, updatedFormData);
+            console.log(JSON.stringify(response))
+            toast.success("Cập nhật tour thành công");
+            onUpdateSuccess(); // Notify parent component
         } catch (error) {
-            console.error("Error updating tour info:", error);
-            toast.error("Failed to update tour!");
+            console.error("Failed to update tour:", error);
+            toast.error("Failed to update tour information");
         } finally {
             setIsSubmitting(false);
         }
@@ -106,64 +131,54 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
     return (
         <ScrollArea className="h-[calc(100vh-200px)] pr-4">
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mx-4">
+                    {/* Hidden tourId field */}
+                    <FormField
+                        control={form.control}
+                        name="tourId"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormControl>
+                                    <Input 
+                                        type="hidden" 
+                                        {...field} 
+                                        value={tourId}
+                                    />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                    />
+
                     {/* Title */}
                     <FormField
                         control={form.control}
                         name="title"
                         render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Title</FormLabel>
-                                <FormControl><Input {...field} disabled={isLoading || isSubmitting} /></FormControl>
+                            <FormItem className="mx-2">
+                                <FormLabel>Nội dung</FormLabel>
+                                <FormControl>
+                                    <Input 
+                                        {...field} 
+                                        disabled={isLoading || isSubmitting}
+                                        className="mx-auto" 
+                                    />
+                                </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
 
                     {/* Category */}
-                    {/* <FormField
-                        control={form.control}
-                        name="category"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Category</FormLabel>
-                                <Select
-                                    onValueChange={field.onChange}
-                                    value={field.value || ""}
-                                    disabled={isLoading || isSubmitting}
-                                >
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a category">
-                                                {field.value && categories.length > 0
-                                                    ? (categories.find((cat) => cat.name === field.value)?.name)
-                                                    : "Select a category"}
-                                            </SelectValue>
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {categories.map((category) => (
-                                            <SelectItem key={category.id} value={category.id}>
-                                                {category.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    /> */}
-                    {/* Category */}
                     <FormField
                         control={form.control}
                         name="category"
                         render={({ field }) => (
-                            <FormItem className="space-y-2 animate-slide-up" style={{ animationDelay: "100ms" }}>
-                                <FormLabel className="font-medium">Category</FormLabel>
+                            <FormItem className="space-y-2 animate-slide-up mx-2" style={{ animationDelay: "100ms" }}>
+                                <FormLabel className="font-medium">Loại tour</FormLabel>
                                 <FormControl>
                                     <CategorySearch
-                                        categories={categories}
-                                        value={field.value}
+                                        categories={categories || []}
+                                        value={field.value || ""}
                                         onChange={field.onChange}
                                         disabled={isLoading || isSubmitting}
                                     />
@@ -178,9 +193,15 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                         control={form.control}
                         name="description"
                         render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Description</FormLabel>
-                                <FormControl><Textarea {...field} className="min-h-[100px]" disabled={isLoading || isSubmitting} /></FormControl>
+                            <FormItem className="mx-2">
+                                <FormLabel>Điểm nổi bật</FormLabel>
+                                <FormControl>
+                                    <Textarea 
+                                        {...field} 
+                                        className="min-h-[100px]" 
+                                        disabled={isLoading || isSubmitting} 
+                                    />
+                                </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -191,51 +212,102 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                         control={form.control}
                         name="img"
                         render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Tour Image</FormLabel>
-                                <FormControl>
-                                    <Input type="text" placeholder="Enter image URL" {...field} disabled={isLoading || isSubmitting} />
-                                </FormControl>
-                                <FormMessage />
-                                {field.value && (
-                                    <div className="mt-2">
-                                        <p className="text-sm text-gray-500">Image Preview:</p>
-                                        <div className="relative w-full max-w-[200px] h-[120px] mt-2 overflow-hidden rounded-md border border-gray-200">
+                            <FormItem className="mx-2">
+                                <FormLabel>Ảnh thumbnail</FormLabel>
+                                <div className="space-y-4">
+                                    {/* Image Preview */}
+                                    {(previewImage || field.value) && (
+                                        <div className="relative w-full max-w-[300px] h-[180px] overflow-hidden rounded-md border border-gray-200 mb-4 mx-auto">
                                             <Image
-                                                src={field.value}
-                                                alt="Tour Image"
-                                                className="w-full h-full object-cover"
-                                                width={100}
-                                                height={100}
+                                                src={previewImage || field.value}
+                                                alt="Tour Image Preview"
+                                                fill
+                                                className="object-cover"
                                                 onError={(e) => {
-                                                    (e.target as HTMLImageElement).src = "https://placehold.co/200x120?text=Invalid+Image";
+                                                    (e.target as HTMLImageElement).src = "https://placehold.co/300x180?text=Invalid+Image";
                                                 }}
                                             />
                                         </div>
+                                    )}
+                                    
+                                    {/* File Input for New Image */}
+                                    <div className="flex flex-col space-y-2">
+                                        <FormLabel className="text-sm font-normal">Chọn ảnh mới: </FormLabel>
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                type="file"
+                                                accept="image/*"
+                                                ref={fileInputRef}
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        setTourImageFile(file);
+                                                        setPreviewImage(URL.createObjectURL(file));
+                                                    }
+                                                }}
+                                                className="flex-1"
+                                                disabled={isLoading || isSubmitting}
+                                            />
+                                            {tourImageFile && (
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        setTourImageFile(null);
+                                                        setPreviewImage(field.value);
+                                                        if (fileInputRef.current) {
+                                                            fileInputRef.current.value = '';
+                                                        }
+                                                    }}
+                                                    disabled={isLoading || isSubmitting}
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            )}
+                                        </div>
+                                        
+                                        {/* Hidden input for storing the image URL */}
+                                        <FormControl>
+                                            <Input 
+                                                type="hidden" 
+                                                {...field} 
+                                                disabled={isLoading || isSubmitting}
+                                            />
+                                        </FormControl>
+                                        
+                                        {/* Info text */}
+                                        <p className="text-xs text-muted-foreground">
+                                            {tourImageFile 
+                                                ? "Ảnh mới sẽ được lưu khi bạn nhấn nút cập nhật." 
+                                                : "Giữ ảnh cũ hoặc chọn một ảnh mới."}
+                                        </p>
                                     </div>
-                                )}
+                                </div>
+                                <FormMessage />
                             </FormItem>
                         )}
                     />
 
                     {/* Submit Button */}
-                    <Button type="submit" disabled={isLoading || isSubmitting} className="w-full">
-                        {isSubmitting ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Updating...
-                            </>
-                        ) : isLoading ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Loading...
-                            </>
-                        ) : (
-                            "Update Tour Information"
-                        )}
-                    </Button>
+                    <div className="mx-2 pt-2">
+                        <Button 
+                            type="submit" 
+                            disabled={isLoading || isSubmitting} 
+                            className="w-full"
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Cập nhật...
+                                </>
+                            ) : (
+                                "Cập nhật thông tin tour."
+                            )}
+                        </Button>
+                    </div>
                 </form>
             </Form>
         </ScrollArea>
-    );
-};
+    )
+}

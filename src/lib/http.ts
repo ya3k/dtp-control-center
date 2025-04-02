@@ -17,17 +17,17 @@ export interface ApiResponse<T = unknown> {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export class HttpError extends Error {
   status: number;
-  payload: ApiResponse | { message: string; [key: string]: any };
-  
+  payload: ApiResponse | { message: string;[key: string]: any };
+
   constructor({ status, payload }: { status: number; payload: any }) {
     // Create a more descriptive error message based on the API response format
     let message = `HTTP Error: ${status}`;
-    
+
     if (typeof payload === 'object') {
       if (payload?.message) {
         message = payload.message;
       }
-      
+
       // Check for the specific error format and use the first error if available
       if (Array.isArray(payload?.error) && payload.error.length > 0) {
         message = payload.error[0];
@@ -39,7 +39,7 @@ export class HttpError extends Error {
     this.status = status;
     this.payload = payload;
   }
-  
+
   // Helper method to get all error messages
   get errorMessages(): string[] {
     if (typeof this.payload === 'object' && Array.isArray(this.payload?.error)) {
@@ -52,7 +52,7 @@ export class HttpError extends Error {
 export class EntityError extends HttpError {
   status: 400;
   payload: ApiResponse;
-  
+
   constructor({ status, payload }: { status: 400; payload: ApiResponse }) {
     super({ status: 400, payload });
     this.status = status;
@@ -164,7 +164,7 @@ const request = async <Response>(
       body,
       method,
     });
-    
+
     const contentType = response.headers.get("content-type");
     let payload: Response | ApiResponse | any;
 
@@ -173,18 +173,18 @@ const request = async <Response>(
         payload = await response.json();
       } catch (error) {
         console.error("Failed to parse JSON response:", error);
-        payload = { 
+        payload = {
           success: false,
-          message: "Invalid response format", 
-          data: null 
+          message: "Invalid response format",
+          data: null
         };
       }
     } else {
       const text = await response.text();
-      payload = { 
+      payload = {
         success: false,
-        message: text || "No content", 
-        data: null 
+        message: text || "No content",
+        data: null
       };
     }
 
@@ -195,20 +195,20 @@ const request = async <Response>(
           // Show error toast if enabled
           if (options?.showErrorToast !== false) {
             // Use the first error message, or fallback to the general message, or a default
-            const errorMsg = Array.isArray(payload.error) && payload.error.length > 0 
-              ? payload.error[0] 
+            const errorMsg = Array.isArray(payload.error) && payload.error.length > 0
+              ? payload.error[0]
               : (payload.message || options?.errorMessage || "An error occurred");
-            
+
             toast.error(errorMsg);
           }
-          
+
           if (response.status === 400) {
             throw new EntityError({
               status: 400,
               payload: payload as ApiResponse,
             });
           }
-          
+
           throw new HttpError({
             status: response.status,
             payload,
@@ -216,7 +216,7 @@ const request = async <Response>(
         }
       }
     }
-    
+
     if (!response.ok) {
       if (response.status === 400) {
         throw new EntityError({
@@ -252,7 +252,7 @@ const request = async <Response>(
         if (options?.showErrorToast !== false) {
           toast.error(options?.errorMessage || payload?.message || `Error: ${response.status}`);
         }
-        
+
         throw new HttpError({
           status: response.status,
           payload,
@@ -279,21 +279,21 @@ const request = async <Response>(
         refreshToken.value = "";
       }
     }
-    
+
     return data;
   } catch (error) {
     if (error instanceof HttpError) {
       throw error;
     }
-    
+
     // Handle unexpected errors
     if (options?.showErrorToast !== false) {
       toast.error(options?.errorMessage || "Network or server error occurred");
     }
-    
+
     throw new HttpError({
       status: 0,
-      payload: { 
+      payload: {
         success: false,
         message: (error as Error).message || "Unknown error occurred",
         data: null
@@ -358,9 +358,10 @@ const http = {
    */
   delete: <Response>(
     url: string,
+    body?: any,
     options?: Omit<CustomOptionsType, "body"> | undefined,
   ) => {
-    return request<Response>("DELETE", url, options);
+    return request<Response>("DELETE", url, { ...options, body });
   },
 };
 
