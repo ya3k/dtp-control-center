@@ -10,7 +10,10 @@ export enum Role {
 export const userSchema = z.object({
     id: z.string(),
     userName: z.string(),
+    name: z.string(),
     email: z.string(),
+    phoneNumber: z.string(),
+    address: z.string(),
     companyName: z.string(),
     roleName: z.string(),
     isActive: z.boolean(),
@@ -37,7 +40,7 @@ export const putUserSchema = z.object({
     email: z.string(),
     phoneNumber: z.string(),
     address: z.string(),
-    roleName: z.string(),    
+    roleName: z.string(),
 });
 
 export type PutUserBodyType = z.infer<typeof putUserSchema>;

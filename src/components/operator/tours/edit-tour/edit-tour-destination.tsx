@@ -3,10 +3,9 @@
 import tourApiService, { tourApiRequest } from "@/apiRequests/tour";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TourDestinationResType } from "@/schemaValidations/tour-operator.shema";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import EditTourDestinationList from "./destination/edit-tour-destination-list";
-import EditTourDestinationDialog from "./destination/edit-tour-destination-dialog";
 import { Button } from "@/components/ui/button";
 
 
@@ -89,13 +88,13 @@ const TourEditPage = ({ tourId, onUpdateSuccess }: TourEditDestinationProps) => 
                 )}
             </ScrollArea>
             
-            <EditTourDestinationDialog
+            {/* <EditTourDestinationDialog
                 isOpen={isDialogOpen}
                 onClose={() => setIsDialogOpen(false)}
                 onSave={handleSave}
                 destination={editingDestination}
                 tourId={tourId}
-            />
+            /> */}
         </div>
     )
 };

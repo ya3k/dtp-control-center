@@ -23,6 +23,14 @@ interface TourInfoFormProps {
     onUpdateSuccess: () => void;
 }
 
+// Define the type for a category item
+interface Category {
+    categoryId?: string;
+    id?: string;
+    categoryName?: string;
+    name?: string;
+}
+
 export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [categories, setCategories] = useState<{ id: string; name: string }[]>([])
@@ -74,9 +82,9 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
         const fetchCategories = async () => {
             try {
                 const categoriesData = await categoryApiRequest.get();
-                const transformedCategories = categoriesData.payload.value.map(item => ({
+                const transformedCategories = categoriesData.payload.value.map((item: Category) => ({
                     id: item.categoryId || item.id,
-                    name: item.categoryName || item.name
+                    name: item.categoryName || item.name,
                 }));
                 setCategories(transformedCategories);
             } catch (error) {

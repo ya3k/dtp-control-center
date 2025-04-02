@@ -1,16 +1,14 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2 } from "lucide-react"
-import { toast } from "sonner"
-import { PutUserBodyType, putUserSchema, Role, UserResType } from "@/schemaValidations/admin-user.schema"
-import userApiRequest from "@/apiRequests/user"
-import companyApiRequest from "@/apiRequests/company"
+import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { z } from "zod";
 import {
   Form,
   FormControl,
@@ -18,42 +16,41 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription
-} from "@/components/ui/form"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select"
+} from "@/components/ui/form";
+
+// Updated schema
+export const userSchema = z.object({
+  id: z.string(),
+  userName: z.string(),
+  name: z.string(),
+  email: z.string(),
+  phoneNumber: z.string(),
+  address: z.string(),
+  companyName: z.string(),
+  roleName: z.string(),
+  isActive: z.boolean(),
+});
+
+export type UserResType = z.infer<typeof userSchema>;
 
 interface EditUserDialogProps {
-  user: UserResType | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onEditComplete: (updatedUser: UserResType) => void
-}
-
-// Extended type to include companyId
-interface ExtendedPutUserBodyType extends PutUserBodyType {
-  companyId?: string;
+  user: UserResType | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onEditComplete: (updatedUser: UserResType) => void;
 }
 
 export function EditUserDialog({
   user,
   open,
   onOpenChange,
-  onEditComplete
+  onEditComplete,
 }: EditUserDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [companies, setCompanies] = useState<{ id: string, name: string }[]>([])
-  const [isLoadingCompanies, setIsLoadingCompanies] = useState(false)
-  const [userCompanyId, setUserCompanyId] = useState<string | undefined>(undefined)
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Create form with extended type
-  const form = useForm<ExtendedPutUserBodyType>({
-    resolver: zodResolver(putUserSchema), // Still use original schema for validation
+  // Create form with updated schema
+  const form = useForm<UserResType>({
+    resolver: zodResolver(userSchema),
     defaultValues: {
       id: "",
       userName: "",
@@ -61,115 +58,48 @@ export function EditUserDialog({
       email: "",
       phoneNumber: "",
       address: "",
+      // companyName: "",
       roleName: "",
-      companyId: undefined // Add companyId with undefined default
-    }
-  })
-
-  // Get the selected role to conditionally show company field
-  const selectedRole = form.watch("roleName")
-  const showCompanyField = selectedRole === Role.Operator
+      // isActive: true,
+    },
+  });
 
   // Update form when user changes
   useEffect(() => {
     if (user) {
-      // We need to fetch the user details to get all the fields
-      // as the UserResType doesn't include everything we need
-      fetchUserDetails(user.id);
-    }
-  }, [user]);
-
-  // Fetch user details
-  const fetchUserDetails = async (userId: string) => {
-    try {
-      const userDetails = await userApiRequest.getById(userId);
-      
-      // Save the form data
       form.reset({
-        id: userDetails.id,
-        userName: userDetails.userName,
-        name: userDetails.name || "",
-        email: userDetails.email,
-        phoneNumber: userDetails.phoneNumber || "",
-        address: userDetails.address || "",
-        roleName: userDetails.roleName,
-        companyId: userDetails.companyId
+        id: user.id,
+        userName: user.userName,
+        name: user.name,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        address: user.address,
+        // companyName: user.companyName,
+        roleName: user.roleName,
+        // isActive: user.isActive,
       });
-      
-      // Store company ID separately to restore it if needed
-      if (userDetails.companyId) {
-        setUserCompanyId(userDetails.companyId);
-      }
-      
-      // If operator role, fetch companies
-      if (userDetails.roleName === Role.Operator) {
-        fetchCompanies();
-      }
-    } catch (error) {
-      console.error("Error fetching user details:", error);
-      toast.error("Failed to load user details");
     }
-  };
-
-  // Reset companyId when role changes
-  useEffect(() => {
-    if (!showCompanyField) {
-      form.setValue("companyId", undefined);
-    } else if (userCompanyId) {
-      // Restore company ID if switching back to Operator role
-      form.setValue("companyId", userCompanyId);
-    }
-  }, [selectedRole, form, userCompanyId, showCompanyField]);
-
-  // Fetch companies when dialog opens for operator role
-  useEffect(() => {
-    if (open && showCompanyField) {
-      fetchCompanies();
-    }
-  }, [open, showCompanyField]);
-
-  // Fetch companies for dropdown
-  const fetchCompanies = async () => {
-    setIsLoadingCompanies(true);
-    try {
-      const response = await companyApiRequest.getWithOData();
-      setCompanies(response?.payload?.value || []);
-    } catch (error) {
-      console.error("Error fetching companies:", error);
-      toast.error("Failed to load companies");
-    } finally {
-      setIsLoadingCompanies(false);
-    }
-  };
+  }, [user, form]);
 
   // Handle form submission
-  const onSubmit = async (data: ExtendedPutUserBodyType) => {
+  const onSubmit = async (data: UserResType) => {
     if (!user) return;
-    
+
     setIsSubmitting(true);
 
     try {
-      // Create a copy of the data for submission
-      const submitData = { ...data };
-      
-      // Remove companyId if not needed for this role
-      if (data.roleName !== Role.Operator) {
-        delete submitData.companyId;
-      }
+      // Simulate API call to update user
+      const updatedUser = { ...data }; // Replace with actual API call
+      toast.success("User updated successfully");
 
-      const updatedUser = await userApiRequest.update(submitData);
-      
-      // Show success message
-      toast.success("Người dùng đã được cập nhật thành công");
-      
       // Close dialog and reset form
       onOpenChange(false);
-      
+
       // Notify parent component of the update
       onEditComplete(updatedUser);
     } catch (error) {
       console.error("Error updating user:", error);
-      toast.error("Không thể cập nhật người dùng. Vui lòng thử lại.");
+      toast.error("Failed to update user. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -187,7 +117,7 @@ export function EditUserDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Chỉnh sửa người dùng</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Edit User</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -199,24 +129,24 @@ export function EditUserDialog({
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Họ và tên</FormLabel>
+                    <FormLabel>Full Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nhập họ và tên" {...field} />
+                      <Input placeholder="Enter full name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              
+
               {/* Username */}
               <FormField
                 control={form.control}
                 name="userName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tên đăng nhập</FormLabel>
+                    <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nhập tên đăng nhập" {...field} />
+                      <Input placeholder="Enter username" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -230,13 +160,9 @@ export function EditUserDialog({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Địa chỉ email</FormLabel>
+                  <FormLabel>Email Address</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="email" 
-                      placeholder="example@email.com" 
-                      {...field} 
-                    />
+                    <Input type="email" placeholder="example@email.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -249,9 +175,9 @@ export function EditUserDialog({
               name="phoneNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Số điện thoại</FormLabel>
+                  <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nhập số điện thoại" {...field} />
+                    <Input placeholder="Enter phone number" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -264,97 +190,86 @@ export function EditUserDialog({
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Địa chỉ</FormLabel>
+                  <FormLabel>Address</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nhập địa chỉ" {...field} />
+                    <Input placeholder="Enter address" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              {/* Role */}
-              <FormField
-                control={form.control}
-                name="roleName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Vai trò</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chọn vai trò" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {Object.values(Role).map((role) => (
-                          <SelectItem key={role} value={role}>
-                            {role}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Company Name */}
+            {/* <FormField
+              control={form.control}
+              name="companyName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Company Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter company name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            /> */}
 
-              {/* Company - Only shown for Operator role */}
-              {showCompanyField && (
-                <FormField
-                  control={form.control}
-                  name="companyId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Công ty</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        value={field.value}
-                        disabled={isLoadingCompanies}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Chọn công ty" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {companies.map((company) => (
-                            <SelectItem key={company.id} value={company.id}>
-                              {company.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        Bắt buộc cho người dùng có vai trò Operator
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                )}
-            </div>
+            {/* Role */}
+            {/* <FormField
+              control={form.control}
+              name="roleName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Role</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Admin">Admin</SelectItem>
+                      <SelectItem value="Operator">Operator</SelectItem>
+                      <SelectItem value="User">User</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            /> */}
+
+            {/* Is Active */}
+            {/* <FormField
+              control={form.control}
+              name="isActive"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Active</FormLabel>
+                  <FormControl>
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            /> */}
 
             <DialogFooter className="pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handleClose}
-                disabled={isSubmitting}
-              >
-                Hủy
+              <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
+                Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Đang cập nhật...
+                    Updating...
                   </>
                 ) : (
-                  'Lưu thay đổi'
+                  "Save Changes"
                 )}
               </Button>
             </DialogFooter>

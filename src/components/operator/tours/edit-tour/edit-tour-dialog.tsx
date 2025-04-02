@@ -33,7 +33,7 @@ export function UpdateTourDialog({ tour: initialTour, open, onOpenChange, onUpda
 
     const handleUpdateSuccess = () => {
         // Update local tour state if needed
-        onUpdateSuccess(tour as TourResType)
+        // onUpdateSuccess(tour as TourResType)
     }
 
     return (

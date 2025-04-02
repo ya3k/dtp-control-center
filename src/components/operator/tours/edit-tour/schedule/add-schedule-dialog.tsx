@@ -125,41 +125,45 @@ export default function AddScheduleDialog({
         }
     }
 
-    // Lấy lịch trình hiện có để ngăn chặn trùng lặp
+
+    // Fetch existing schedules
     useEffect(() => {
         const fetchExistingSchedules = async () => {
             try {
-                const response = await tourApiService.getTourSchedule(tourId)
+                const response = await tourApiService.getTourSchedule(tourId);
+
                 if (response.payload && Array.isArray(response.payload.data)) {
-                    // Chuyển đổi chuỗi lịch trình hiện có thành đối tượng Date
-                    const dates = response.payload.data.map(dateStr => {
-                        try {
-                            // Xử lý các định dạng ngày khác nhau
-                            if (dateStr.includes('.') || dateStr.includes(' ')) {
-                                // Ngày có microseconds hoặc định dạng có khoảng trắng
-                                const datePart = dateStr.split(' ')[0];
-                                return parseISO(datePart);
-                            } else if (dateStr.includes('T')) {
-                                // Định dạng ISO có thời gian
-                                return parseISO(dateStr);
-                            } else if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                                // Định dạng YYYY-MM-DD đơn giản
-                                return parseISO(dateStr);
-                            } else {
-                                // Dự phòng
-                                return new Date(dateStr);
+                    // Explicitly type the items in response.payload.data
+                    const dates = response.payload.data
+                        .map((dateStr: string) => {
+                            try {
+                                // Handle different date formats
+                                if (dateStr.includes('.') || dateStr.includes(' ')) {
+                                    // Date with microseconds or space-separated format
+                                    const datePart = dateStr.split(' ')[0];
+                                    return parseISO(datePart);
+                                } else if (dateStr.includes('T')) {
+                                    // ISO format with time
+                                    return parseISO(dateStr);
+                                } else if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                                    // Simple YYYY-MM-DD format
+                                    return parseISO(dateStr);
+                                } else {
+                                    // Fallback
+                                    return new Date(dateStr);
+                                }
+                            } catch (error) {
+                                console.error("Error parsing date:", error);
+                                return null;
                             }
-                        } catch (error) {
-                            console.error("Lỗi phân tích ngày:", error);
-                            return null;
-                        }
-                    }).filter(date => date !== null) as Date[];
-                    
+                        })
+                        .filter((date: Date | null): date is Date => date !== null); // Explicitly type the filter
+
                     setExistingDates(dates);
                 }
             } catch (error) {
-                console.error("Không thể lấy lịch trình hiện có:", error);
-                toast.error("Không thể tải lịch trình hiện có");
+                console.error("Failed to fetch existing schedules:", error);
+                toast.error("Failed to load existing schedules.");
             }
         };
 
@@ -408,7 +412,6 @@ export default function AddScheduleDialog({
                                     <FormDescription>
                                         Tần suất tour sẽ hoạt động trong khoảng thời gian này.
                                     </FormDescription>
-                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
