@@ -20,6 +20,7 @@ import type { CategoryType } from "@/schemaValidations/category.schema"
 import CategorySearch from "../categories-search"
 import { toast } from "sonner"
 import { TiptapEditor } from "@/components/common/tiptap-editor"
+import Image from "next/image"
 
 // Define the Frequency enum for display
 enum Frequency {
@@ -104,9 +105,9 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tour Title</FormLabel>
+                  <FormLabel>Tiêu đề</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter tour title" {...field} />
+                    <Input placeholder="Nhập tiêu đề..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -119,38 +120,43 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
               name="img"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tour Thumbnail Image</FormLabel>
+                  <FormLabel>Ảnh Thumnail cho Tour</FormLabel>
                   <FormControl>
-                    <div className="space-y-2">
+                    <div className="flex items-start gap-4">
+                      {/* Left: Image Preview */}
                       {previewImage && (
-                        <div className="relative w-full h-40 overflow-hidden rounded-md">
-                          <img
+                        <div className="relative w-2/5 h-40 overflow-hidden rounded-md">
+                          <Image
+                            width={500}
+                            height={500}
                             src={previewImage || "/placeholder.svg"}
                             alt="Tour thumbnail preview"
                             className="object-cover w-full h-full"
                           />
                         </div>
                       )}
-                      <div className="flex items-center gap-2">
+
+                      {/* Right: Input Field */}
+                      <div className="flex-1 space-y-2">
                         <Input
                           type="file"
                           accept="image/*"
                           ref={fileInputRef}
                           onChange={(e) => {
-                            const file = e.target.files?.[0]
+                            const file = e.target.files?.[0];
                             if (file) {
                               // Store the file for later upload
-                              setTourImageFile(file)
+                              setTourImageFile(file);
 
                               // Create a preview URL
-                              const previewUrl = URL.createObjectURL(file)
-                              setPreviewImage(previewUrl)
+                              const previewUrl = URL.createObjectURL(file);
+                              setPreviewImage(previewUrl);
 
                               // Clear any existing URL input
-                              field.onChange("")
+                              field.onChange("");
                             }
                           }}
-                          className="flex-1"
+                          className="w-full"
                         />
                         {previewImage && (
                           <Button
@@ -158,63 +164,20 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
                             variant="outline"
                             size="sm"
                             onClick={() => {
-                              setPreviewImage(null)
-                              setTourImageFile(null)
-                              field.onChange("")
+                              setPreviewImage(null);
+                              setTourImageFile(null);
+                              field.onChange("");
 
                               // Reset the file input
                               if (fileInputRef.current) {
-                                fileInputRef.current.value = ""
+                                fileInputRef.current.value = "";
                               }
                             }}
                           >
-                            Clear
+                            Xóa ảnh
                           </Button>
                         )}
                       </div>
-
-                      {/* <div className="flex items-center gap-2">
-                        <Input
-                          placeholder="Or enter image URL directly"
-                          value={field.value}
-                          onChange={(e) => {
-                            field.onChange(e.target.value)
-                            if (e.target.value) {
-                              setPreviewImage(e.target.value)
-                              setTourImageFile(null)
-                              setHasLocalFile(false) // Reset file selection state
-
-                              // Clear the file input
-                              if (fileInputRef.current) {
-                                fileInputRef.current.value = ""
-                              }
-                            } else {
-                              setPreviewImage(null)
-                            }
-                          }}
-                          disabled={hasLocalFile} // Disable when a local file is selected
-                          className={hasLocalFile ? "opacity-50 cursor-not-allowed" : ""}
-                        />
-                        {field.value && !hasLocalFile && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setPreviewImage(null)
-                              field.onChange("")
-                            }}
-                          >
-                            Clear URL
-                          </Button>
-                        )}
-                      </div>
-
-                      {hasLocalFile && (
-                        <p className="text-sm text-muted-foreground">
-                          URL input is disabled while using a local file. Clear the file selection to use a URL.
-                        </p>
-                      )} */}
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -228,7 +191,7 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
               name="categoryid"
               render={({ field }) => (
                 <FormItem className="space-y-2 animate-slide-up" style={{ animationDelay: "100ms" }}>
-                  <FormLabel className="font-medium">Category</FormLabel>
+                  <FormLabel className="font-medium">Loại Tour</FormLabel>
                   <FormControl>
                     <CategorySearch categories={categories} value={field.value} onChange={field.onChange} />
                   </FormControl>
@@ -243,7 +206,7 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
               name="scheduleFrequency"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Frequency</FormLabel>
+                  <FormLabel>Chu kỳ Tour</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -271,7 +234,7 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
               name="openDay"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Open Day</FormLabel>
+                  <FormLabel>Ngày mở Tour</FormLabel>
                   <FormControl>
                     <Input type="datetime-local" {...field} />
                   </FormControl>
@@ -286,7 +249,7 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
               name="closeDay"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Close Day</FormLabel>
+                  <FormLabel>Ngày đóng Tour</FormLabel>
                   <FormControl>
                     <Input type="datetime-local" {...field} />
                   </FormControl>

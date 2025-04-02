@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Plus, Trash2, PlusCircle, Upload } from "lucide-react"
+import { Plus, Trash2, PlusCircle, Upload, Pencil } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -93,21 +93,21 @@ const ActivityForm = ({
 
   return (
     <div className="space-y-4 mt-4 p-4 border rounded-md">
-      <h4 className="font-medium">Destination Activities</h4>
+      <h4 className="font-medium">Hoạt động</h4>
 
       <div className="space-y-3">
         <div>
-          <label className="text-sm font-medium">Activity Name</label>
+          <label className="text-sm font-medium">Tên hoạt động</label>
           <Input
             value={activityName}
             onChange={(e) => setActivityName(e.target.value)}
-            placeholder="Enter activity name"
+            placeholder="Nhập tên hoạt động"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-sm font-medium">Start Time</label>
+            <label className="text-sm font-medium">Thời gian bắt đầu</label>
             <Input
               type="time"
               step="1"
@@ -117,7 +117,7 @@ const ActivityForm = ({
           </div>
 
           <div>
-            <label className="text-sm font-medium">End Time</label>
+            <label className="text-sm font-medium">Thời gian kết thúc</label>
             <Input
               type="time"
               step="1"
@@ -129,13 +129,13 @@ const ActivityForm = ({
 
         <Button type="button" variant="outline" size="sm" className="w-full" onClick={addActivity}>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Add Activity
+          Thêm hoạt động
         </Button>
       </div>
 
       {activities.length > 0 && (
         <div className="space-y-2 mt-2">
-          <h5 className="text-sm font-medium">Added Activities</h5>
+          <h5 className="text-sm font-medium">Hoạt động đã thêm</h5>
           {activities.map((activity, index) => (
             <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-md">
               <div>
@@ -207,7 +207,7 @@ export function DestinationForm({
     const destinationsForDate = (data.destinations || []).filter(
       dest => dest.sortOrderByDate === sortOrderByDate
     );
-    
+
     // Return the next available sortOrder (0 if none exist yet)
     return destinationsForDate.length;
   };
@@ -269,12 +269,12 @@ export function DestinationForm({
 
   const setActivities = (destinationIndex: number, activities: z.infer<typeof destinationActivities>[]) => {
     console.log("Setting activities for destination", destinationIndex, activities);
-    
+
     // Update the activities map
     const newMap = new Map(destinationActivitiesMap);
     newMap.set(destinationIndex, activities);
     setDestinationActivitiesMap(newMap);
-  
+
     // If this is for an existing destination, update it in the data
     if (destinationIndex >= 0 && destinationIndex < (data.destinations?.length || 0)) {
       const updatedDestinations = [...(data.destinations || [])];
@@ -297,10 +297,10 @@ export function DestinationForm({
 
   const editDestination = (index: number) => {
     console.log("Editing destination at index:", index);
-    
+
     if (index >= 0 && index < destinationsWithFiles.length) {
       const destination = destinationsWithFiles[index];
-      
+
       // Set form values to edit
       form.reset({
         destinationId: destination.destinationId,
@@ -310,24 +310,24 @@ export function DestinationForm({
         sortOrderByDate: destination.sortOrderByDate,
         img: destination.img || "",
       });
-      
+
       // Set editing state
       setEditingIndex(index);
-      
+
       // Set preview image if exists
       if (destination.imagePreview || destination.img) {
         setImagePreview(destination.imagePreview || destination.img || null);
       }
-      
+
       // Set selected file if exists
       if (destination.imageFile) {
         setSelectedImageFile(destination.imageFile);
         form.setValue("imageFile", destination.imageFile);
       }
-      
+
       console.log("Editing destination:", destination);
       console.log("Activities for this destination:", destinationActivitiesMap.get(index));
-      
+
       // Scroll to the form
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -338,7 +338,7 @@ export function DestinationForm({
 
   const addDestination = (values: TourCreateDestinationType & { imageFile?: File }) => {
     const imageFile = selectedImageFile || values.imageFile;
-  
+
     // Different validation logic for new vs. editing
     if (editingIndex === null && !imageFile && !values.img) {
       // Only require image for new destinations
@@ -348,7 +348,7 @@ export function DestinationForm({
       });
       return;
     }
-  
+
     // For editing, use existing image if no new one is provided
     let imageUrl = values.img || "";
     if (imageFile) {
@@ -357,20 +357,20 @@ export function DestinationForm({
       // When editing, keep the existing image if no new one is provided
       imageUrl = destinationsWithFiles[editingIndex].img || "";
     }
-  
+
     // Ensure sortOrder is appropriate for the sortOrderByDate
     const sortOrderByDate = values.sortOrderByDate;
     const sortOrder = values.sortOrder;
-    
+
     // Get the existing activities for this destination
     let existingActivities: z.infer<typeof destinationActivities>[] = [];
-    
+
     if (editingIndex !== null) {
       // When editing, preserve activities from the activities map
       existingActivities = destinationActivitiesMap.get(editingIndex) || [];
       console.log("Preserving activities for destination", editingIndex, existingActivities);
     }
-  
+
     // Create the destination data object
     const destinationData: TourCreateDestinationType = {
       destinationId: values.destinationId,
@@ -381,20 +381,20 @@ export function DestinationForm({
       img: imageUrl,
       destinationActivities: existingActivities,
     };
-  
+
     const destinationWithFile: DestinationWithFile = {
       ...destinationData,
       imageFile: imageFile,
       imagePreview: imageUrl,
     };
-  
+
     // If we're editing an existing destination
     if (editingIndex !== null) {
       // Update destinationsWithFiles array
       const updatedDestinationsWithFiles = [...destinationsWithFiles];
       updatedDestinationsWithFiles[editingIndex] = destinationWithFile;
       setDestinationsWithFiles(updatedDestinationsWithFiles);
-      
+
       // Update the main destinations data
       const updatedDestinations = [...(data.destinations || [])];
       updatedDestinations[editingIndex] = {
@@ -402,15 +402,15 @@ export function DestinationForm({
         // Make sure activities are explicitly preserved here
         destinationActivities: existingActivities,
       };
-      
+
       // Update parent data
       updateData({ destinations: updatedDestinations });
-      
+
       // If the image file changed, update it in parent
       if (imageFile) {
         addDestinationImageFile(editingIndex, imageFile);
       }
-      
+
       console.log("Updated destination at index", editingIndex, updatedDestinations[editingIndex]);
       toast.success("Destination updated successfully");
       setEditingIndex(null);
@@ -420,21 +420,21 @@ export function DestinationForm({
       setDestinationsWithFiles([...destinationsWithFiles, destinationWithFile]);
       const updatedDestinations = [...(data.destinations || []), destinationData];
       updateData({ destinations: updatedDestinations });
-  
+
       // Initialize empty activities for this destination
       const newActivitiesMap = new Map(destinationActivitiesMap);
       newActivitiesMap.set(updatedDestinations.length - 1, []);
       setDestinationActivitiesMap(newActivitiesMap);
-      
+
       // If we have an image file, add it
       if (imageFile) {
         const destinationIndex = updatedDestinations.length - 1;
         addDestinationImageFile(destinationIndex, imageFile);
       }
-      
+
       toast.success("Destination added successfully");
     }
-  
+
     // Reset form with appropriate default values
     form.reset({
       destinationId: "",
@@ -445,7 +445,7 @@ export function DestinationForm({
       img: "",
       destinationActivities: [],
     });
-  
+
     // Clear image state
     setImagePreview(null);
     setSelectedImageFile(null);
@@ -531,8 +531,8 @@ export function DestinationForm({
     <div className="space-y-6">
       {/* Title */}
       <div>
-        <h2 className="text-2xl font-bold">Destinations</h2>
-        <p className="text-muted-foreground">Add destinations for your tour and organize their activities.</p>
+        <h2 className="text-2xl font-bold">Điểm đến</h2>
+        <p className="text-muted-foreground">Thêm điểm đến cho tour và các hoạt động của bạn.</p>
       </div>
 
       {/* Two-column layout */}
@@ -540,7 +540,7 @@ export function DestinationForm({
         {/* Left column - Add Destination Form */}
         <Card className="md:sticky md:top-4 h-fit">
           <CardHeader>
-            <CardTitle>{editingIndex !== null ? 'Edit Destination' : 'Add Destination'}</CardTitle>
+            <CardTitle>{editingIndex !== null ? 'Chỉn sửa điểm đến' : 'Thêm điểm đến'}</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -551,13 +551,13 @@ export function DestinationForm({
                   name="destinationId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Destination</FormLabel>
+                      <FormLabel>Điểm đến</FormLabel>
                       <FormControl>
                         <select
                           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                           {...field}
                         >
-                          <option value="">Select a destination</option>
+                          <option value="">Chọn địa điểm</option>
                           {destinations.map((destination) => (
                             <option key={destination.id} value={destination.id}>
                               {destination.name}
@@ -577,7 +577,7 @@ export function DestinationForm({
                     name="startTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Start Time</FormLabel>
+                        <FormLabel>Thời gian đến</FormLabel>
                         <FormControl>
                           <Input
                             type="time"
@@ -596,7 +596,7 @@ export function DestinationForm({
                     name="endTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>End Time</FormLabel>
+                        <FormLabel>Thời gian rời đi</FormLabel>
                         <FormControl>
                           <Input
                             type="time"
@@ -618,7 +618,7 @@ export function DestinationForm({
                     name="sortOrderByDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Day Number</FormLabel>
+                        <FormLabel>Ngày</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -627,7 +627,7 @@ export function DestinationForm({
                             onChange={(e) => {
                               const newSortOrderByDate = Number.parseInt(e.target.value);
                               field.onChange(newSortOrderByDate);
-                              
+
                               // Automatically update sortOrder when sortOrderByDate changes
                               const nextSortOrder = getNextSortOrderForDate(newSortOrderByDate);
                               form.setValue("sortOrder", nextSortOrder);
@@ -635,7 +635,7 @@ export function DestinationForm({
                           />
                         </FormControl>
                         <p className="text-xs text-muted-foreground">
-                          Destinations will be grouped by this day number
+                          Điểm đến sẽ hiển thị theo lịch trình.
                         </p>
                         <FormMessage />
                       </FormItem>
@@ -647,7 +647,7 @@ export function DestinationForm({
                     name="sortOrder"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Position Within Day</FormLabel>
+                        <FormLabel>Thứ tự điểm đến</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -657,7 +657,7 @@ export function DestinationForm({
                           />
                         </FormControl>
                         <p className="text-xs text-muted-foreground">
-                          Order of this destination within the selected day
+                          Thứ tự của điểm đến.
                         </p>
                         <FormMessage />
                       </FormItem>
@@ -671,7 +671,7 @@ export function DestinationForm({
                   name="img"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Destination Image</FormLabel>
+                      <FormLabel>Ảnh điểm đến</FormLabel>
                       <FormControl>
                         <div className="space-y-2">
                           {/* Preview area */}
@@ -706,12 +706,12 @@ export function DestinationForm({
                                   size="sm"
                                   onClick={() => clearImage(field)}
                                 >
-                                  Clear
+                                  Xóa ảnh
                                 </Button>
                               )}
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              Please select an image for this destination
+                              Hãy chọn ảnh cho điểm đến.
                             </div>
                           </div>
                         </div>
@@ -726,24 +726,24 @@ export function DestinationForm({
                   <Button type="submit" className="w-full">
                     {editingIndex !== null ? (
                       <>
-                        Save Changes
+                        Lưu chỉnh sửa
                       </>
                     ) : (
                       <>
                         <Plus className="mr-2 h-4 w-4" />
-                        Add Destination
+                        Thêm điểm đến
                       </>
                     )}
                   </Button>
-                  
+
                   {editingIndex !== null && (
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+                    <Button
+                      type="button"
+                      variant="outline"
                       className="w-full"
                       onClick={cancelEdit}
                     >
-                      Cancel Edit
+                      Trở lại, dừng chỉnh sửa.
                     </Button>
                   )}
                 </div>
@@ -757,23 +757,22 @@ export function DestinationForm({
           <Card className="flex-1 flex flex-col">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle>Added Destinations</CardTitle>
+                <CardTitle>Danh sách điểm đến đã thêm.</CardTitle>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setSortNewestFirst(!sortNewestFirst)}
                 >
-                  {sortNewestFirst ? "Sort by Order" : "Sort by Newest"}
+                  {sortNewestFirst ? "Sắp xếp theo thứ tự" : "Mới nhất trước"}
                 </Button>
               </div>
               <div>
                 <p className="text-sm">
-                  {destinationsWithFiles.length} destination{destinationsWithFiles.length !== 1 ? "s" : ""}
-                  added
+                  {destinationsWithFiles.length} điểm đến đã thêm
                 </p>
               </div>
               {destinationsWithFiles.length === 0 && (
-                <p className="text-sm text-muted-foreground">No destinations added yet. Start by adding a destination from the form.</p>
+                <p className="text-sm text-muted-foreground">Không có điểm đến nào được thêm. Hãy thêm điểm đến cho tour.</p>
               )}
             </CardHeader>
             {destinationsWithFiles.length > 0 && (
@@ -785,7 +784,7 @@ export function DestinationForm({
                     .map(dateOrder => (
                       <div key={`day-${dateOrder}`} className="mb-6">
                         <h3 className="text-lg font-medium mb-3 bg-muted px-3 py-2 rounded-md">
-                          Day {dateOrder + 1}
+                          Ngày {dateOrder + 1}
                         </h3>
                         <div className="space-y-4 pl-3">
                           {sortDestinations(destinationsWithFiles)
@@ -794,10 +793,10 @@ export function DestinationForm({
                               // Find the actual index in the original array
                               const originalIndex = destinationsWithFiles.findIndex(
                                 d => d.destinationId === destination.destinationId &&
-                                    d.sortOrder === destination.sortOrder &&
-                                    d.sortOrderByDate === destination.sortOrderByDate
+                                  d.sortOrder === destination.sortOrder &&
+                                  d.sortOrderByDate === destination.sortOrderByDate
                               );
-                              
+
                               return (
                                 <div key={originalIndex} className="p-4 border rounded-md">
                                   {/* Destination header */}
@@ -827,25 +826,23 @@ export function DestinationForm({
                                           {destination.startTime} - {destination.endTime}
                                         </p>
                                         <p className="text-sm text-muted-foreground">
-                                          Position: {destination.sortOrder + 1}
+                                          Thứ tự: {destination.sortOrder + 1}
                                         </p>
                                       </div>
                                     </div>
 
                                     {/* Action buttons remain the same */}
                                     <div className="flex gap-1">
-                                      <Button 
-                                        variant="outline" 
-                                        size="icon" 
+                                      <Button
+                                        variant="outline"
+                                        size="icon"
                                         onClick={() => editDestination(originalIndex)}
                                       >
-                                        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                          <path d="M11.8536 1.14645C11.6583 0.951184 11.3417 0.951184 11.1465 1.14645L3.71455 8.57836C3.62459 8.66832 3.55263 8.77461 3.50251 8.89155L2.04044 12.303C1.9599 12.491 2.00189 12.709 2.14646 12.8536C2.29103 12.9981 2.50905 13.0401 2.69697 12.9596L6.10847 11.4975C6.2254 11.4474 6.33168 11.3754 6.42164 11.2855L13.8536 3.85355C14.0488 3.65829 14.0488 3.34171 13.8536 3.14645L11.8536 1.14645ZM4.42157 9.28547L11.5 2.20711L12.7929 3.5L5.71447 10.5784L4.21079 11.1392L3.86082 10.7892L4.42157 9.28547Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"/>
-                                        </svg>
+                                        <Pencil />
                                       </Button>
-                                      <Button 
-                                        variant="ghost" 
-                                        size="icon" 
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
                                         onClick={() => removeDestination(originalIndex)}
                                       >
                                         <Trash2 className="h-4 w-4" />
@@ -875,9 +872,9 @@ export function DestinationForm({
       {/* Navigation buttons */}
       <div className="flex justify-between">
         <Button variant="outline" onClick={onPrevious}>
-          Previous: Tour Info
+         Trước: Thông tin tour
         </Button>
-        <Button onClick={handleContinue}>Next: Tickets</Button>
+        <Button onClick={handleContinue}>Tiếp theo: Vé</Button>
       </div>
     </div>
   )

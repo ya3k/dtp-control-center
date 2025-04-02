@@ -1,7 +1,7 @@
 "use client"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Plus, Trash2, Loader2 } from "lucide-react"
+import { Plus, Trash2, Loader2, Pencil, PencilIcon } from "lucide-react"
 import { useState } from "react" // Add this import
 
 import { Button } from "@/components/ui/button"
@@ -30,11 +30,12 @@ const ticketKinds = Object.entries(TicketKind)
   .filter(([key]) => isNaN(Number(key)))
   .map(([key, value]) => ({ id: Number(value), name: key }))
 
+  
 export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmitting }: TicketFormProps) {
   // Add state for editing
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [sortNewestFirst, setSortNewestFirst] = useState<boolean>(false);
-  
+
   const form = useForm<TourCreateTicketType>({
     resolver: zodResolver(TicketSchema),
     defaultValues: {
@@ -83,7 +84,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
         ticketKind: ticket.ticketKind,
       });
       setEditingIndex(index);
-      
+
       // Scroll to form for better UX
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -102,7 +103,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
     const updatedTickets = [...(data.tickets || [])];
     updatedTickets.splice(index, 1);
     updateData({ tickets: updatedTickets });
-    
+
     // Reset editing mode if the ticket being edited is removed
     if (editingIndex === index) {
       setEditingIndex(null);
@@ -115,7 +116,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
       // Adjust editing index if a ticket before the one being edited is removed
       setEditingIndex(editingIndex - 1);
     }
-    
+
     toast.info("Ticket removed");
   }
 
@@ -135,7 +136,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
     const kind = ticketKinds.find((k) => k.id === id);
     return kind ? kind.name : "Unknown Ticket Type";
   }
-  
+
   // Sort function
   const sortTickets = (tickets: TourCreateTicketType[]) => {
     if (sortNewestFirst) {
@@ -148,16 +149,16 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
     <div className="space-y-6">
       {/* Title */}
       <div>
-        <h2 className="text-2xl font-bold">Tickets</h2>
-        <p className="text-muted-foreground">Add ticket types for your tour with pricing information.</p>
+        <h2 className="text-2xl font-bold">Vé</h2>
+        <p className="text-muted-foreground">Thêm loại vé.</p>
       </div>
-      
+
       {/* Two-column layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left column - Add/Edit Ticket form */}
         <Card className="md:sticky md:top-4 h-fit">
           <CardHeader>
-            <CardTitle>{editingIndex !== null ? 'Edit Ticket' : 'Add Ticket'}</CardTitle>
+            <CardTitle>{editingIndex !== null ? 'Chỉnh sửa vé' : 'Thêm vé'}</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -175,7 +176,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select ticket type" />
+                            <SelectValue placeholder="Chọn loại vé" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -196,7 +197,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
                   name="defaultNetCost"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Net Cost</FormLabel>
+                      <FormLabel>Giá cơ bản</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -216,7 +217,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
                   name="minimumPurchaseQuantity"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Minimum Purchase Quantity</FormLabel>
+                      <FormLabel>Số lượng vé mua tối thiểu</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -236,11 +237,11 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
                     {editingIndex !== null ? 'Save Changes' : (
                       <>
                         <Plus className="mr-2 h-4 w-4" />
-                        Add Ticket
+                        Thêm vé
                       </>
                     )}
                   </Button>
-                  
+
                   {editingIndex !== null && (
                     <Button
                       type="button"
@@ -248,7 +249,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
                       className="w-full"
                       onClick={cancelEdit}
                     >
-                      Cancel Edit
+                      Ngưng chỉnh sửa
                     </Button>
                   )}
                 </div>
@@ -262,25 +263,25 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
           <Card className="h-full flex flex-col">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle>Added Tickets</CardTitle>
+                <CardTitle>Thêm vé</CardTitle>
                 {(data.tickets?.length ?? 0) > 1 && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setSortNewestFirst(!sortNewestFirst)}
                   >
-                    {sortNewestFirst ? "Original Order" : "Newest First"}
+                    {sortNewestFirst ? "Mặc định" : "Xếp theo mới nhất"}
                   </Button>
                 )}
               </div>
               <div>
                 <p className="text-sm">
-                  {data.tickets?.length || 0} ticket{(data.tickets?.length || 0) !== 1 ? "s" : ""} added
+                  {data.tickets?.length || 0} vé đã được thêm
                 </p>
               </div>
               {(!data.tickets || data.tickets.length === 0) && (
                 <p className="text-sm text-muted-foreground mt-2">
-                  No tickets added yet. Start by adding a ticket from the form.
+                  Không có loại vé nào. Hãy thêm vé.
                 </p>
               )}
             </CardHeader>
@@ -289,42 +290,39 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
                 <div className="space-y-4 pr-2">
                   {sortTickets(data.tickets).map((ticket, index) => {
                     // Find original index if sorted
-                    const originalIndex = sortNewestFirst 
+                    const originalIndex = sortNewestFirst
                       ? data.tickets!.length - 1 - index
                       : index;
-                      
+
                     return (
-                      <div 
-                        key={originalIndex} 
-                        className={`flex items-center justify-between p-4 border rounded-md ${
-                          editingIndex === originalIndex ? "border-primary bg-primary/5" : ""
-                        }`}
+                      <div
+                        key={originalIndex}
+                        className={`flex items-center justify-between p-4 border rounded-md ${editingIndex === originalIndex ? "border-primary bg-primary/5" : ""
+                          }`}
                       >
                         <div>
                           <div className="flex items-center">
                             <p className="font-medium">{getTicketKindName(ticket.ticketKind)}</p>
                             {editingIndex === originalIndex && (
                               <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">
-                                Editing
+                                Chỉnh sửa
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">Price: ${ticket.defaultNetCost.toFixed(2)}</p>
-                          <p className="text-sm text-muted-foreground">Min. Quantity: {ticket.minimumPurchaseQuantity}</p>
+                          <p className="text-sm text-muted-foreground">Giá: ${ticket.defaultNetCost.toFixed(2)}</p>
+                          <p className="text-sm text-muted-foreground">Số lượng tối thiểu: {ticket.minimumPurchaseQuantity}</p>
                         </div>
                         <div className="flex space-x-2">
-                          <Button 
+                          <Button
                             variant="outline"
-                            size="icon" 
+                            size="icon"
                             onClick={() => editTicket(originalIndex)}
                           >
-                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M11.8536 1.14645C11.6583 0.951184 11.3417 0.951184 11.1465 1.14645L3.71455 8.57836C3.62459 8.66832 3.55263 8.77461 3.50251 8.89155L2.04044 12.303C1.9599 12.491 2.00189 12.709 2.14646 12.8536C2.29103 12.9981 2.50905 13.0401 2.69697 12.9596L6.10847 11.4975C6.2254 11.4474 6.33168 11.3754 6.42164 11.2855L13.8536 3.85355C14.0488 3.65829 14.0488 3.34171 13.8536 3.14645L11.8536 1.14645ZM4.42157 9.28547L11.5 2.20711L12.7929 3.5L5.71447 10.5784L4.21079 11.1392L3.86082 10.7892L4.42157 9.28547Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"/>
-                            </svg>
+                            <PencilIcon />
                           </Button>
                           <Button
-                            variant="ghost" 
-                            size="icon" 
+                            variant="ghost"
+                            size="icon"
                             onClick={() => removeTicket(originalIndex)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -343,16 +341,16 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
       {/* Navigation buttons */}
       <div className="flex justify-between">
         <Button variant="outline" onClick={onPrevious}>
-          Previous: Destinations
+          Trước: Địa điểm
         </Button>
         <Button onClick={handleSubmit} disabled={isSubmitting}>
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating Tour...
+              Đang tạo Tour...
             </>
           ) : (
-            "Create Tour"
+            "Tạo tour ngay"
           )}
         </Button>
       </div>
