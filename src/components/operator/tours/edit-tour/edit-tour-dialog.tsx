@@ -9,6 +9,7 @@ import { tourOdataResType, TourResType } from "@/schemaValidations/tour-operator
 import { TourEditInfoForm } from "./edit-tour-info-form"
 import TourEditScheduleForm from "./edit-tour-schedule"
 import TourEditDestination from "./edit-tour-destination"
+import EditTourDestination from "./edit-tour-destination"
 
 interface UpdateTourDialogProps {
     tour: tourOdataResType
@@ -73,7 +74,7 @@ export function UpdateTourDialog({ tour: initialTour, open, onOpenChange, onUpda
 
                         <TabsContent value="destinations" className="space-y-4">
                             {/* Destinations edit form will go here */}
-                            <TourEditDestination tourId={tour.id} onUpdateSuccess={handleUpdateSuccess} />
+                            <EditTourDestination tourId={tour.id} onUpdateSuccess={handleUpdateSuccess} />
                         </TabsContent>
 
                         <TabsContent value="schedule" className="space-y-4">

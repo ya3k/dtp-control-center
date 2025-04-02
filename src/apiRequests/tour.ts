@@ -6,6 +6,7 @@ import type {
   POSTTourScheduleBodyType,
   PUTTourDestinationBodyType,
   PUTTourInfoBodyType,
+  tourByCompanyRestType,
   TourDestinationResType,
   TourInfoFormBodyType,
   TourInfoResType,
@@ -37,6 +38,16 @@ const tourApiService = {
       throw error;
     }
   },
+  getTourByCompany: async () => {
+    try {
+      const response = await http.get<tourByCompanyRestType>(apiEndpoint.tourByCompany);
+      return response;
+    } catch (error) {
+      console.error("Failed to fetch tours bycompany:", error);
+      throw error;
+    }
+  }
+  ,
 
   getTourInfo: async (tourId: string) => {
     try {

@@ -30,6 +30,7 @@ export const DestinationSchema = z.object({
 
 
 
+
 // Ticket schema
 export const TicketSchema = z.object({
   defaultNetCost: z.coerce.number().positive(),
@@ -78,6 +79,19 @@ export const TourResSchema = TourSchema.extend({
 // Type definitions inferred from Zod schemas
 export type TourResType = z.infer<typeof TourResSchema>;
 
+
+/// tour by company res
+
+export const tourByCompanyResSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  companyId: z.string(),
+  category: z.string(),
+  description: z.string(),
+  about: z.string()
+})
+
+export type tourByCompanyRestType = z.infer<typeof tourByCompanyResSchema>;
 
 // Additional types for the UI
 export const DestinationUI = z.object({
@@ -136,8 +150,7 @@ export const tourDestinationResSchema = z.object({
 
 export type TourDestinationResType = z.infer<typeof tourDestinationResSchema>;
 
-// Schema cho từng điểm đến trong tour
-export const PUTdestinationSchema = z.object({
+export const PUTtourDestinationSchema = z.object({
   destinationId: z.string().uuid(),
   destinationActivities: z.array(destinationActivitySchema),
   startTime: z.string(),
@@ -147,7 +160,14 @@ export const PUTdestinationSchema = z.object({
   img: z.string(),
 });
 
-export type PUTTourDestinationBodyType = z.infer<typeof PUTdestinationSchema>;
+export type PUTTDestinationBodyType = z.infer<typeof PUTtourDestinationSchema>;
+
+export const PUTFULLtourDestinationSchema = z.object({
+  tourId: z.string().uuid(),
+  destinations: z.array(PUTtourDestinationSchema),
+});
+
+export type PUTFULLTourDestinationBodyType = z.infer<typeof PUTFULLtourDestinationSchema>;
 
 
 

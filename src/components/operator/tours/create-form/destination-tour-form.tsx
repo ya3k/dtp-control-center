@@ -201,6 +201,17 @@ export function DestinationForm({
     return destination ? destination.name : "Unknown Destination"
   }
 
+  // Helper function to determine the next sortOrder for a given sortOrderByDate
+  const getNextSortOrderForDate = (sortOrderByDate: number): number => {
+    // Filter destinations with the same sortOrderByDate
+    const destinationsForDate = (data.destinations || []).filter(
+      dest => dest.sortOrderByDate === sortOrderByDate
+    );
+    
+    // Return the next available sortOrder (0 if none exist yet)
+    return destinationsForDate.length;
+  };
+
   // Data Fetching
   const fetchDestinations = async () => {
     try {
@@ -257,21 +268,24 @@ export function DestinationForm({
   }
 
   const setActivities = (destinationIndex: number, activities: z.infer<typeof destinationActivities>[]) => {
+    console.log("Setting activities for destination", destinationIndex, activities);
+    
     // Update the activities map
-    const newMap = new Map(destinationActivitiesMap)
-    newMap.set(destinationIndex, activities)
-    setDestinationActivitiesMap(newMap)
-
-    // If this is for an existing destination, update it in the form data
-    if (destinationIndex < (data.destinations?.length || 0)) {
-      const updatedDestinations = [...(data.destinations || [])]
+    const newMap = new Map(destinationActivitiesMap);
+    newMap.set(destinationIndex, activities);
+    setDestinationActivitiesMap(newMap);
+  
+    // If this is for an existing destination, update it in the data
+    if (destinationIndex >= 0 && destinationIndex < (data.destinations?.length || 0)) {
+      const updatedDestinations = [...(data.destinations || [])];
       updatedDestinations[destinationIndex] = {
         ...updatedDestinations[destinationIndex],
         destinationActivities: activities,
-      }
-      updateData({ destinations: updatedDestinations })
+      };
+      updateData({ destinations: updatedDestinations });
+      console.log("Updated activities in main data for destination", destinationIndex);
     }
-  }
+  };
 
   const sortDestinations = (destinations: DestinationWithFile[]) => {
     if (sortNewestFirst) {
@@ -282,41 +296,52 @@ export function DestinationForm({
   };
 
   const editDestination = (index: number) => {
-    const destination = destinationsWithFiles[index];
+    console.log("Editing destination at index:", index);
     
-    // Set form values to edit
-    form.reset({
-      destinationId: destination.destinationId,
-      startTime: destination.startTime,
-      endTime: destination.endTime,
-      sortOrder: destination.sortOrder,
-      sortOrderByDate: destination.sortOrderByDate,
-      img: destination.img || "",
-      destinationActivities: destination.destinationActivities || [],
-    });
-    
-    // Set editing state
-    setEditingIndex(index);
-    
-    // Set preview image if exists
-    if (destination.imagePreview || destination.img) {
-      setImagePreview(destination.imagePreview || destination.img || null);
+    if (index >= 0 && index < destinationsWithFiles.length) {
+      const destination = destinationsWithFiles[index];
+      
+      // Set form values to edit
+      form.reset({
+        destinationId: destination.destinationId,
+        startTime: destination.startTime,
+        endTime: destination.endTime,
+        sortOrder: destination.sortOrder,
+        sortOrderByDate: destination.sortOrderByDate,
+        img: destination.img || "",
+      });
+      
+      // Set editing state
+      setEditingIndex(index);
+      
+      // Set preview image if exists
+      if (destination.imagePreview || destination.img) {
+        setImagePreview(destination.imagePreview || destination.img || null);
+      }
+      
+      // Set selected file if exists
+      if (destination.imageFile) {
+        setSelectedImageFile(destination.imageFile);
+        form.setValue("imageFile", destination.imageFile);
+      }
+      
+      console.log("Editing destination:", destination);
+      console.log("Activities for this destination:", destinationActivitiesMap.get(index));
+      
+      // Scroll to the form
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      console.error("Invalid destination index:", index);
+      toast.error("Error editing destination");
     }
-    
-    // Set selected file if exists
-    if (destination.imageFile) {
-      setSelectedImageFile(destination.imageFile);
-      form.setValue("imageFile", destination.imageFile);
-    }
-    
-    // Scroll to the form
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const addDestination = (values: TourCreateDestinationType & { imageFile?: File }) => {
     const imageFile = selectedImageFile || values.imageFile;
   
-    if (!imageFile && !values.img) {
+    // Different validation logic for new vs. editing
+    if (editingIndex === null && !imageFile && !values.img) {
+      // Only require image for new destinations
       form.setError("img", {
         type: "manual",
         message: "Please select an image or provide an image URL"
@@ -324,10 +349,26 @@ export function DestinationForm({
       return;
     }
   
-    // Generate a preview URL if we have an image file
+    // For editing, use existing image if no new one is provided
     let imageUrl = values.img || "";
     if (imageFile) {
       imageUrl = URL.createObjectURL(imageFile);
+    } else if (editingIndex !== null && destinationsWithFiles[editingIndex]) {
+      // When editing, keep the existing image if no new one is provided
+      imageUrl = destinationsWithFiles[editingIndex].img || "";
+    }
+  
+    // Ensure sortOrder is appropriate for the sortOrderByDate
+    const sortOrderByDate = values.sortOrderByDate;
+    const sortOrder = values.sortOrder;
+    
+    // Get the existing activities for this destination
+    let existingActivities: z.infer<typeof destinationActivities>[] = [];
+    
+    if (editingIndex !== null) {
+      // When editing, preserve activities from the activities map
+      existingActivities = destinationActivitiesMap.get(editingIndex) || [];
+      console.log("Preserving activities for destination", editingIndex, existingActivities);
     }
   
     // Create the destination data object
@@ -335,10 +376,10 @@ export function DestinationForm({
       destinationId: values.destinationId,
       startTime: values.startTime,
       endTime: values.endTime,
-      sortOrder: values.sortOrder,
-      sortOrderByDate: values.sortOrderByDate,
+      sortOrder: sortOrder,
+      sortOrderByDate: sortOrderByDate,
       img: imageUrl,
-      destinationActivities: [],
+      destinationActivities: existingActivities,
     };
   
     const destinationWithFile: DestinationWithFile = {
@@ -349,26 +390,33 @@ export function DestinationForm({
   
     // If we're editing an existing destination
     if (editingIndex !== null) {
-      // Update destinationsWithFiles
+      // Update destinationsWithFiles array
       const updatedDestinationsWithFiles = [...destinationsWithFiles];
       updatedDestinationsWithFiles[editingIndex] = destinationWithFile;
       setDestinationsWithFiles(updatedDestinationsWithFiles);
       
-      // Update parent data
+      // Update the main destinations data
       const updatedDestinations = [...(data.destinations || [])];
-      updatedDestinations[editingIndex] = destinationData;
+      updatedDestinations[editingIndex] = {
+        ...destinationData,
+        // Make sure activities are explicitly preserved here
+        destinationActivities: existingActivities,
+      };
+      
+      // Update parent data
       updateData({ destinations: updatedDestinations });
       
-      // If the image file changed, update it
+      // If the image file changed, update it in parent
       if (imageFile) {
         addDestinationImageFile(editingIndex, imageFile);
       }
       
+      console.log("Updated destination at index", editingIndex, updatedDestinations[editingIndex]);
       toast.success("Destination updated successfully");
       setEditingIndex(null);
     } else {
-      // Add new destination
-      // Update state and parent data
+      // Add new destination logic
+      // ...existing code for adding new destination
       setDestinationsWithFiles([...destinationsWithFiles, destinationWithFile]);
       const updatedDestinations = [...(data.destinations || []), destinationData];
       updateData({ destinations: updatedDestinations });
@@ -387,13 +435,13 @@ export function DestinationForm({
       toast.success("Destination added successfully");
     }
   
-    // Reset form
+    // Reset form with appropriate default values
     form.reset({
       destinationId: "",
       startTime: "09:00:00",
       endTime: "10:00:00",
-      sortOrder: (data.destinations?.length || 0) + (editingIndex !== null ? 0 : 1),
-      sortOrderByDate: (data.destinations?.length || 0) + (editingIndex !== null ? 0 : 1),
+      sortOrder: 0,
+      sortOrderByDate: data.destinations?.length ? Math.max(...data.destinations.map(d => d.sortOrderByDate)) : 0,
       img: "",
       destinationActivities: [],
     });
@@ -412,8 +460,8 @@ export function DestinationForm({
       destinationId: "",
       startTime: "09:00:00",
       endTime: "10:00:00",
-      sortOrder: data.destinations?.length || 0,
-      sortOrderByDate: data.destinations?.length || 0,
+      sortOrder: 0,
+      sortOrderByDate: data.destinations?.length ? Math.max(...data.destinations.map(d => d.sortOrderByDate)) : 0,
       img: "",
       destinationActivities: [],
     });
@@ -567,18 +615,28 @@ export function DestinationForm({
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="sortOrder"
+                    name="sortOrderByDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Sort Order</FormLabel>
+                        <FormLabel>Day Number</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
                             min="0"
                             {...field}
-                            onChange={(e) => field.onChange(Number.parseInt(e.target.value))}
+                            onChange={(e) => {
+                              const newSortOrderByDate = Number.parseInt(e.target.value);
+                              field.onChange(newSortOrderByDate);
+                              
+                              // Automatically update sortOrder when sortOrderByDate changes
+                              const nextSortOrder = getNextSortOrderForDate(newSortOrderByDate);
+                              form.setValue("sortOrder", nextSortOrder);
+                            }}
                           />
                         </FormControl>
+                        <p className="text-xs text-muted-foreground">
+                          Destinations will be grouped by this day number
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -586,10 +644,10 @@ export function DestinationForm({
 
                   <FormField
                     control={form.control}
-                    name="sortOrderByDate"
+                    name="sortOrder"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Sort Order By Date</FormLabel>
+                        <FormLabel>Position Within Day</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -598,6 +656,9 @@ export function DestinationForm({
                             onChange={(e) => field.onChange(Number.parseInt(e.target.value))}
                           />
                         </FormControl>
+                        <p className="text-xs text-muted-foreground">
+                          Order of this destination within the selected day
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -707,7 +768,8 @@ export function DestinationForm({
               </div>
               <div>
                 <p className="text-sm">
-                  {destinationsWithFiles.length} destination{destinationsWithFiles.length !== 1 ? "s" : ""} added
+                  {destinationsWithFiles.length} destination{destinationsWithFiles.length !== 1 ? "s" : ""}
+                  added
                 </p>
               </div>
               {destinationsWithFiles.length === 0 && (
@@ -717,78 +779,92 @@ export function DestinationForm({
             {destinationsWithFiles.length > 0 && (
               <CardContent className="flex-1 overflow-auto max-h-[70vh]">
                 <div className="space-y-6 pr-2">
-                  {sortDestinations(destinationsWithFiles).map((destination, sortedIndex) => {
-                    // Find the actual index in the original array
-                    const originalIndex = destinationsWithFiles.findIndex(
-                      d => d.destinationId === destination.destinationId &&
-                          d.sortOrder === destination.sortOrder &&
-                          d.sortOrderByDate === destination.sortOrderByDate
-                    );
-                    
-                    return (
-                      <div key={originalIndex} className="p-4 border rounded-md">
-                        {/* Destination header */}
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-4">
-                            {/* Destination image */}
-                            {destination.imagePreview || destination.img ? (
-                              <div className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0 relative">
-                                <Image
-                                  src={destination.imagePreview || destination.img || "/placeholder.svg"}
-                                  alt={getDestinationName(destination.destinationId)}
-                                  fill
-                                  sizes="48px"
-                                  style={{ objectFit: "cover" }}
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
-                                <Upload className="h-4 w-4 text-muted-foreground" />
-                              </div>
-                            )}
+                  {/* Group destinations by sortOrderByDate */}
+                  {Array.from(new Set(destinationsWithFiles.map(d => d.sortOrderByDate)))
+                    .sort((a, b) => a - b)
+                    .map(dateOrder => (
+                      <div key={`day-${dateOrder}`} className="mb-6">
+                        <h3 className="text-lg font-medium mb-3 bg-muted px-3 py-2 rounded-md">
+                          Day {dateOrder + 1}
+                        </h3>
+                        <div className="space-y-4 pl-3">
+                          {sortDestinations(destinationsWithFiles)
+                            .filter(d => d.sortOrderByDate === dateOrder)
+                            .map((destination, sortedIndex) => {
+                              // Find the actual index in the original array
+                              const originalIndex = destinationsWithFiles.findIndex(
+                                d => d.destinationId === destination.destinationId &&
+                                    d.sortOrder === destination.sortOrder &&
+                                    d.sortOrderByDate === destination.sortOrderByDate
+                              );
+                              
+                              return (
+                                <div key={originalIndex} className="p-4 border rounded-md">
+                                  {/* Destination header */}
+                                  <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-4">
+                                      {/* Destination image */}
+                                      {destination.imagePreview || destination.img ? (
+                                        <div className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0 relative">
+                                          <Image
+                                            src={destination.imagePreview || destination.img || "/placeholder.svg"}
+                                            alt={getDestinationName(destination.destinationId)}
+                                            fill
+                                            sizes="48px"
+                                            style={{ objectFit: "cover" }}
+                                          />
+                                        </div>
+                                      ) : (
+                                        <div className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
+                                          <Upload className="h-4 w-4 text-muted-foreground" />
+                                        </div>
+                                      )}
 
-                            {/* Destination info */}
-                            <div>
-                              <p className="font-medium">{getDestinationName(destination.destinationId)}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {destination.startTime} - {destination.endTime}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                Sort Order: {destination.sortOrder} | Date Order: {destination.sortOrderByDate}
-                              </p>
-                            </div>
-                          </div>
+                                      {/* Destination info */}
+                                      <div>
+                                        <p className="font-medium">{getDestinationName(destination.destinationId)}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                          {destination.startTime} - {destination.endTime}
+                                        </p>
+                                        <p className="text-sm text-muted-foreground">
+                                          Position: {destination.sortOrder + 1}
+                                        </p>
+                                      </div>
+                                    </div>
 
-                          {/* Action buttons */}
-                          <div className="flex gap-1">
-                            <Button 
-                              variant="outline" 
-                              size="icon" 
-                              onClick={() => editDestination(originalIndex)}
-                            >
-                              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M11.8536 1.14645C11.6583 0.951184 11.3417 0.951184 11.1465 1.14645L3.71455 8.57836C3.62459 8.66832 3.55263 8.77461 3.50251 8.89155L2.04044 12.303C1.9599 12.491 2.00189 12.709 2.14646 12.8536C2.29103 12.9981 2.50905 13.0401 2.69697 12.9596L6.10847 11.4975C6.2254 11.4474 6.33168 11.3754 6.42164 11.2855L13.8536 3.85355C14.0488 3.65829 14.0488 3.34171 13.8536 3.14645L11.8536 1.14645ZM4.42157 9.28547L11.5 2.20711L12.7929 3.5L5.71447 10.5784L4.21079 11.1392L3.86082 10.7892L4.42157 9.28547Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"/>
-                              </svg>
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              onClick={() => removeDestination(originalIndex)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                                    {/* Action buttons remain the same */}
+                                    <div className="flex gap-1">
+                                      <Button 
+                                        variant="outline" 
+                                        size="icon" 
+                                        onClick={() => editDestination(originalIndex)}
+                                      >
+                                        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                          <path d="M11.8536 1.14645C11.6583 0.951184 11.3417 0.951184 11.1465 1.14645L3.71455 8.57836C3.62459 8.66832 3.55263 8.77461 3.50251 8.89155L2.04044 12.303C1.9599 12.491 2.00189 12.709 2.14646 12.8536C2.29103 12.9981 2.50905 13.0401 2.69697 12.9596L6.10847 11.4975C6.2254 11.4474 6.33168 11.3754 6.42164 11.2855L13.8536 3.85355C14.0488 3.65829 14.0488 3.34171 13.8536 3.14645L11.8536 1.14645ZM4.42157 9.28547L11.5 2.20711L12.7929 3.5L5.71447 10.5784L4.21079 11.1392L3.86082 10.7892L4.42157 9.28547Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"/>
+                                        </svg>
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={() => removeDestination(originalIndex)}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+
+                                  {/* Activities section remains the same */}
+                                  <ActivityForm
+                                    destinationIndex={originalIndex}
+                                    activities={destinationActivitiesMap.get(originalIndex) || []}
+                                    setActivities={setActivities}
+                                  />
+                                </div>
+                              );
+                            })}
                         </div>
-
-                        {/* Activities section */}
-                        <ActivityForm
-                          destinationIndex={originalIndex}
-                          activities={destinationActivitiesMap.get(originalIndex) || []}
-                          setActivities={setActivities}
-                        />
                       </div>
-                    );
-                  })}
+                    ))}
                 </div>
               </CardContent>
             )}
