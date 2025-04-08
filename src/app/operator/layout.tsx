@@ -19,9 +19,9 @@ export default function OperatorLayout({ children }: { children: React.ReactNode
                         <SidebarTrigger className="font-bold" />
                         <Separator orientation="vertical" className="mr-2 h-4" />
                         {/* breadcrumb */}
-                        <div className="w-full border-b border-gray-300 pb-2">
+                        {/* <div className="w-full border-b border-gray-300 pb-2">
                             <SidebarBreadcrumb />
-                        </div>
+                        </div> */}
                     </div>
                 </header>
                 <div className="ml-4">

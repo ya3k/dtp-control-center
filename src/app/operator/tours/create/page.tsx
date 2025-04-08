@@ -30,7 +30,9 @@ export default function CreateTourPage() {
     openDay: "",
     closeDay: "",
     scheduleFrequency: "",
-    about: ""
+    about: "",
+    include: '',
+    peekInfor: ''
   })
 
   const updateFormData = (data: Partial<CreateTourBodyType>) => {
@@ -161,6 +163,8 @@ export default function CreateTourPage() {
         closeDay: updatedFormData.closeDay || "",
         scheduleFrequency: updatedFormData.scheduleFrequency || "",
         about: updatedFormData.about || "",
+        include: updatedFormData.include || "",
+        peekInfor: updatedFormData.peekInfor || "",
 
       }
 
@@ -218,8 +222,8 @@ export default function CreateTourPage() {
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-8">Create New Tour</h1>
+    <div className="container mx-auto py-3">
+      <h1 className="text-3xl font-bold mb-8">Tạo Tour mới</h1>
 
       <FormStepper currentStep={step} />
 

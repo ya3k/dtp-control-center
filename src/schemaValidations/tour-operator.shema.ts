@@ -49,19 +49,23 @@ export const TourSchema = z.object({
   closeDay: z.string(),
   scheduleFrequency: z.string(),
   img: z.string(),
-  about: z.string()
+  about: z.string(),
+  include: z.string(),
+  peekInfor: z.string()
 });
 
 export const tourInfoPostSchema = z.object({
-  title: z.string().min(1, "Title is required"),
+  title: z.string().min(1, "Hãy nhập tiêu đề"),
   img: z.string(),
-  categoryid: z.string().min(1, "Category is required"),
-  description: z.string().min(1, "Description is required"),
-  openDay: z.string(),
-  closeDay: z.string(),
-  scheduleFrequency: z.string(),
-  about: z.string()
-})
+  categoryid: z.string().min(1, "Hãy chọn loại tour"),
+  description: z.string().min(1, "Nhập điểm nổi bật của tour"),
+  openDay: z.string().min(1, "Hãy nhập ngày mở tour."),
+  closeDay: z.string().min(1, "Hãy nhập ngày mở tour."),
+  scheduleFrequency: z.string().min(1, "Hãy nhập chu kì tour"),
+  about: z.string().min(1, "Về dịch vụ này là bắt buộc."),
+  include: z.string().min(1, "Bao gồm là bắt buộc."),
+  peekInfor: z.string().min(1, "Đón và gặp khách là bắt buộc."),
+});
 
 export type CreateTourInfoType = z.infer<typeof tourInfoPostSchema>;
 

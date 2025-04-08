@@ -174,7 +174,7 @@ export function DestinationForm({
     Map<number, z.infer<typeof destinationActivities>[]>
   >(new Map())
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [sortNewestFirst, setSortNewestFirst] = useState<boolean>(false);
+
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   // Form setup
@@ -182,8 +182,8 @@ export function DestinationForm({
     resolver: zodResolver(DestinationSchema),
     defaultValues: {
       destinationId: "",
-      startTime: "09:00:00",
-      endTime: "10:00:00",
+      startTime: "",
+      endTime: "",
       sortOrder: data.destinations?.length || 0,
       sortOrderByDate: data.destinations?.length || 0,
       img: "",
@@ -287,14 +287,6 @@ export function DestinationForm({
     }
   };
 
-  const sortDestinations = (destinations: DestinationWithFile[]) => {
-    if (sortNewestFirst) {
-      return [...destinations].reverse();
-    } else {
-      return [...destinations].sort((a, b) => a.sortOrder - b.sortOrder);
-    }
-  };
-
   const editDestination = (index: number) => {
     console.log("Editing destination at index:", index);
 
@@ -339,15 +331,15 @@ export function DestinationForm({
   const addDestination = (values: TourCreateDestinationType & { imageFile?: File }) => {
     const imageFile = selectedImageFile || values.imageFile;
 
-    // Different validation logic for new vs. editing
-    if (editingIndex === null && !imageFile && !values.img) {
-      // Only require image for new destinations
-      form.setError("img", {
-        type: "manual",
-        message: "Please select an image or provide an image URL"
-      });
-      return;
-    }
+    // // Different validation logic for new vs. editing
+    // if (editingIndex === null && !imageFile && !values.img) {
+    //   // Only require image for new destinations
+    //   form.setError("img", {
+    //     type: "manual",
+    //     message: "Please select an image or provide an image URL"
+    //   });
+    //   return;
+    // }
 
     // For editing, use existing image if no new one is provided
     let imageUrl = values.img || "";
@@ -438,8 +430,8 @@ export function DestinationForm({
     // Reset form with appropriate default values
     form.reset({
       destinationId: "",
-      startTime: "09:00:00",
-      endTime: "10:00:00",
+      startTime: "",
+      endTime: "",
       sortOrder: 0,
       sortOrderByDate: data.destinations?.length ? Math.max(...data.destinations.map(d => d.sortOrderByDate)) : 0,
       img: "",
@@ -671,7 +663,7 @@ export function DestinationForm({
                   name="img"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Ảnh điểm đến</FormLabel>
+                      <FormLabel>Ảnh điểm đến (Không bắt buộc)</FormLabel>
                       <FormControl>
                         <div className="space-y-2">
                           {/* Preview area */}
@@ -711,7 +703,7 @@ export function DestinationForm({
                               )}
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              Hãy chọn ảnh cho điểm đến.
+                              Hãy chọn ảnh cho điểm đến (nếu có).
                             </div>
                           </div>
                         </div>
@@ -758,13 +750,6 @@ export function DestinationForm({
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle>Danh sách điểm đến đã thêm.</CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSortNewestFirst(!sortNewestFirst)}
-                >
-                  {sortNewestFirst ? "Sắp xếp theo thứ tự" : "Mới nhất trước"}
-                </Button>
               </div>
               <div>
                 <p className="text-sm">
@@ -787,7 +772,7 @@ export function DestinationForm({
                           Ngày {dateOrder + 1}
                         </h3>
                         <div className="space-y-4 pl-3">
-                          {sortDestinations(destinationsWithFiles)
+                          {destinationsWithFiles
                             .filter(d => d.sortOrderByDate === dateOrder)
                             .map((destination, sortedIndex) => {
                               // Find the actual index in the original array
@@ -872,7 +857,7 @@ export function DestinationForm({
       {/* Navigation buttons */}
       <div className="flex justify-between">
         <Button variant="outline" onClick={onPrevious}>
-         Trước: Thông tin tour
+          Trước: Thông tin tour
         </Button>
         <Button onClick={handleContinue}>Tiếp theo: Vé</Button>
       </div>

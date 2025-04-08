@@ -6,9 +6,9 @@ interface FormStepperProps {
 
 export function FormStepper({ currentStep }: FormStepperProps) {
   const steps = [
-    { id: 1, name: "Tour Information" },
-    { id: 2, name: "Destinations" },
-    { id: 3, name: "Tickets" },
+    { id: 1, name: "Thông tin tour" },
+    { id: 2, name: "Lịch trình" },
+    { id: 3, name: "Vé" },
   ]
 
   return (

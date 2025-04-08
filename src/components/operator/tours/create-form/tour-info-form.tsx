@@ -21,18 +21,19 @@ import CategorySearch from "../categories-search"
 import { toast } from "sonner"
 import { TiptapEditor } from "@/components/common/tiptap-editor"
 import Image from "next/image"
+import { Calendar } from "@/components/ui/calendar"
 
 // Define the Frequency enum for display
 enum Frequency {
-  Daily = "Daily",
-  Weekly = "Weekly",
-  Monthly = "Monthly",
+  Daily = "Hằng ngày",
+  Weekly = "Hằng tuần",
+  Monthly = "Hằng tháng",
 }
 
 const frequencyList = [
-  { id: Frequency.Daily, name: "Daily" },
-  { id: Frequency.Weekly, name: "Weekly" },
-  { id: Frequency.Monthly, name: "Monthly" },
+  { id: Frequency.Daily, name: "Hằng ngày" },
+  { id: Frequency.Weekly, name: "Hằng tuần" },
+  { id: Frequency.Monthly, name: "Hằng tháng" },
 ]
 
 interface TourInfoFormProps {
@@ -58,7 +59,9 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
       openDay: data.openDay || "",
       closeDay: data.closeDay || "",
       description: data.description || "",
-      about: data.about || ""
+      about: data.about || "",
+      include: data.include || '',
+      peekInfor: data.peekInfor || "",
     },
   })
 
@@ -87,7 +90,10 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
       openDay: values.openDay,
       closeDay: values.closeDay,
       scheduleFrequency: values.scheduleFrequency,
-      about: values.about || ""
+      about: values.about || "",
+      include: data.include || '',
+      peekInfor: data.peekInfor || "",
+
     }
 
     updateData(formattedValues)
@@ -105,7 +111,7 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tiêu đề</FormLabel>
+                  <FormLabel>Tiêu đề <span className="text-red-600">*</span></FormLabel>
                   <FormControl>
                     <Input placeholder="Nhập tiêu đề..." {...field} />
                   </FormControl>
@@ -120,7 +126,7 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
               name="img"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ảnh Thumnail cho Tour</FormLabel>
+                  <FormLabel>Ảnh Thumnail cho Tour <span className="text-red-600">*</span></FormLabel>
                   <FormControl>
                     <div className="flex items-start gap-4">
                       {/* Left: Image Preview */}
@@ -191,7 +197,7 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
               name="categoryid"
               render={({ field }) => (
                 <FormItem className="space-y-2 animate-slide-up" style={{ animationDelay: "100ms" }}>
-                  <FormLabel className="font-medium">Loại Tour</FormLabel>
+                  <FormLabel className="font-medium">Loại Tour <span className="text-red-600">*</span></FormLabel>
                   <FormControl>
                     <CategorySearch categories={categories} value={field.value} onChange={field.onChange} />
                   </FormControl>
@@ -199,65 +205,69 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
                 </FormItem>
               )}
             />
+            {/* Tour schedule */}
+            <div className="flex gap-6">
+              {/* Schedule Frequency */}
+              <FormField
+                control={form.control}
+                name="scheduleFrequency"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Chu kỳ Tour <span className="text-red-600">*</span></FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn chu kỳ Tour">
+                            {frequencyList.find((freq) => freq.id === field.value)?.name || "Chọn chu kỳ Tour"}
+                          </SelectValue>
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {frequencyList.map((freq) => (
+                          <SelectItem key={freq.id} value={freq.id}>
+                            {freq.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Schedule Frequency */}
-            <FormField
-              control={form.control}
-              name="scheduleFrequency"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Chu kỳ Tour</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+              {/* Open Day and Close Day */}
+
+              {/* Open Day */}
+              <FormField
+                control={form.control}
+                name="openDay"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel>Ngày mở Tour <span className="text-red-600">*</span></FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a frequency">
-                          {frequencyList.find((freq) => freq.id === field.value)?.name || "Select a frequency"}
-                        </SelectValue>
-                      </SelectTrigger>
+                      <Input type="date" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      {frequencyList.map((freq) => (
-                        <SelectItem key={freq.id} value={freq.id}>
-                          {freq.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Open Day */}
-            <FormField
-              control={form.control}
-              name="openDay"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ngày mở Tour</FormLabel>
-                  <FormControl>
-                    <Input type="datetime-local" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Close Day */}
-            <FormField
-              control={form.control}
-              name="closeDay"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ngày đóng Tour</FormLabel>
-                  <FormControl>
-                    <Input type="datetime-local" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+              {/* Close Day */}
+              <FormField
+                control={form.control}
+                name="closeDay"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel>Ngày đóng Tour <span className="text-red-600">*</span></FormLabel>
+                    <FormControl>
+                  
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Description */}
             <FormField
@@ -265,9 +275,9 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Điểm nổi bật</FormLabel>
+                  <FormLabel>Điểm nổi bật <span className="text-red-600">*</span></FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Enter tour description" className="min-h-32" {...field} />
+                    <Textarea placeholder="Nhập điểm nổi bật" className="min-h-32" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -299,7 +309,7 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
               name="about"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Về dịch vụ này</FormLabel>
+                  <FormLabel>Về dịch vụ này <span className="text-red-600">*</span></FormLabel>
                   <FormControl>
                     <TiptapEditor
                       value={field.value}
@@ -312,8 +322,47 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
                 </FormItem>
               )}
             />
+
+            {/* what's inclue */}
+            <FormField
+              control={form.control}
+              name="include"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bao gồm những gì <span className="text-red-600">*</span></FormLabel>
+                  <FormControl>
+                    <TiptapEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Những thứ kèm với tour..."
+                      className="min-h-[250px]"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+<FormField
+              control={form.control}
+              name="peekInfor"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Thông tin đón và gặp gỡ khách <span className="text-red-600">*</span></FormLabel>
+                  <FormControl>
+                    <TiptapEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Thông tin đón và gặp gỡ khách..."
+                      className="min-h-[250px]"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <div className="flex justify-end">
-              <Button type="submit">Next: Destinations</Button>
+              <Button type="submit">Tiếp theo: Lịch trình</Button>
             </div>
           </form>
         </Form>

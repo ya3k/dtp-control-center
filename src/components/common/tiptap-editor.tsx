@@ -364,7 +364,7 @@ export function TiptapEditor({ value, onChange, placeholder, className }: Tiptap
         </div>
 
         {/* Help button */}
-        <div className="ml-auto">
+        {/* <div className="ml-auto">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -380,7 +380,7 @@ export function TiptapEditor({ value, onChange, placeholder, className }: Tiptap
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        </div>
+        </div> */}
       </div>
       <EditorContent editor={editor} />
     </div>
