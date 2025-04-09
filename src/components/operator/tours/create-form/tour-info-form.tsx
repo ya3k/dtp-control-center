@@ -22,12 +22,16 @@ import { toast } from "sonner"
 import { TiptapEditor } from "@/components/common/tiptap-editor"
 import Image from "next/image"
 import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 // Define the Frequency enum for display
 enum Frequency {
-  Daily = "Hằng ngày",
-  Weekly = "Hằng tuần",
-  Monthly = "Hằng tháng",
+  Daily = "Daily",
+  Weekly = "Weekly",
+  Monthly = "Monthly",
 }
 
 const frequencyList = [
@@ -56,8 +60,8 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
       img: data.img || "",
       categoryid: data.categoryid || "",
       scheduleFrequency: (data.scheduleFrequency as Frequency) || Frequency.Daily,
-      openDay: data.openDay || "",
-      closeDay: data.closeDay || "",
+      openDay: data.openDay ? new Date(data.openDay) : undefined,
+      closeDay: data.closeDay ? new Date(data.closeDay) : undefined,
       description: data.description || "",
       about: data.about || "",
       include: data.include || '',
@@ -91,8 +95,8 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
       closeDay: values.closeDay,
       scheduleFrequency: values.scheduleFrequency,
       about: values.about || "",
-      include: data.include || '',
-      peekInfor: data.peekInfor || "",
+      include: values.include || '',
+      peekInfor: values.peekInfor || "",
 
     }
 
@@ -212,11 +216,11 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
                 control={form.control}
                 name="scheduleFrequency"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex-1">
                     <FormLabel>Chu kỳ Tour <span className="text-red-600">*</span></FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Chọn chu kỳ Tour">
                             {frequencyList.find((freq) => freq.id === field.value)?.name || "Chọn chu kỳ Tour"}
                           </SelectValue>
@@ -235,8 +239,6 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
                 )}
               />
 
-              {/* Open Day and Close Day */}
-
               {/* Open Day */}
               <FormField
                 control={form.control}
@@ -244,9 +246,35 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
                 render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormLabel>Ngày mở Tour <span className="text-red-600">*</span></FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "dd/MM/yyyy")
+                            ) : (
+                              <span>Chọn ngày mở tour</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) => date < new Date()}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -259,14 +287,44 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
                 render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormLabel>Ngày đóng Tour <span className="text-red-600">*</span></FormLabel>
-                    <FormControl>
-                  
-                      <Input type="date" {...field} />
-                    </FormControl>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "dd/MM/yyyy")
+                            ) : (
+                              <span>Chọn ngày đóng tour</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) => {
+                            const openDay = form.getValues("openDay");
+                            // Disable dates before today and before openDay
+                            return date < new Date() || (openDay && date < openDay);
+                          }}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
             </div>
 
             {/* Description */}
@@ -300,7 +358,7 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
                   </FormControl>
                   <FormMessage />
                 </FormItem>
-              )}
+              )} 
             /> */}
 
             {/* about */}
@@ -343,7 +401,7 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
               )}
             />
 
-<FormField
+            <FormField
               control={form.control}
               name="peekInfor"
               render={({ field }) => (

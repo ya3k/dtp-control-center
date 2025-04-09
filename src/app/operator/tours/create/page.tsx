@@ -27,12 +27,12 @@ export default function CreateTourPage() {
     description: "",
     destinations: [],
     tickets: [],
-    openDay: "",
-    closeDay: "",
+    openDay: new Date(),
+    closeDay: new Date(),
     scheduleFrequency: "",
     about: "",
-    include: '',
-    peekInfor: ''
+    include: "",
+    peekInfor: ""
   })
 
   const updateFormData = (data: Partial<CreateTourBodyType>) => {
@@ -145,12 +145,21 @@ export default function CreateTourPage() {
       }
 
       // Format dates to ISO string if they aren't already
+      // updatedFormData = {
+      //   ...updatedFormData,
+      //   openDay: updatedFormData.openDay ? new Date(updatedFormData.openDay).toISOString() : "",
+      //   closeDay: updatedFormData.closeDay ? new Date(updatedFormData.closeDay).toISOString() : "",
+      // }
+
       updatedFormData = {
         ...updatedFormData,
-        openDay: updatedFormData.openDay ? new Date(updatedFormData.openDay).toISOString() : "",
-        closeDay: updatedFormData.closeDay ? new Date(updatedFormData.closeDay).toISOString() : "",
+        openDay: updatedFormData.openDay instanceof Date
+          ? updatedFormData.openDay
+          : new Date(updatedFormData.openDay || new Date()),
+        closeDay: updatedFormData.closeDay instanceof Date
+          ? updatedFormData.closeDay
+          : new Date(updatedFormData.closeDay || new Date()),
       }
-
       // Ensure all required fields are present and properly formatted
       const finalFormData: CreateTourBodyType = {
         title: updatedFormData.title || "",
@@ -159,8 +168,8 @@ export default function CreateTourPage() {
         description: updatedFormData.description || "",
         destinations: updatedFormData.destinations || [],
         tickets: updatedFormData.tickets || [],
-        openDay: updatedFormData.openDay || "",
-        closeDay: updatedFormData.closeDay || "",
+        openDay: updatedFormData.openDay || new Date(),
+        closeDay: updatedFormData.closeDay || new Date(),
         scheduleFrequency: updatedFormData.scheduleFrequency || "",
         about: updatedFormData.about || "",
         include: updatedFormData.include || "",

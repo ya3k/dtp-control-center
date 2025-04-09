@@ -50,11 +50,15 @@ const ActivityForm = ({
   setActivities: (index: number, activities: z.infer<typeof destinationActivities>[]) => void
 }) => {
   const [activityName, setActivityName] = useState("")
-  const [activityStartTime, setActivityStartTime] = useState("09:00:00")
-  const [activityEndTime, setActivityEndTime] = useState("10:00:00")
+  const [activityStartTime, setActivityStartTime] = useState("")
+  const [activityEndTime, setActivityEndTime] = useState("")
+  const [editingActivityIndex, setEditingActivityIndex] = useState<number | null>(null)
 
   const formatTime = (time: string): string => {
-    return /^\d{2}:\d{2}$/.test(time) ? `${time}:00` : time
+    if (!time) return ""; // Handle empty values
+    if (/^\d{2}:\d{2}$/.test(time)) return `${time}:00`;
+    if (/^\d{2}:\d{2}:\d{2}$/.test(time)) return time;
+    return time; // Return unchanged if format is unexpected
   }
 
   const addActivity = () => {
@@ -63,19 +67,54 @@ const ActivityForm = ({
       return
     }
 
-    const newActivity = {
-      name: activityName,
-      startTime: activityStartTime,
-      endTime: activityEndTime,
-      sortOrder: activities.length,
+    if (editingActivityIndex !== null) {
+      // Update existing activity
+      const updatedActivities = [...activities]
+      updatedActivities[editingActivityIndex] = {
+        ...updatedActivities[editingActivityIndex],
+        name: activityName,
+        startTime: activityStartTime,
+        endTime: activityEndTime,
+      }
+
+      setActivities(destinationIndex, updatedActivities)
+      toast.success("Hoạt động đã được cập nhật")
+
+      // Reset edit state
+      setEditingActivityIndex(null)
+    } else {
+      // Add new activity
+      const newActivity = {
+        name: activityName,
+        startTime: activityStartTime,
+        endTime: activityEndTime,
+        sortOrder: activities.length,
+      }
+
+      setActivities(destinationIndex, [...activities, newActivity])
     }
 
-    setActivities(destinationIndex, [...activities, newActivity])
-
     // Reset form
+    resetForm()
+  }
+
+  const editActivity = (index: number) => {
+    const activity = activities[index]
+    setActivityName(activity.name)
+    setActivityStartTime(activity.startTime)
+    setActivityEndTime(activity.endTime)
+    setEditingActivityIndex(index)
+  }
+
+  const cancelEdit = () => {
+    setEditingActivityIndex(null)
+    resetForm()
+  }
+
+  const resetForm = () => {
     setActivityName("")
-    setActivityStartTime("09:00:00")
-    setActivityEndTime("10:00:00")
+    setActivityStartTime("")
+    setActivityEndTime("")
   }
 
   const removeActivity = (index: number) => {
@@ -89,6 +128,12 @@ const ActivityForm = ({
     }))
 
     setActivities(destinationIndex, reorderedActivities)
+
+    // If we're currently editing this activity, reset form
+    if (editingActivityIndex === index) {
+      setEditingActivityIndex(null)
+      resetForm()
+    }
   }
 
   return (
@@ -127,10 +172,24 @@ const ActivityForm = ({
           </div>
         </div>
 
-        <Button type="button" variant="outline" size="sm" className="w-full" onClick={addActivity}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Thêm hoạt động
-        </Button>
+        <div className={editingActivityIndex !== null ? "grid grid-cols-2 gap-2" : ""}>
+          <Button type="button" variant="outline" size="sm" className="w-full" onClick={addActivity}>
+            {editingActivityIndex !== null ? (
+              <>Lưu chỉnh sửa hoạt động</>
+            ) : (
+              <>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Thêm hoạt động
+              </>
+            )}
+          </Button>
+
+          {editingActivityIndex !== null && (
+            <Button type="button" variant="ghost" size="sm" className="w-full" onClick={cancelEdit}>
+              Hủy chỉnh sửa
+            </Button>
+          )}
+        </div>
       </div>
 
       {activities.length > 0 && (
@@ -144,9 +203,14 @@ const ActivityForm = ({
                   {activity.startTime} - {activity.endTime}
                 </p>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => removeActivity(index)}>
-                <Trash2 className="h-3 w-3" />
-              </Button>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="sm" onClick={() => editActivity(index)}>
+                  <Pencil className="h-3 w-3" />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => removeActivity(index)}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
@@ -289,120 +353,105 @@ export function DestinationForm({
 
   const editDestination = (index: number) => {
     console.log("Editing destination at index:", index);
-
+  
     if (index >= 0 && index < destinationsWithFiles.length) {
       const destination = destinationsWithFiles[index];
-
-      // Set form values to edit
+  
+      // Set form values to edit - simpler time handling
       form.reset({
         destinationId: destination.destinationId,
-        startTime: destination.startTime,
-        endTime: destination.endTime,
+        startTime: destination.startTime.substring(0, 5), // Just use HH:MM
+        endTime: destination.endTime.substring(0, 5),     // Just use HH:MM
         sortOrder: destination.sortOrder,
         sortOrderByDate: destination.sortOrderByDate,
         img: destination.img || "",
       });
-
-      // Set editing state
+  
+      // Rest of the function remains the same
       setEditingIndex(index);
-
-      // Set preview image if exists
+  
       if (destination.imagePreview || destination.img) {
         setImagePreview(destination.imagePreview || destination.img || null);
+      } else {
+        setImagePreview(null);
       }
-
-      // Set selected file if exists
+  
       if (destination.imageFile) {
         setSelectedImageFile(destination.imageFile);
         form.setValue("imageFile", destination.imageFile);
+      } else {
+        setSelectedImageFile(null);
       }
-
+  
       console.log("Editing destination:", destination);
       console.log("Activities for this destination:", destinationActivitiesMap.get(index));
-
-      // Scroll to the form
+  
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       console.error("Invalid destination index:", index);
       toast.error("Error editing destination");
     }
   };
-
   const addDestination = (values: TourCreateDestinationType & { imageFile?: File }) => {
+    console.log("addDestination được gọi với giá trị:", values);
+    console.log("Định dạng startTime:", values.startTime);
+    console.log("Định dạng endTime:", values.endTime);
+    
     const imageFile = selectedImageFile || values.imageFile;
-
-    // // Different validation logic for new vs. editing
-    // if (editingIndex === null && !imageFile && !values.img) {
-    //   // Only require image for new destinations
-    //   form.setError("img", {
-    //     type: "manual",
-    //     message: "Please select an image or provide an image URL"
-    //   });
-    //   return;
-    // }
-
-    // For editing, use existing image if no new one is provided
-    let imageUrl = values.img || "";
-    if (imageFile) {
-      imageUrl = URL.createObjectURL(imageFile);
-    } else if (editingIndex !== null && destinationsWithFiles[editingIndex]) {
-      // When editing, keep the existing image if no new one is provided
-      imageUrl = destinationsWithFiles[editingIndex].img || "";
-    }
-
-    // Ensure sortOrder is appropriate for the sortOrderByDate
-    const sortOrderByDate = values.sortOrderByDate;
-    const sortOrder = values.sortOrder;
-
-    // Get the existing activities for this destination
-    let existingActivities: z.infer<typeof destinationActivities>[] = [];
-
-    if (editingIndex !== null) {
-      // When editing, preserve activities from the activities map
-      existingActivities = destinationActivitiesMap.get(editingIndex) || [];
-      console.log("Preserving activities for destination", editingIndex, existingActivities);
-    }
-
+  
+    // Format times to ensure they have seconds
+    const startTime = values.startTime.includes(':') ? 
+      (values.startTime.length === 5 ? `${values.startTime}:00` : values.startTime) : 
+      values.startTime;
+    
+    const endTime = values.endTime.includes(':') ? 
+      (values.endTime.length === 5 ? `${values.endTime}:00` : values.endTime) : 
+      values.endTime;
+  
+    // Rest of your function...
+    
     // Create the destination data object
     const destinationData: TourCreateDestinationType = {
       destinationId: values.destinationId,
-      startTime: values.startTime,
-      endTime: values.endTime,
-      sortOrder: sortOrder,
-      sortOrderByDate: sortOrderByDate,
-      img: imageUrl,
-      destinationActivities: existingActivities,
+      startTime: startTime,
+      endTime: endTime,
+      sortOrder: values.sortOrder,
+      sortOrderByDate: values.sortOrderByDate,
+      img: values.img,
+      destinationActivities: values.destinationActivities,
     };
-
+  
     const destinationWithFile: DestinationWithFile = {
       ...destinationData,
       imageFile: imageFile,
-      imagePreview: imageUrl,
+      imagePreview: values.img,
     };
-
+  
     // If we're editing an existing destination
     if (editingIndex !== null) {
+      console.log("Saving edited destination with activities:", values.destinationActivities);
+  
       // Update destinationsWithFiles array
       const updatedDestinationsWithFiles = [...destinationsWithFiles];
       updatedDestinationsWithFiles[editingIndex] = destinationWithFile;
       setDestinationsWithFiles(updatedDestinationsWithFiles);
-
+  
       // Update the main destinations data
       const updatedDestinations = [...(data.destinations || [])];
       updatedDestinations[editingIndex] = {
         ...destinationData,
         // Make sure activities are explicitly preserved here
-        destinationActivities: existingActivities,
+        destinationActivities: values.destinationActivities,
       };
-
+  
       // Update parent data
       updateData({ destinations: updatedDestinations });
-
+  
       // If the image file changed, update it in parent
       if (imageFile) {
         addDestinationImageFile(editingIndex, imageFile);
       }
-
+  
       console.log("Updated destination at index", editingIndex, updatedDestinations[editingIndex]);
       toast.success("Destination updated successfully");
       setEditingIndex(null);
@@ -412,21 +461,21 @@ export function DestinationForm({
       setDestinationsWithFiles([...destinationsWithFiles, destinationWithFile]);
       const updatedDestinations = [...(data.destinations || []), destinationData];
       updateData({ destinations: updatedDestinations });
-
+  
       // Initialize empty activities for this destination
       const newActivitiesMap = new Map(destinationActivitiesMap);
       newActivitiesMap.set(updatedDestinations.length - 1, []);
       setDestinationActivitiesMap(newActivitiesMap);
-
+  
       // If we have an image file, add it
       if (imageFile) {
         const destinationIndex = updatedDestinations.length - 1;
         addDestinationImageFile(destinationIndex, imageFile);
       }
-
+  
       toast.success("Destination added successfully");
     }
-
+  
     // Reset form with appropriate default values
     form.reset({
       destinationId: "",
@@ -437,21 +486,24 @@ export function DestinationForm({
       img: "",
       destinationActivities: [],
     });
-
+  
     // Clear image state
     setImagePreview(null);
     setSelectedImageFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+  
+    console.log("Form values:", values);
   };
+  
 
   const cancelEdit = () => {
     setEditingIndex(null);
     form.reset({
       destinationId: "",
-      startTime: "09:00:00",
-      endTime: "10:00:00",
+      startTime: "",
+      endTime: "",
       sortOrder: 0,
       sortOrderByDate: data.destinations?.length ? Math.max(...data.destinations.map(d => d.sortOrderByDate)) : 0,
       img: "",
@@ -524,7 +576,7 @@ export function DestinationForm({
       {/* Title */}
       <div>
         <h2 className="text-2xl font-bold">Điểm đến</h2>
-        <p className="text-muted-foreground">Thêm điểm đến cho tour và các hoạt động của bạn.</p>
+        <p className="text-muted-foreground">Thêm điểm đến và các hoạt động cho tour.</p>
       </div>
 
       {/* Two-column layout */}
@@ -532,7 +584,7 @@ export function DestinationForm({
         {/* Left column - Add Destination Form */}
         <Card className="md:sticky md:top-4 h-fit">
           <CardHeader>
-            <CardTitle>{editingIndex !== null ? 'Chỉn sửa điểm đến' : 'Thêm điểm đến'}</CardTitle>
+            <CardTitle>{editingIndex !== null ? 'Chỉnh sửa điểm đến' : 'Thêm điểm đến'}</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -573,9 +625,8 @@ export function DestinationForm({
                         <FormControl>
                           <Input
                             type="time"
-                            step="1"
-                            {...field}
-                            onChange={(e) => field.onChange(formatTime(e.target.value))}
+                            value={formatTimeForInput(field.value)}
+                            onChange={(e) => field.onChange(formatTimeForStorage(e.target.value))}
                           />
                         </FormControl>
                         <FormMessage />
@@ -588,13 +639,12 @@ export function DestinationForm({
                     name="endTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Thời gian rời đi</FormLabel>
+                        <FormLabel>Thời gian đi</FormLabel>
                         <FormControl>
                           <Input
                             type="time"
-                            step="1"
-                            {...field}
-                            onChange={(e) => field.onChange(formatTime(e.target.value))}
+                            value={formatTimeForInput(field.value)}
+                            onChange={(e) => field.onChange(formatTimeForStorage(e.target.value))}
                           />
                         </FormControl>
                         <FormMessage />
@@ -715,7 +765,8 @@ export function DestinationForm({
 
                 {/* Submit button */}
                 <div className={editingIndex !== null ? "grid grid-cols-2 gap-2" : ""}>
-                  <Button type="submit" className="w-full">
+                  <Button type="submit" className="w-full"
+                  >
                     {editingIndex !== null ? (
                       <>
                         Lưu chỉnh sửa
@@ -864,4 +915,26 @@ export function DestinationForm({
     </div>
   )
 }
+
+// Add these helper functions near your other utility functions
+
+// Convert HH:MM:SS to HH:MM for input fields
+const formatTimeForInput = (time: string): string => {
+  if (!time) return "";
+  // Extract just the HH:MM part if the time is in HH:MM:SS format
+  if (/^\d{2}:\d{2}:\d{2}$/.test(time)) {
+    return time.substring(0, 5);
+  }
+  return time;
+};
+
+// Convert HH:MM to HH:MM:SS for data storage
+const formatTimeForStorage = (time: string): string => {
+  if (!time) return "";
+  // Add :00 seconds if not present
+  if (/^\d{2}:\d{2}$/.test(time)) {
+    return `${time}:00`;
+  }
+  return time;
+};
 

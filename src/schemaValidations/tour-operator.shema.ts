@@ -21,8 +21,8 @@ export const destinationActivities = z.object({
 export const DestinationSchema = z.object({
   destinationId: z.string().uuid(),
   destinationActivities: z.array(destinationActivities),
-  startTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/), // Ensures HH:MM:SS format
-  endTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/), // Ensures HH:MM:SS format
+  startTime: z.string(), // Ensures HH:MM:SS format
+  endTime: z.string(), // Ensures HH:MM:SS format
   sortOrder: z.number(),
   sortOrderByDate: z.number(),
   img: z.string()
@@ -45,8 +45,8 @@ export const TourSchema = z.object({
   description: z.string(),
   destinations: z.array(DestinationSchema),
   tickets: z.array(TicketSchema),
-  openDay: z.string(),
-  closeDay: z.string(),
+  openDay: z.date(),
+  closeDay: z.date(),
   scheduleFrequency: z.string(),
   img: z.string(),
   about: z.string(),
@@ -59,8 +59,8 @@ export const tourInfoPostSchema = z.object({
   img: z.string(),
   categoryid: z.string().min(1, "Hãy chọn loại tour"),
   description: z.string().min(1, "Nhập điểm nổi bật của tour"),
-  openDay: z.string().min(1, "Hãy nhập ngày mở tour."),
-  closeDay: z.string().min(1, "Hãy nhập ngày mở tour."),
+  openDay: z.date(),
+  closeDay: z.date(),
   scheduleFrequency: z.string().min(1, "Hãy nhập chu kì tour"),
   about: z.string().min(1, "Về dịch vụ này là bắt buộc."),
   include: z.string().min(1, "Bao gồm là bắt buộc."),

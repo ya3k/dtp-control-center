@@ -55,7 +55,7 @@ export function TiptapEditor({ value, onChange, placeholder, className }: Tiptap
       TextAlign.configure({
         types: ['heading', 'paragraph'],
         defaultAlignment: 'left',
-        
+
       }),
       Image.configure({
         HTMLAttributes: {
@@ -84,6 +84,10 @@ export function TiptapEditor({ value, onChange, placeholder, className }: Tiptap
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML())
     },
+    enableCoreExtensions: true,
+    enablePasteRules: true,
+    enableInputRules: true,
+    immediatelyRender: false
   })
 
   if (!editor) {
@@ -159,8 +163,8 @@ export function TiptapEditor({ value, onChange, placeholder, className }: Tiptap
       onBlur={() => setIsFocused(false)}
     >
       {editor && (
-        <BubbleMenu 
-          editor={editor} 
+        <BubbleMenu
+          editor={editor}
           tippyOptions={{ duration: 100 }}
           className="bg-background rounded-md shadow-md border border-border flex overflow-hidden"
         >
@@ -182,14 +186,14 @@ export function TiptapEditor({ value, onChange, placeholder, className }: Tiptap
           >
             <Italic className="h-4 w-4" />
           </Button>
-          
+
           <div className="border-l h-8"></div>
-          
+
           {/* Text styles */}
-          
-          
+
+
           <div className="border-l h-8"></div>
-          
+
           {/* List buttons */}
           <Button
             type="button"
