@@ -8,8 +8,8 @@ import { Loader2 } from "lucide-react"
 import { tourOdataResType, TourResType } from "@/schemaValidations/tour-operator.shema"
 import { TourEditInfoForm } from "./edit-tour-info-form"
 import TourEditScheduleForm from "./edit-tour-schedule"
-import TourEditDestination from "./edit-tour-destination"
-import EditTourDestination from "./edit-tour-destination"
+import TourEditDetinationForm from "./edit-tour-destination-form"
+import TourEditScheduleTicketForm from "./edit-tour-ticket-form"
 
 interface UpdateTourDialogProps {
     tour: tourOdataResType
@@ -63,8 +63,8 @@ export function UpdateTourDialog({ tour: initialTour, open, onOpenChange, onUpda
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                         <TabsList className="flex flex-auto mb-4">
                             <TabsTrigger value="info">Thông tin cơ bản</TabsTrigger>
-                            <TabsTrigger value="destinations">Địa điểm</TabsTrigger>
-                            <TabsTrigger value="schedule">Lịch Trình</TabsTrigger>
+                            <TabsTrigger value="destinations">Lịch trình Tour</TabsTrigger>
+                            <TabsTrigger value="schedule">Tour Schedule</TabsTrigger>
                             <TabsTrigger value="tickets">Vé</TabsTrigger>
                         </TabsList>
 
@@ -74,7 +74,10 @@ export function UpdateTourDialog({ tour: initialTour, open, onOpenChange, onUpda
 
                         <TabsContent value="destinations" className="space-y-4">
                             {/* Destinations edit form will go here */}
-                            <EditTourDestination tourId={tour.id} onUpdateSuccess={handleUpdateSuccess} />
+                            <TourEditDetinationForm
+                                tourId={tour.id}
+                                onUpdateSuccess={handleUpdateSuccess}
+                            />
                         </TabsContent>
 
                         <TabsContent value="schedule" className="space-y-4">
@@ -84,6 +87,9 @@ export function UpdateTourDialog({ tour: initialTour, open, onOpenChange, onUpda
 
                         <TabsContent value="tickets" className="space-y-4">
                             {/* Tickets edit form will go here */}
+                            <TourEditScheduleTicketForm
+                                tourId={tour.id}
+                                onUpdateSuccess={handleUpdateSuccess} />
                         </TabsContent>
                     </Tabs>
                 )}

@@ -26,6 +26,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import { ChevronDown } from "lucide-react"
 
 // Define the Frequency enum for display
 enum Frequency {
@@ -328,97 +334,122 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
             </div>
 
             {/* Description */}
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Điểm nổi bật <span className="text-red-600">*</span></FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Nhập điểm nổi bật" className="min-h-32" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Điểm nổi bật</FormLabel>
-                  <FormControl>
-                    <TiptapEditor
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder="Nhập một số điểm nổi bật của tour..."
-                      className="min-h-[250px]"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} 
-            /> */}
+            <Collapsible className="w-full space-y-2">
+              <CollapsibleTrigger className="w-full">
+                <div className="flex items-center justify-between space-x-4 px-4 py-2 hover:bg-accent hover:text-accent-foreground rounded-md">
+                  <h4 className="text-sm font-semibold">
+                    Điểm nổi bật <span className="text-red-600">*</span>
+                  </h4>
+                  <ChevronDown className="h-4 w-4" />
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-2">
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Textarea placeholder="Nhập điểm nổi bật" className="min-h-32" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CollapsibleContent>
+            </Collapsible>
 
             {/* about */}
-            <FormField
-              control={form.control}
-              name="about"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Về dịch vụ này <span className="text-red-600">*</span></FormLabel>
-                  <FormControl>
-                    <TiptapEditor
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder="Thông tin thêm về dịch vụ này..."
-                      className="min-h-[250px]"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <Collapsible className="w-full space-y-2">
+              <CollapsibleTrigger className="w-full">
+                <div className="flex items-center justify-between space-x-4 px-4 py-2 hover:bg-accent hover:text-accent-foreground rounded-md">
+                  <h4 className="text-sm font-semibold">
+                    Về dịch vụ này <span className="text-red-600">*</span>
+                  </h4>
+                  <ChevronDown className="h-4 w-4" />
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-2">
+                <FormField
+                  control={form.control}
+                  name="about"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <TiptapEditor
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Thông tin thêm về dịch vụ này..."
+                          className="min-h-[250px]"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CollapsibleContent>
+            </Collapsible>
 
-            {/* what's inclue */}
-            <FormField
-              control={form.control}
-              name="include"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bao gồm những gì <span className="text-red-600">*</span></FormLabel>
-                  <FormControl>
-                    <TiptapEditor
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder="Những thứ kèm với tour..."
-                      className="min-h-[250px]"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* what's include */}
+            <Collapsible className="w-full space-y-2">
+              <CollapsibleTrigger className="w-full">
+                <div className="flex items-center justify-between space-x-4 px-4 py-2 hover:bg-accent hover:text-accent-foreground rounded-md">
+                  <h4 className="text-sm font-semibold">
+                    Bao gồm những gì <span className="text-red-600">*</span>
+                  </h4>
+                  <ChevronDown className="h-4 w-4" />
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-2">
+                <FormField
+                  control={form.control}
+                  name="include"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <TiptapEditor
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Những thứ kèm với tour..."
+                          className="min-h-[250px]"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CollapsibleContent>
+            </Collapsible>
 
-            <FormField
-              control={form.control}
-              name="peekInfor"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Thông tin đón và gặp gỡ khách <span className="text-red-600">*</span></FormLabel>
-                  <FormControl>
-                    <TiptapEditor
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder="Thông tin đón và gặp gỡ khách..."
-                      className="min-h-[250px]"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <Collapsible className="w-full space-y-2">
+              <CollapsibleTrigger className="w-full">
+                <div className="flex items-center justify-between space-x-4 px-4 py-2 hover:bg-accent hover:text-accent-foreground rounded-md">
+                  <h4 className="text-sm font-semibold">
+                    Thông tin đón và gặp gỡ khách <span className="text-red-600">*</span>
+                  </h4>
+                  <ChevronDown className="h-4 w-4" />
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-2">
+                <FormField
+                  control={form.control}
+                  name="peekInfor"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <TiptapEditor
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Thông tin đón và gặp gỡ khách..."
+                          className="min-h-[250px]"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CollapsibleContent>
+            </Collapsible>
             <div className="flex justify-end">
               <Button type="submit">Tiếp theo: Lịch trình</Button>
             </div>

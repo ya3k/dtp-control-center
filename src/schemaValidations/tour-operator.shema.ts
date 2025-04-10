@@ -1,3 +1,4 @@
+import { TicketSchema } from './tour-operator.shema';
 import { z } from "zod";
 
 // Enum for ticket types
@@ -204,3 +205,17 @@ export const DELETEtourScheduleSchema = z.object({
 
 export type DELETETourScheduleBodyType = z.infer<typeof DELETEtourScheduleSchema>;
 
+export const TicketScheduleSchema = z.object({
+  ticketTypeId: z.string(),
+  ticketKind: z.number(), // 0 or 1 — if needed, can be refined
+  netCost: z.number().nonnegative(),
+  availableTicket: z.number().int().nonnegative(),
+  tourScheduleId: z.string()
+});
+
+export const ListTicketScheduleSchema = z.object({
+  day: z.string(),
+  ticketSchedules: z.array(TicketScheduleSchema)
+})
+
+export type TicketScheduleResType = z.infer<typeof TicketScheduleSchema>;
