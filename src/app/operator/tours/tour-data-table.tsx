@@ -124,7 +124,7 @@ export default function OpTourDataTable() {
     fetchTours(); // Refresh the data
   }
   // Function to truncate description text
-  const truncateDescription = (text: string, maxLength = 100): string => {
+  const truncateDescription = (text: string, maxLength = 50): string => {
     if (!text) return ""
     if (text.length <= maxLength) return text
     return text.substring(0, maxLength) + "..."
@@ -155,7 +155,7 @@ export default function OpTourDataTable() {
     setMinRating(0)
   }
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       <Card>
         <CardHeader className="mx-4">
           <div className="flex justify-between items-center">

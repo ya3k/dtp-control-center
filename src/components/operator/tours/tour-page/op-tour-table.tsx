@@ -66,13 +66,19 @@ export function OpTourTable({
                       src={tour.thumbnailUrl}
                       alt={tour.title}
                       fill
+                      sizes="(max-width: 768px) 100px, 96px"
                       className="object-cover"
                       onError={() => handleImageError(tour.id)}
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
-                      <Image src={`/images/binhdinhtour.png`} alt="Default tour image" width={96}
-                        height={64}/>
+                      <Image 
+                        src={`/images/binhdinhtour.png`} 
+                        alt="Default tour image" 
+                        width={96}
+                        height={64}
+                        style={{ width: 'auto', height: 'auto' }}
+                      />
                     </div>
                   )}
                 </div>
@@ -80,9 +86,7 @@ export function OpTourTable({
               <TableCell>
                 <div>
                   <div className="font-medium">{tour.title}</div>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    {truncateDescription(tour.description)}
-                  </div>
+                  <div className="text-sm text-muted-foreground">{truncateDescription(tour.description)}</div>
                 </div>
               </TableCell>
               <TableCell><OpTourStarRating rating={tour.avgStar} /></TableCell>

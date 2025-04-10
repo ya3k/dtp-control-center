@@ -1,7 +1,7 @@
 "use client"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Plus, Trash2, Loader2, Pencil, PencilIcon } from "lucide-react"
+import { Plus, Trash2, Loader2, Pencil } from "lucide-react"
 import { useState } from "react" // Add this import
 
 import { Button } from "@/components/ui/button"
@@ -25,12 +25,25 @@ interface TicketFormProps {
   isSubmitting: boolean
 }
 
-// Convert enum to array for rendering
-const ticketKinds = Object.entries(TicketKind)
-  .filter(([key]) => isNaN(Number(key)))
-  .map(([key, value]) => ({ id: Number(value), name: key }))
+// Vietnamese labels for ticket kinds
+const ticketKindLabels: Record<TicketKind, string> = {
+  [TicketKind.Adult]: "Người lớn",
+  [TicketKind.Child]: "Trẻ em",
+  [TicketKind.PerGroupOfThree]: "Nhóm 3 người",
+  [TicketKind.PerGroupOfFive]: "Nhóm 5 người",
+  [TicketKind.PerGroupOfSeven]: "Nhóm 7 người",
+  [TicketKind.PerGroupOfTen]: "Nhóm 10 người",
+};
 
-  
+// Convert enum to array for rendering
+const ticketKinds = Object.keys(TicketKind)
+  .filter(key => !isNaN(Number(key)))
+  .map(key => ({
+    id: Number(key),
+    name: TicketKind[Number(key) as TicketKind],
+    label: ticketKindLabels[Number(key) as TicketKind]
+  }));
+
 export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmitting }: TicketFormProps) {
   // Add state for editing
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -133,8 +146,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
 
   // Get ticket kind name by ID
   const getTicketKindName = (id: TicketKind) => {
-    const kind = ticketKinds.find((k) => k.id === id);
-    return kind ? kind.name : "Unknown Ticket Type";
+    return ticketKindLabels[id] || "Loại vé không xác định";
   }
 
   // Sort function
@@ -168,7 +180,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
                   name="ticketKind"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Ticket Type</FormLabel>
+                      <FormLabel>Loại vé</FormLabel>
                       <Select
                         onValueChange={(value) => field.onChange(Number.parseInt(value))}
                         defaultValue={field.value.toString()}
@@ -182,7 +194,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
                         <SelectContent>
                           {ticketKinds.map((kind) => (
                             <SelectItem key={kind.id} value={kind.id.toString()}>
-                              {kind.name}
+                              {kind.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -234,7 +246,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
                 {/* Buttons - show different options when editing */}
                 <div className={editingIndex !== null ? "grid grid-cols-2 gap-2" : ""}>
                   <Button type="submit" className="w-full">
-                    {editingIndex !== null ? 'Save Changes' : (
+                    {editingIndex !== null ? 'Lưu chỉnh sửa' : (
                       <>
                         <Plus className="mr-2 h-4 w-4" />
                         Thêm vé
@@ -309,7 +321,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">Giá: ${ticket.defaultNetCost.toFixed(2)}</p>
+                          <p className="text-sm text-muted-foreground">Giá: {ticket.defaultNetCost.toLocaleString('vi-VN')} VND</p>
                           <p className="text-sm text-muted-foreground">Số lượng tối thiểu: {ticket.minimumPurchaseQuantity}</p>
                         </div>
                         <div className="flex space-x-2">
@@ -318,7 +330,7 @@ export function TicketForm({ data, updateData, onPrevious, onSubmit, isSubmittin
                             size="icon"
                             onClick={() => editTicket(originalIndex)}
                           >
-                            <PencilIcon />
+                            <Pencil />
                           </Button>
                           <Button
                             variant="ghost"
