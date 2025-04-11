@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2 } from "lucide-react"
+import { ChevronDown, Loader2 } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -17,6 +17,8 @@ import uploadApiRequest from "@/apiRequests/upload"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import Image from "next/image"
 import CategorySearch from "../categories-search"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { TiptapEditor } from "@/components/common/tiptap-editor"
 
 interface TourInfoFormProps {
     tourId: string;
@@ -47,24 +49,32 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
             title: "",
             category: "",
             description: "",
+            about: "",
+            include: "",
+            pickinfor: "",
             img: ""
         },
     });
 
     useEffect(() => {
         const fetchTourInfo = async () => {
+            console.log(tourId)
+            
             try {
                 setIsLoading(true);
                 const resTourInfo = await tourApiService.getTourInfo(tourId);
                 const editableInfo = resTourInfo.payload.data;
                 setTourData(editableInfo);
                 setPreviewImage(editableInfo.img || null);
-                
+
                 form.reset({
                     tourId: tourId,
                     title: editableInfo.title || '',
                     category: editableInfo.category || '',
                     description: editableInfo.description || '',
+                    about: editableInfo.about || '',
+                    include: editableInfo.include || '',
+                    pickinfor: editableInfo.pickinfor || '',
                     img: editableInfo.img || '',
                 });
             } catch (error) {
@@ -99,9 +109,9 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
     const onSubmit = async (values: PUTTourInfoBodyType) => {
         try {
             setIsSubmitting(true);
-            
+
             // Create a copy of the values for updating and ensure tourId is included
-            const updatedFormData = { 
+            const updatedFormData = {
                 ...values,
                 tourId: tourId
             };
@@ -147,9 +157,9 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                         render={({ field }) => (
                             <FormItem>
                                 <FormControl>
-                                    <Input 
-                                        type="hidden" 
-                                        {...field} 
+                                    <Input
+                                        type="hidden"
+                                        {...field}
                                         value={tourId}
                                     />
                                 </FormControl>
@@ -165,10 +175,10 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                             <FormItem className="mx-2">
                                 <FormLabel>Nội dung</FormLabel>
                                 <FormControl>
-                                    <Input 
-                                        {...field} 
+                                    <Input
+                                        {...field}
                                         disabled={isLoading || isSubmitting}
-                                        className="mx-auto" 
+                                        className="mx-auto"
                                     />
                                 </FormControl>
                                 <FormMessage />
@@ -197,23 +207,121 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                     />
 
                     {/* Description */}
-                    <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                            <FormItem className="mx-2">
-                                <FormLabel>Điểm nổi bật</FormLabel>
-                                <FormControl>
-                                    <Textarea 
-                                        {...field} 
-                                        className="min-h-[100px]" 
-                                        disabled={isLoading || isSubmitting} 
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    <Collapsible className="w-full space-y-2">
+                        <CollapsibleTrigger className="w-full">
+                            <div className="flex items-center justify-between space-x-4 px-4 py-2 hover:bg-accent hover:text-accent-foreground rounded-md">
+                                <h4 className="text-sm font-semibold">
+                                    Điểm nổi bật <span className="text-red-600">*</span>
+                                </h4>
+                                <ChevronDown className="h-4 w-4" />
+                            </div>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-2">
+                            <FormField
+                                control={form.control}
+                                name="description"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <Textarea placeholder="Nhập điểm nổi bật" className="min-h-32" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </CollapsibleContent>
+                    </Collapsible>
+                    {/* about */}
+                    <Collapsible className="w-full space-y-2">
+                        <CollapsibleTrigger className="w-full">
+                            <div className="flex items-center justify-between space-x-4 px-4 py-2 hover:bg-accent hover:text-accent-foreground rounded-md">
+                                <h4 className="text-sm font-semibold">
+                                    Về dịch vụ này <span className="text-red-600">*</span>
+                                </h4>
+                                <ChevronDown className="h-4 w-4" />
+                            </div>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-2">
+                            <FormField
+                                control={form.control}
+                                name="about"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <TiptapEditor
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                placeholder="Thông tin thêm về dịch vụ này..."
+                                                className="min-h-[250px]"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </CollapsibleContent>
+                    </Collapsible>
+
+                    {/* what's include */}
+                    <Collapsible className="w-full space-y-2">
+                        <CollapsibleTrigger className="w-full">
+                            <div className="flex items-center justify-between space-x-4 px-4 py-2 hover:bg-accent hover:text-accent-foreground rounded-md">
+                                <h4 className="text-sm font-semibold">
+                                    Bao gồm những gì <span className="text-red-600">*</span>
+                                </h4>
+                                <ChevronDown className="h-4 w-4" />
+                            </div>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-2">
+                            <FormField
+                                control={form.control}
+                                name="include"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <TiptapEditor
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                placeholder="Những thứ kèm với tour..."
+                                                className="min-h-[250px]"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </CollapsibleContent>
+                    </Collapsible>
+
+                    <Collapsible className="w-full space-y-2">
+                        <CollapsibleTrigger className="w-full">
+                            <div className="flex items-center justify-between space-x-4 px-4 py-2 hover:bg-accent hover:text-accent-foreground rounded-md">
+                                <h4 className="text-sm font-semibold">
+                                    Thông tin đón và gặp gỡ khách <span className="text-red-600">*</span>
+                                </h4>
+                                <ChevronDown className="h-4 w-4" />
+                            </div>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-2">
+                            <FormField
+                                control={form.control}
+                                name="pickinfor"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <TiptapEditor
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                placeholder="Thông tin đón và gặp gỡ khách..."
+                                                className="min-h-[250px]"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </CollapsibleContent>
+                    </Collapsible>
 
                     {/* Image */}
                     <FormField
@@ -237,7 +345,7 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                                             />
                                         </div>
                                     )}
-                                    
+
                                     {/* File Input for New Image */}
                                     <div className="flex flex-col space-y-2">
                                         <FormLabel className="text-sm font-normal">Chọn ảnh mới: </FormLabel>
@@ -274,20 +382,20 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                                                 </Button>
                                             )}
                                         </div>
-                                        
+
                                         {/* Hidden input for storing the image URL */}
                                         <FormControl>
-                                            <Input 
-                                                type="hidden" 
-                                                {...field} 
+                                            <Input
+                                                type="hidden"
+                                                {...field}
                                                 disabled={isLoading || isSubmitting}
                                             />
                                         </FormControl>
-                                        
+
                                         {/* Info text */}
                                         <p className="text-xs text-muted-foreground">
-                                            {tourImageFile 
-                                                ? "Ảnh mới sẽ được lưu khi bạn nhấn nút cập nhật." 
+                                            {tourImageFile
+                                                ? "Ảnh mới sẽ được lưu khi bạn nhấn nút cập nhật."
                                                 : "Giữ ảnh cũ hoặc chọn một ảnh mới."}
                                         </p>
                                     </div>
@@ -299,9 +407,9 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
 
                     {/* Submit Button */}
                     <div className="mx-2 pt-2">
-                        <Button 
-                            type="submit" 
-                            disabled={isLoading || isSubmitting} 
+                        <Button
+                            type="submit"
+                            disabled={isLoading || isSubmitting}
                             className="w-full"
                         >
                             {isSubmitting ? (

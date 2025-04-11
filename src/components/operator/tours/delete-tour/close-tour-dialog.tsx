@@ -14,24 +14,28 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import { TourResType } from "@/schemaValidations/tour-operator.shema"
+import tourApiService from "@/apiRequests/tour"
+import { tourOdataResType, TourResType } from "@/schemaValidations/tour-operator.shema"
 
-interface DeleteEmployeeDialogProps {
-    tour: TourResType | null
+interface CloseToursDialogProps {
+    tour: tourOdataResType
     open: boolean
     onOpenChange: (open: boolean) => void
+    onCloseSuccess: (updatedTour: TourResType) => void
 }
 
-export function DeleteToursDialog({ tour, open, onOpenChange }: DeleteEmployeeDialogProps) {
+export function CloseToursDialog({ tour, open, onOpenChange }: CloseToursDialogProps) {
     const [isDeleting, setIsDeleting] = useState(false)
 
     const handleDelete = async () => {
-        if (!tour) return
-
+        console.log(tour.id)
         setIsDeleting(true)
         try {
-           //fetch api
-            toast.success(`Tour ${tour.id} delete successfully`)
+            //fetch api
+            const response = await tourApiService.closeTour(tour.id);
+            if (response.payload.success === true) {
+                toast.success("Đóng tour thành công~!")
+            }
             onOpenChange(false)
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Failed to delete employee")
@@ -44,14 +48,13 @@ export function DeleteToursDialog({ tour, open, onOpenChange }: DeleteEmployeeDi
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogTitle>Bạn có chắc?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This action cannot be undone. This will  delete the tour
-                        {tour ? ` "${tour.title}"` : ""} and remove their data from our servers.
+                        Bạn có chắc chắn muốn đóng tour <span>{tour.title}</span> này không?
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
                     <Button
                         variant="destructive"
                         onClick={handleDelete}
@@ -61,10 +64,10 @@ export function DeleteToursDialog({ tour, open, onOpenChange }: DeleteEmployeeDi
                         {isDeleting ? (
                             <>
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                Deleting...
+                                Đang đóng...
                             </>
                         ) : (
-                            "Delete"
+                            "Đóng"
                         )}
                     </Button>
                 </AlertDialogFooter>

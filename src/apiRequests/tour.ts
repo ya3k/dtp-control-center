@@ -89,6 +89,19 @@ const tourApiService = {
     return response
   },
 
+  updateTourTickets: async (tourId: string, body: {
+    startDate: string;
+    endDate: string;
+    ticketKindUpdates: Array<{
+      ticketKind: number;
+      newNetCost: number;
+      newAvailableTicket: number;
+    }>;
+  }) => {
+    const response = await http.put(`${apiEndpoint.tourScheduleTicket}/${tourId}`, body);
+    return response;
+  },
+
   create: async (body: CreateTourBodyType) => {
     try {
       const response = await http.post<TourResType>(
@@ -131,6 +144,18 @@ const tourApiService = {
       throw error;
     }
   },
+
+  closeTour: async (id: string) => {
+    try {
+      const response = await http.put(`${apiEndpoint.closeTour}/${id}`, {});
+      toast.success("Đóng tour thành công");
+      return response;
+    } catch (error) {
+      console.error("Đóng tour thất bại:", error);
+      throw error;
+    }
+  },
+
 };
 
 export const tourApiRequest = {

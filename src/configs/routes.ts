@@ -50,6 +50,7 @@ export const apiEndpoint = {
     odataTour: "/odata/tour",
     tourScheduleTicket: "/api/tour/scheduleticket",
     tourByCompany: `/api/tour/get`,
+    closeTour: `/api/tour/closetour`,
 
     //tour schedule
     tourSchedule: "/api/tour/schedule",
@@ -62,7 +63,7 @@ export const apiEndpoint = {
     order: "/api/order",
     //category
     categoryOdata: `/odata/category`,
-
+    category: `/api/category`,
 
     //tour info
     tourInfo: `/api/tour/tourinfor`,

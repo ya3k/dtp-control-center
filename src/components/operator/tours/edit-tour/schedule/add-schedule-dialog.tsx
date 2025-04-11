@@ -50,13 +50,17 @@ const addScheduleSchema = z.object({
     }),
     closeDay: z.date({
         required_error: "Ngày kết thúc là bắt buộc",
-    }).refine(date => date > new Date(), {
+    })
+    .refine(date => date > new Date(), {
         message: "Ngày kết thúc phải ở trong tương lai",
     }),
     scheduleFrequency: z.string({
         required_error: "Tần suất là bắt buộc",
     }),
-})
+}).refine((data) => data.closeDay >= data.openDay, {
+    message: "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu",
+    path: ["closeDay"], // This shows the error on the closeDay field
+});
 
 interface AddScheduleDialogProps {
     open: boolean
@@ -90,6 +94,14 @@ export default function AddScheduleDialog({
     // Theo dõi giá trị form để thực hiện xác thực tùy chỉnh
     const openDay = form.watch("openDay")
     const closeDay = form.watch("closeDay")
+
+    // Update closeDay when openDay changes if closeDay is before openDay
+    useEffect(() => {
+        const currentCloseDay = form.getValues("closeDay")
+        if (openDay && currentCloseDay < openDay) {
+            form.setValue("closeDay", openDay)
+        }
+    }, [openDay, form])
 
     // Thực hiện xác thực khi ngày thay đổi
     useEffect(() => {
@@ -249,14 +261,14 @@ export default function AddScheduleDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
-                    <DialogTitle>Thêm lịch trình</DialogTitle>
+                    <DialogTitle>Thêm lịch trình mới</DialogTitle>
                     <DialogDescription>
-                        Tạo lịch trình mới cho tour.
+                        Thêm lịch trình mới cho tour. Chọn ngày bắt đầu và kết thúc.
                     </DialogDescription>
                 </DialogHeader>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                         {validationMessage && (
                             <Alert variant="destructive">
                                 <AlertCircle className="h-4 w-4" />
@@ -301,24 +313,10 @@ export default function AddScheduleDialog({
                                                     const isAlreadyBooked = isDateBooked(date);
                                                     return isInPast || isAlreadyBooked;
                                                 }}
-                                                modifiers={{
-                                                    booked: existingDates
-                                                }}
-                                                modifiersStyles={{
-                                                    booked: { 
-                                                        backgroundColor: "rgba(220, 38, 38, 0.1)", 
-                                                        color: "rgba(220, 38, 38, 1)",
-                                                        fontWeight: "bold"
-                                                       
-                                                    }
-                                                }}
                                                 initialFocus
                                             />
                                         </PopoverContent>
                                     </Popover>
-                                    <FormDescription>
-                                        Những ngày được đánh dấu màu đỏ đã có lịch trình.
-                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -355,30 +353,14 @@ export default function AddScheduleDialog({
                                                 selected={field.value}
                                                 onSelect={field.onChange}
                                                 disabled={(date) => {
-                                                    // Không thể chọn ngày trước ngày bắt đầu
-                                                    if (date < form.getValues("openDay")) return true;
-                                                    
-                                                    // Hiển thị cảnh báo thay vì vô hiệu hóa khi có xung đột
-                                                    // Chúng ta sẽ xác thực phạm vi sau khi chọn
-                                                    return false;
-                                                }}
-                                                modifiers={{
-                                                    booked: existingDates
-                                                }}
-                                                modifiersStyles={{
-                                                    booked: { 
-                                                        backgroundColor: "rgba(220, 38, 38, 0.1)", 
-                                                        color: "rgba(220, 38, 38, 1)",
-                                                        fontWeight: "bold"
-                                                    }
+                                                    const isBeforeOpenDay = date < openDay;
+                                                    const isAlreadyBooked = isDateBooked(date);
+                                                    return isBeforeOpenDay || isAlreadyBooked;
                                                 }}
                                                 initialFocus
                                             />
                                         </PopoverContent>
                                     </Popover>
-                                    <FormDescription>
-                                        Chọn ngày kết thúc. Các ngày đã đặt trong phạm vi sẽ được đánh dấu.
-                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}

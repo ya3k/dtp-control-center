@@ -71,7 +71,7 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
       description: data.description || "",
       about: data.about || "",
       include: data.include || '',
-      peekInfor: data.peekInfor || "",
+      pickinfor: data.pickinfor || "",
     },
   })
 
@@ -102,7 +102,7 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
       scheduleFrequency: values.scheduleFrequency,
       about: values.about || "",
       include: values.include || '',
-      peekInfor: values.peekInfor || "",
+      pickinfor: values.pickinfor || "",
 
     }
 
@@ -433,7 +433,7 @@ export function TourInfoForm({ data, updateData, onNext, setTourImageFile }: Tou
               <CollapsibleContent className="space-y-2">
                 <FormField
                   control={form.control}
-                  name="peekInfor"
+                  name="pickinfor"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>

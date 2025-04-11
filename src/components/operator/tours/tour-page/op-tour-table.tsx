@@ -6,7 +6,7 @@ import { OpTourStarRating } from "./op-tour-star-rating"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Pencil, ImageIcon } from "lucide-react"
+import { Pencil, ImageIcon, X } from "lucide-react"
 import { useState } from "react"
 
 interface TourTableProps {
@@ -16,7 +16,8 @@ interface TourTableProps {
   pageSize: number
   resetFilters: () => void
   truncateDescription: (text: string, maxLength?: number) => string
-  onEditTour?: (tour: tourOdataResType) => void
+  onEditTour?: (tour: tourOdataResType) => void,
+  onCloseTour?: (tour: tourOdataResType) => void
 }
 
 export function OpTourTable({
@@ -26,7 +27,8 @@ export function OpTourTable({
   pageSize,
   resetFilters,
   truncateDescription,
-  onEditTour
+  onEditTour,
+  onCloseTour
 }: TourTableProps) {
   // Track images that failed to load
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
@@ -72,9 +74,9 @@ export function OpTourTable({
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
-                      <Image 
-                        src={`/images/binhdinhtour.png`} 
-                        alt="Default tour image" 
+                      <Image
+                        src={`/images/binhdinhtour.png`}
+                        alt="Default tour image"
                         width={96}
                         height={64}
                         style={{ width: 'auto', height: 'auto' }}
@@ -95,15 +97,28 @@ export function OpTourTable({
                   ${tour.onlyFromCost}
                 </Badge>
               </TableCell>
-              <TableCell>
+              <TableCell className="flex justify-center items-center">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => onEditTour && onEditTour(tour)}
+                  title="Chỉnh sửa tour"
                 >
+
                   <Pencil className="h-4 w-4" />
+
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onCloseTour && onCloseTour(tour)}
+                  title="Đóng tour"
+                >
+                  <X className="h-4 w-4 text-red-600" />
+
                 </Button>
               </TableCell>
+
             </TableRow>
           ))
         ) : (

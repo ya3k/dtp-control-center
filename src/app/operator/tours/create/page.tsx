@@ -32,7 +32,7 @@ export default function CreateTourPage() {
     scheduleFrequency: "",
     about: "",
     include: "",
-    peekInfor: ""
+    pickinfor: ""
   })
 
   const updateFormData = (data: Partial<CreateTourBodyType>) => {
@@ -173,7 +173,7 @@ export default function CreateTourPage() {
         scheduleFrequency: updatedFormData.scheduleFrequency || "",
         about: updatedFormData.about || "",
         include: updatedFormData.include || "",
-        peekInfor: updatedFormData.peekInfor || "",
+        pickinfor: updatedFormData.pickinfor || "",
 
       }
 

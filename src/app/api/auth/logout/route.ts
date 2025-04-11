@@ -2,12 +2,22 @@
 import authApiRequest from "@/apiRequests/auth";
 import { HttpError } from "@/lib/http";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+
+const clearCookies = () => {
+  return ["_auth", "cont_auth"]
+    .map(
+      (name) =>
+        `${name}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Strict`,
+    )
+    .join(", ");
+};
 
 export async function POST(req: Request) {
   const res = await req.json();
   const force = res.force as boolean | undefined;
   if (force) {
-    return Response.json(
+    return NextResponse.json(
       {
         success: true,
         message: "Buộc đăng xuất thành công",
@@ -15,15 +25,16 @@ export async function POST(req: Request) {
       {
         status: 200,
         headers: {
-          "Set-Cookie": `sessionToken=; Max-Age=0; path=/, role=; Max-Age=0; path=/`,
+          "Set-Cookie": clearCookies(),
         },
       },
     );
   }
   const cookieStore = cookies();
-  const sessionToken = cookieStore.get("sessionToken");
+  const sessionToken = cookieStore.get("_auth");
+
   if (!sessionToken) {
-    return Response.json(
+    return NextResponse.json(
       {
         success: false,
         message: "Session token not found",
@@ -37,7 +48,7 @@ export async function POST(req: Request) {
     );
     console.log("logout response: ", response);
     if (response.payload.success) {
-      return Response.json(
+      return NextResponse.json(
         {
           success: true,
           message: "Đăng xuất thành công",
@@ -45,7 +56,7 @@ export async function POST(req: Request) {
         {
           status: 200,
           headers: {
-            "Set-Cookie": `sessionToken=; Max-Age=0; path=/, role=; Max-Age=0; path=/`,
+            "Set-Cookie": clearCookies(),
           },
         },
       );
@@ -54,17 +65,22 @@ export async function POST(req: Request) {
         {
           success: false,
         },
-        { status: 401 },
+        {
+          status: 401,
+          headers: {
+            "Set-Cookie": clearCookies(),
+          },
+        },
       );
     }
   } catch (error) {
     console.error("Error in logout:", error);
     if (error instanceof HttpError) {
-      return Response.json(error.payload, {
+      return NextResponse.json(error.payload, {
         status: error.status,
       });
     } else {
-      return Response.json(
+      return NextResponse.json(
         {
           success: false,
           message: "Có lỗi xảy ra trong quá trình đăng xuất",

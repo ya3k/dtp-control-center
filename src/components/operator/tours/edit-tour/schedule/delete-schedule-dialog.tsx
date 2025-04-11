@@ -93,6 +93,7 @@ export default function DeleteScheduleDialog({
             <DialogTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50">
                     <Trash2 className="h-4 w-4" />
+                    Xóa lịch trình
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">

@@ -12,6 +12,8 @@ import { PlusCircle, RefreshCcw } from "lucide-react"
 import Link from "next/link"
 import { UpdateTourDialog } from "@/components/operator/tours/edit-tour/edit-tour-dialog"
 import { TablePagination } from "@/components/admin/common-table/table-pagination"
+import { CloseToursDialog } from "@/components/operator/tours/delete-tour/close-tour-dialog"
+import { is } from "date-fns/locale"
 
 export default function OpTourDataTable() {
   // Data state
@@ -35,7 +37,7 @@ export default function OpTourDataTable() {
   const [selectedTour, setSelectedTour] = useState<tourOdataResType | null>(null)
   const [editTourId, setEditTourId] = useState<string | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-
+  const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false)
 
   // Debounce search term
   useEffect(() => {
@@ -123,6 +125,17 @@ export default function OpTourDataTable() {
     setSelectedTour(null)
     fetchTours(); // Refresh the data
   }
+
+  //handle close tour
+  const handleCloseTour = (tour: tourOdataResType) => {
+    setSelectedTour(tour)
+    setIsCloseDialogOpen(true)
+  }
+  const handleCloseSuccess = () => {
+    // setIsEditDialogOpen(false)
+    setSelectedTour(null)
+    fetchTours(); // Refresh the data
+  }
   // Function to truncate description text
   const truncateDescription = (text: string, maxLength = 50): string => {
     if (!text) return ""
@@ -197,7 +210,7 @@ export default function OpTourDataTable() {
         <OpTourFilterCard searchTerm={searchTerm} setSearchTerm={setSearchTerm} minRating={minRating} setMinRating={setMinRating} pageSize={pageSize} setPageSize={setPageSize} />
         {/* Table */}
         <div className="rounded-md border">
-          <OpTourTable tours={tours} totalCount={totalCount} loading={loading} pageSize={pageSize} resetFilters={resetFilters} truncateDescription={truncateDescription} onEditTour={handleEditTour} />
+          <OpTourTable tours={tours} totalCount={totalCount} loading={loading} pageSize={pageSize} resetFilters={resetFilters} truncateDescription={truncateDescription} onEditTour={handleEditTour} onCloseTour={handleCloseTour} />
         </div>
         {/* Pagination */}
         <TablePagination
@@ -225,6 +238,22 @@ export default function OpTourDataTable() {
             }
           }}
           onUpdateSuccess={handleUpdateSuccess}
+        />
+      )}
+
+      {/* Edit Dialog */}
+      {selectedTour && (
+        <CloseToursDialog
+          tour={selectedTour}
+          open={isCloseDialogOpen}
+          onOpenChange={(isOpen) => {
+            setIsCloseDialogOpen(isOpen)
+            if (!isOpen) {
+              setSelectedTour(null)
+              fetchTours()
+            }
+          }}
+          onCloseSuccess={handleCloseSuccess}
         />
       )}
     </div>

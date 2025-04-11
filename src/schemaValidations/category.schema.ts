@@ -7,7 +7,8 @@ export const categorySchema = z.object({
     createdBy: z.string().nullable(),
     lastModified: z.string().nullable(),
     lastModifiedBy: z.string().nullable(),
-    isDeleted: z.boolean(),
 })
 
 export type CategoryType = z.infer<typeof categorySchema>
+
+export type POSTCategoryType = z.infer<typeof categorySchema>

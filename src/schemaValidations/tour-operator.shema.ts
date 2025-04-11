@@ -1,4 +1,3 @@
-import { TicketSchema } from './tour-operator.shema';
 import { z } from "zod";
 
 // Enum for ticket types
@@ -31,11 +30,10 @@ export const DestinationSchema = z.object({
 
 
 
-
 // Ticket schema
 export const TicketSchema = z.object({
-  defaultNetCost: z.coerce.number().positive(),
-  minimumPurchaseQuantity: z.number().int().positive(),
+  defaultNetCost: z.coerce.number().positive().nonnegative(),
+  minimumPurchaseQuantity: z.number().int().positive().min(1, "Minimum purchase quantity must be at least 1."),
   ticketKind: z.nativeEnum(TicketKind),
 });
 
@@ -52,7 +50,7 @@ export const TourSchema = z.object({
   img: z.string(),
   about: z.string(),
   include: z.string(),
-  peekInfor: z.string()
+  pickinfor: z.string()
 });
 
 export const tourInfoPostSchema = z.object({
@@ -65,7 +63,7 @@ export const tourInfoPostSchema = z.object({
   scheduleFrequency: z.string().min(1, "Hãy nhập chu kì tour"),
   about: z.string().min(1, "Về dịch vụ này là bắt buộc."),
   include: z.string().min(1, "Bao gồm là bắt buộc."),
-  peekInfor: z.string().min(1, "Đón và gặp khách là bắt buộc."),
+  pickinfor: z.string().min(1, "Đón và gặp khách là bắt buộc."),
 });
 
 export type CreateTourInfoType = z.infer<typeof tourInfoPostSchema>;
@@ -112,6 +110,9 @@ export const tourInfoSchema = z.object({
   title: z.string().min(1, "Title is required"),
   category: z.string().min(1, "Category is required"),
   description: z.string().min(1, "Description is required"),
+  about: z.string().min(1, "Về dịch vụ này là bắt buộc."),
+  include: z.string().min(1, "Bao gồm là bắt buộc."),
+  pickinfor: z.string().min(1, "Đón và gặp khách là bắt buộc."),
   img: z.string()
 })
 
@@ -128,6 +129,9 @@ export const tourInfoResSchema = z.object({
   title: z.string().min(1, "Title is required"),
   category: z.string().min(1, "Category is required"),
   description: z.string().min(1, "Description is required"),
+  about: z.string().min(1, "about is required"),
+  include: z.string().min(1, "include is required"),
+  pickinfor: z.string().min(1, "pickifor is required"),
   img: z.string()
 })
 export type TourInfoResType = z.infer<typeof tourInfoResSchema>;
