@@ -230,6 +230,11 @@ export default function CompanyDataTable() {
         company={selectedCompany}
         onEditComplete={handleEditComplete}
       />
+
+      {/* Delete Dialog */}
+      
+
+
     </div>
   )
 }

@@ -8,7 +8,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { z } from "zod";
 import {
   Form,
   FormControl,
@@ -17,27 +16,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
-// Updated schema
-export const userSchema = z.object({
-  id: z.string(),
-  userName: z.string(),
-  name: z.string(),
-  email: z.string(),
-  phoneNumber: z.string(),
-  address: z.string(),
-  companyName: z.string(),
-  roleName: z.string(),
-  isActive: z.boolean(),
-});
-
-export type UserResType = z.infer<typeof userSchema>;
+import { PutUserBodyType, putUserSchema, UserResType } from "@/schemaValidations/admin-user.schema";
+import userApiRequest from "@/apiRequests/user";
 
 interface EditUserDialogProps {
   user: UserResType | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onEditComplete: (updatedUser: UserResType) => void;
+  onEditComplete: () => void;
 }
 
 export function EditUserDialog({
@@ -47,10 +33,12 @@ export function EditUserDialog({
   onEditComplete,
 }: EditUserDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userDetails, setUserDetails] = useState<UserResType | null>(null);
 
   // Create form with updated schema
-  const form = useForm<UserResType>({
-    resolver: zodResolver(userSchema),
+  const form = useForm<PutUserBodyType>({
+    resolver: zodResolver(putUserSchema),
     defaultValues: {
       id: "",
       userName: "",
@@ -58,48 +46,59 @@ export function EditUserDialog({
       email: "",
       phoneNumber: "",
       address: "",
-      // companyName: "",
       roleName: "",
-      // isActive: true,
     },
   });
 
-  // Update form when user changes
+  // Fetch user details when dialog opens
   useEffect(() => {
-    if (user) {
-      form.reset({
-        id: user.id,
-        userName: user.userName,
-        name: user.name,
-        email: user.email,
-        phoneNumber: user.phoneNumber,
-        address: user.address,
-        // companyName: user.companyName,
-        roleName: user.roleName,
-        // isActive: user.isActive,
-      });
+    async function fetchUserDetails() {
+      if (open && user?.id) {
+        setIsLoading(true);
+        try {
+          const response = await userApiRequest.getById(user.id);
+          if (response.status === 200 && response.payload.success) {
+            const userData = response.payload.data;
+            setUserDetails(userData);
+            // Update form with fetched data
+            form.reset({
+              id: userData.id,
+              userName: userData.userName,
+              name: userData.name,
+              email: userData.email,
+              phoneNumber: userData.phoneNumber,
+              address: userData.address,
+              roleName: userData.roleName,
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching user details:", error);
+          toast.error("Không thể tải thông tin người dùng");
+          onOpenChange(false); // Close dialog on error
+        } finally {
+          setIsLoading(false);
+        }
+      }
     }
-  }, [user, form]);
+
+    fetchUserDetails();
+  }, [open, user?.id, form, onOpenChange]);
 
   // Handle form submission
-  const onSubmit = async (data: UserResType) => {
-    if (!user) return;
+  const onSubmit = async (data: PutUserBodyType) => {
+    if (!userDetails?.id) return;
 
     setIsSubmitting(true);
-
     try {
-      // Simulate API call to update user
-      const updatedUser = { ...data }; // Replace with actual API call
-      toast.success("User updated successfully");
-
-      // Close dialog and reset form
-      onOpenChange(false);
-
-      // Notify parent component of the update
-      onEditComplete(updatedUser);
+      const response = await userApiRequest.update(data);
+      if (response.status === 200) {
+        toast.success("Cập nhật người dùng thành công");
+        onOpenChange(false);
+        onEditComplete();
+      }
     } catch (error) {
       console.error("Error updating user:", error);
-      toast.error("Failed to update user. Please try again.");
+      toast.error("Không thể cập nhật người dùng. Vui lòng thử lại.");
     } finally {
       setIsSubmitting(false);
     }
@@ -109,6 +108,7 @@ export function EditUserDialog({
   const handleClose = () => {
     if (!isSubmitting) {
       form.reset();
+      setUserDetails(null);
       onOpenChange(false);
     }
   };
@@ -117,164 +117,112 @@ export function EditUserDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Edit User</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Chỉnh sửa người dùng</DialogTitle>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              {/* Full Name */}
+        {isLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2">Đang tải thông tin...</span>
+          </div>
+        ) : (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                {/* Full Name */}
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Họ và tên</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nhập họ và tên" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Username */}
+                <FormField
+                  control={form.control}
+                  name="userName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên đăng nhập</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nhập tên đăng nhập" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Email */}
               <FormField
                 control={form.control}
-                name="name"
+                name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter full name" {...field} />
+                      <Input type="email" placeholder="example@email.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Username */}
+              {/* Phone Number */}
               <FormField
                 control={form.control}
-                name="userName"
+                name="phoneNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel>Số điện thoại</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter username" {...field} />
+                      <Input placeholder="Nhập số điện thoại" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
 
-            {/* Email */}
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email Address</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="example@email.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Phone Number */}
-            <FormField
-              control={form.control}
-              name="phoneNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter phone number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Address */}
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Address</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter address" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Company Name */}
-            {/* <FormField
-              control={form.control}
-              name="companyName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Company Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter company name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
-
-            {/* Role */}
-            {/* <FormField
-              control={form.control}
-              name="roleName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Role</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+              {/* Address */}
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Địa chỉ</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
+                      <Input placeholder="Nhập địa chỉ" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Admin">Admin</SelectItem>
-                      <SelectItem value="Operator">Operator</SelectItem>
-                      <SelectItem value="User">User</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
-
-            {/* Is Active */}
-            {/* <FormField
-              control={form.control}
-              name="isActive"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Active</FormLabel>
-                  <FormControl>
-                    <input
-                      type="checkbox"
-                      checked={field.value}
-                      onChange={(e) => field.onChange(e.target.checked)}
-                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
-
-            <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  "Save Changes"
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+              />
+
+              <DialogFooter className="pt-4">
+                <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
+                  Hủy
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Đang cập nhật...
+                    </>
+                  ) : (
+                    "Lưu thay đổi"
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        )}
       </DialogContent>
     </Dialog>
   );

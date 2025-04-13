@@ -10,6 +10,9 @@ import { UserTable } from "@/components/admin/users/user-table"
 import { UserTableFilterCard } from "@/components/admin/users/user-table-filter"
 import userApiRequest from "@/apiRequests/user"
 import { CreateUserDialog } from "@/components/admin/users/create-user-dialog"
+import { DeleteUsersDialog } from "@/components/admin/users/delete-user-dialog"
+import { EditUserDialog } from "@/components/admin/users/edit-user-dialog"
+import { toast } from "sonner"
 
 export default function UserDataTable() {
   // Data state
@@ -98,9 +101,9 @@ export default function UserDataTable() {
       console.log(queryString)
 
       // Use userApiRequest instead of userApi
-      const response = await userApiRequest.getWithOdata(queryString)
+      const response = await userApiRequest.getWithOdata()
       console.log(JSON.stringify(response))
-      setUsers(response.payload?.value)
+      setUsers(response.payload?.data)
       setTotalCount(response.payload["@odata.count"] || 0)
     } catch (error) {
       console.error("Error fetching user data:", error)
@@ -128,19 +131,18 @@ export default function UserDataTable() {
 
   // Handle update
   const handleEditUser = (user: UserResType) => {
-    setSelectedUser(user)
-    setIsEditDialogOpen(true)
+    setSelectedUser(user) // Just set the basic user info
+    setIsEditDialogOpen(true) // Open dialog immediately
+  }
+
+  const handleEditComplete = () => {
+    setSelectedUser(null)
+    setIsEditDialogOpen(false)
+    fetchUsers() // Refresh the list after edit
   }
 
   const handleCreateComplete = () => {
     fetchUsers()
-  }
-
-  const handleEditComplete = (updatedUser: UserResType) => {
-    // Update the user in the local state without refetching
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => (user.id === updatedUser.id ? updatedUser : user))
-    )
   }
 
   // Handle delete
@@ -149,8 +151,6 @@ export default function UserDataTable() {
     setIsDeleteDialogOpen(true)
   }
 
-
-  
   const handleDeleteComplete = (deletedId: string) => {
     // Remove the deleted user from the local state
     setUsers(prevUsers =>
@@ -204,12 +204,12 @@ export default function UserDataTable() {
                 {isRefreshing ? (
                   <>
                     <RefreshCcw className="h-4 w-4 animate-spin" />
-                    <span>Làm mới...</span>
+                    <span>Đang làm mới...</span>
                   </>
                 ) : (
                   <>
                     <RefreshCcw className="h-4 w-4" />
-                    <span>Đang làm mới</span>
+                    <span>Làm mới</span>
                   </>
                 )}
               </Button>
@@ -271,20 +271,20 @@ export default function UserDataTable() {
       />
 
       {/* Edit Dialog */}
-      {/* <EditUserDialog
+      <EditUserDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         user={selectedUser}
         onEditComplete={handleEditComplete}
-      /> */}
+      />
 
       {/* Delete Dialog */}
-      {/* <DeleteUserDialog
+      <DeleteUsersDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         user={selectedUser}
         onDeleteComplete={handleDeleteComplete}
-      /> */}
+      />
     </div>
   )
 }

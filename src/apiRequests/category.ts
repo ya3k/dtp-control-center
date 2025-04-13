@@ -23,7 +23,27 @@ const categoryApiRequest = {
       console.error("Failed to create category:", error)
       throw error
     }
+  },
+  delete: async (id: string) => {
+    try {
+      const response = await http.delete(`${apiEndpoint.category}/${id}`)
+      return response
+    } catch (error) {
+      console.error("Failed to delete category:", error)
+      throw error
+    }
+  },
+  update: async (id: string, data: { name: string }) => {
+    try {
+      const response = await http.put(`${apiEndpoint.category}/${id}`, data)
+      return response
+    } catch (error) {
+      console.error("Failed to update category:", error)
+      throw error
+    }
   }
+
+
 };
 
 export default categoryApiRequest;

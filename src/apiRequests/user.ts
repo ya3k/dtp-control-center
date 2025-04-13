@@ -16,7 +16,8 @@ const userApiRequest = {
   },
   create: (body: PostUserBodyType) => http.post(apiEndpoint.user, body),
   update: (body: PutUserBodyType) => http.put(apiEndpoint.user, body),
-  getById: (id: string) => http.get<UserResType>(`${apiEndpoint.user}/${id}`)
+  getById: (id: string) => http.get<UserResType>(`${apiEndpoint.user}/${id}`),
+  delete: (id: string) => http.delete(`${apiEndpoint.user}/${id}`)
 };
 
 export default userApiRequest;

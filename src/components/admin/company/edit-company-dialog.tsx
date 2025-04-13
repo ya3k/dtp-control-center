@@ -33,6 +33,7 @@ export function EditCompanyDialog({ open, onOpenChange, company, onEditComplete 
             email: company?.email || "",
             phone: company?.phone || "",
             taxCode: company?.taxCode || "",
+            commissionRate: company?.commissionRate || 0,
         },
     })
 
@@ -45,6 +46,7 @@ export function EditCompanyDialog({ open, onOpenChange, company, onEditComplete 
                 email: company.email || "",
                 phone: company.phone || "",
                 taxCode: company.taxCode || "",
+                commissionRate: company.commissionRate || 0,
             })
         }
     }, [company, form])
@@ -138,7 +140,25 @@ export function EditCompanyDialog({ open, onOpenChange, company, onEditComplete 
                                 </FormItem>
                             )}
                         />
-
+                        <FormField
+                            control={form.control}
+                            name="commissionRate"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Phần trăm hoa hồng</FormLabel>
+                                    <FormControl>
+                                        <Input 
+                                            type="number" 
+                                            placeholder="Phần trăm hoa hồng" 
+                                            {...field}
+                                            onChange={(e) => field.onChange(Number(e.target.value))}
+                                            value={field.value || ''}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                         <DialogFooter className="mt-6">
                             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                                 Hủy

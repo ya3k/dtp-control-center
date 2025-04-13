@@ -29,12 +29,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <script src="https://unpkg.com/react-scan/dist/auto.global.js" />
+        {/* <script src="https://unpkg.com/react-scan/dist/auto.global.js" /> */}
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
       </head>
-      <ReactScan />
+      {/* <ReactScan /> */}
       <body className={`${ibmPlexSans.className} antialiased`}>
         <AuthProvider
           initialSessionToken={sessionToken?.value}

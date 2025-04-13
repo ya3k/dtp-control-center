@@ -1,8 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useUserStore } from "@/store/users/useUserStore"
-import type { User } from "@/types/user"
 import { Button } from "@/components/ui/button"
 import {
     AlertDialog,
@@ -15,15 +13,17 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { UserResType } from "@/schemaValidations/admin-user.schema"
+import userApiRequest from "@/apiRequests/user"
 
 interface DeleteEmployeeDialogProps {
-    user: User | null
+    user: UserResType | null
     open: boolean
-    onOpenChange: (open: boolean) => void
+    onOpenChange: (open: boolean) => void,
+    onDeleteComplete: (deleteId: string) => void
 }
 
-export function DeleteUsersDialog({ user, open, onOpenChange }: DeleteEmployeeDialogProps) {
-    const { deleteUser } = useUserStore()
+export function DeleteUsersDialog({ user, open, onOpenChange, onDeleteComplete }: DeleteEmployeeDialogProps) {
     const [isDeleting, setIsDeleting] = useState(false)
 
     const handleDelete = async () => {
@@ -31,9 +31,12 @@ export function DeleteUsersDialog({ user, open, onOpenChange }: DeleteEmployeeDi
 
         setIsDeleting(true)
         try {
-            await deleteUser(user.id)
-            toast.success(`Employee ${user.email} delete successfully`)
-            onOpenChange(false)
+            const response = await userApiRequest.delete(user.id)
+            if (response.payload.success === true) {
+                toast.success(`Người dùng ${user.email} đã được xóa`)
+                onDeleteComplete(user.id)
+                onOpenChange(false);
+            }
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Failed to delete employee")
         } finally {
@@ -45,14 +48,14 @@ export function DeleteUsersDialog({ user, open, onOpenChange }: DeleteEmployeeDi
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogTitle>Chắc chắn vô hiệu hóa người dùng này?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the employee
-                        {user ? ` "${user.fullname}"` : ""} and remove their data from our servers.
+                        Người dùng
+                        {user ? ` "${user.email}"` : ""} sẽ bị vô hiệu hóa.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
                     <Button
                         variant="destructive"
                         onClick={handleDelete}
@@ -62,10 +65,10 @@ export function DeleteUsersDialog({ user, open, onOpenChange }: DeleteEmployeeDi
                         {isDeleting ? (
                             <>
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                Deleting...
+                                Đang vô hiệu hóa...
                             </>
                         ) : (
-                            "Delete"
+                            "Vô hiệu hóa"
                         )}
                     </Button>
                 </AlertDialogFooter>

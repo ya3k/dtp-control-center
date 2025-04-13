@@ -20,9 +20,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <SidebarTrigger className="-ml-1" />
                             <Separator orientation="vertical" className="mr-2 h-4" />
                             {/* breadcrum */}
-                            <div className="w-full border-b border-gray-300 pb-2">
+                            {/* <div className="w-full border-b border-gray-300 pb-2">
                                 <SidebarBreadcrumb />
-                            </div>
+                            </div> */}
                         </div>
                     </header>
 

@@ -10,33 +10,41 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import categoryApiRequest from "@/apiRequests/category"
+import { CategoryType } from "@/schemaValidations/category.schema"
 import { CategoryForm } from "./category-form"
 
-interface CreateCategoryDialogProps {
+interface EditCategoryDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onCreateComplete: () => void
+  category: CategoryType | null
+  onEditComplete: (updatedCategory: CategoryType) => void
 }
 
-export function CreateCategoryDialog({
+export function EditCategoryDialog({
   open,
   onOpenChange,
-  onCreateComplete,
-}: CreateCategoryDialogProps) {
+  category,
+  onEditComplete,
+}: EditCategoryDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const onSubmit = async (data: { name: string }) => {
+    if (!category?.id) return
+
     setIsSubmitting(true)
     try {
-      const response = await categoryApiRequest.create(data)
-      if (response.status === 201) {
-        onCreateComplete()
-        toast.success("Tạo danh mục mới thành công")
+      const response = await categoryApiRequest.update(category.id, data)
+      console.log(JSON.stringify(response.payload))
+      
+      if (response.status === 204) {
+        const updatedCategory = { ...category, ...data }
+        onEditComplete(updatedCategory)
+        toast.success("Cập nhật danh mục thành công")
         onOpenChange(false)
       }
     } catch (error) {
-      console.error("Lỗi khi tạo danh mục:", error)
-      toast.error(error instanceof Error ? error.message : "Không thể tạo danh mục mới")
+      console.error("Lỗi khi cập nhật danh mục:", error)
+      toast.error(error instanceof Error ? error.message : "Không thể cập nhật danh mục")
     } finally {
       setIsSubmitting(false)
     }
@@ -46,13 +54,14 @@ export function CreateCategoryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Thêm danh mục mới</DialogTitle>
+          <DialogTitle>Chỉnh sửa danh mục</DialogTitle>
           <DialogDescription>
-            Nhập thông tin cho danh mục mới. Nhấn tạo khi hoàn tất.
+            Cập nhật thông tin cho danh mục. Nhấn lưu khi hoàn tất.
           </DialogDescription>
         </DialogHeader>
 
         <CategoryForm
+          initialData={category || undefined}
           onSubmit={onSubmit}
           isSubmitting={isSubmitting}
           onCancel={() => onOpenChange(false)}
@@ -60,4 +69,4 @@ export function CreateCategoryDialog({
       </DialogContent>
     </Dialog>
   )
-}
+} 

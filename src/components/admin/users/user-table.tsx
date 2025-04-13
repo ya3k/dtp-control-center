@@ -130,7 +130,7 @@ export function UserTable({
     )
   }
 
-  if (users.length === 0) {
+  if (!users || users.length === 0) {
     return (
       <div className="text-center p-8">
         <h3 className="text-lg font-medium">Không tìm thấy người dùng nào</h3>

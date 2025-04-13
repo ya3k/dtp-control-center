@@ -31,6 +31,13 @@ import {
 import Script from 'next/script'
 
 // Define types for MapLibre GL
+interface MapLibreMap {
+  remove: () => void;
+  flyTo: (options: { center: [number, number]; zoom: number }) => void;
+  addControl: (control: MapLibreNavigationControl) => void;
+  on: (event: string, callback: (e: { lngLat: { lng: number; lat: number } }) => void) => void;
+}
+
 interface MapLibreGL {
   Map: {
     new (options: {
@@ -38,18 +45,31 @@ interface MapLibreGL {
       style: string;
       center: [number, number];
       zoom: number;
-    }): any;
+    }): MapLibreMap;
   };
   NavigationControl: {
-    new (): any;
+    new (): MapLibreNavigationControl;
   };
   Marker: {
     new (): {
-      setLngLat: (coords: [number, number]) => any;
-      addTo: (map: any) => any;
+      setLngLat: (coords: [number, number]) => MapLibreMarker;
+      addTo: (map: MapLibreMap) => MapLibreMarker;
       remove: () => void;
     };
   };
+}
+
+// Define navigation control interface
+interface MapLibreNavigationControl {
+  onAdd?: (map: MapLibreMap) => HTMLElement;
+  onRemove?: () => void;
+}
+
+// Define marker interface
+interface MapLibreMarker {
+  setLngLat: (coords: [number, number]) => MapLibreMarker;
+  addTo: (map: MapLibreMap) => MapLibreMarker;
+  remove: () => void;
 }
 
 // Define types for search results
@@ -96,8 +116,8 @@ export function CreateDestinationDialog({
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const mapContainer = useRef<HTMLDivElement>(null)
-  const map = useRef<MapLibreGL['Map'] | null>(null)
-  const marker = useRef<MapLibreGL['Marker'] | null>(null)
+  const map = useRef<MapLibreMap | null>(null)
+  const marker = useRef<MapLibreMarker | null>(null)
 
   const form = useForm<CreateDestinationBodyType>({
     resolver: zodResolver(CreateDestinationBodySchema),
@@ -108,26 +128,37 @@ export function CreateDestinationDialog({
     },
   })
 
-  // Initialize map
+  // Initialize map when dialog opens
   useEffect(() => {
     if (!open || !isMapReady || !mapContainer.current || map.current) return;
 
-    map.current = new window.maplibregl.Map({
-      container: mapContainer.current,
-      style: 'https://tiles.openfreemap.org/styles/liberty',
-      center: [105.8342, 21.0278], // Hanoi coordinates
-      zoom: 5
-    });
+    try {
+      // Initialize map centered on Vietnam
+      map.current = new window.maplibregl.Map({
+        container: mapContainer.current,
+        style: 'https://tiles.openfreemap.org/styles/liberty',
+        center: [105.8342, 21.0278], // Hanoi coordinates
+        zoom: 5
+      });
 
-    map.current.addControl(new window.maplibregl.NavigationControl());
+      // Add navigation control
+      map.current.addControl(new window.maplibregl.NavigationControl());
 
-    map.current.on('click', (e: { lngLat: { lng: number; lat: number } }) => {
-      const { lng, lat } = e.lngLat;
-      updateMarkerPosition(lng, lat);
-      form.setValue('longitude', lng.toFixed(6));
-      form.setValue('latitude', lat.toFixed(6));
-    });
+      // Add click handler
+      map.current.on('click', (e) => {
+        const { lng, lat } = e.lngLat;
+        updateMarkerPosition(lng, lat);
+        form.setValue('longitude', lng.toFixed(6));
+        form.setValue('latitude', lat.toFixed(6));
+      });
 
+      toast.success('Bản đồ đã sẵn sàng');
+    } catch (error) {
+      console.error('Error initializing map:', error);
+      toast.error('Không thể tải bản đồ');
+    }
+
+    // Cleanup on dialog close
     return () => {
       if (map.current) {
         map.current.remove();
@@ -135,6 +166,21 @@ export function CreateDestinationDialog({
       }
     };
   }, [open, isMapReady]);
+
+  // Reset map state when dialog closes
+  useEffect(() => {
+    if (!open) {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+      if (marker.current) {
+        marker.current.remove();
+        marker.current = null;
+      }
+      setIsMapReady(false);
+    }
+  }, [open]);
 
   // Update marker position
   const updateMarkerPosition = (lng: number, lat: number) => {
@@ -283,15 +329,27 @@ export function CreateDestinationDialog({
 
   return (
     <>
-      <Script
-        src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"
-        onLoad={() => setIsMapReady(true)}
-      />
-      <link 
-        href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" 
-        rel="stylesheet" 
-      />
-      
+      {/* Load MapLibre scripts */}
+      {open && (
+        <>
+          <Script
+            src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"
+            onLoad={() => {
+              console.log('MapLibre script loaded');
+              setIsMapReady(true);
+            }}
+            onError={(e) => {
+              console.error('Error loading MapLibre script:', e);
+              toast.error('Không thể tải thư viện bản đồ');
+            }}
+          />
+          <link 
+            href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" 
+            rel="stylesheet" 
+          />
+        </>
+      )}
+
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
@@ -359,11 +417,15 @@ export function CreateDestinationDialog({
                 )}
               />
 
-              {/* Map Container */}
-              <div 
-                ref={mapContainer} 
-                className="w-full h-[300px] rounded-md border mb-4"
-              />
+              {/* Map Container with loading state */}
+              <div className="relative w-full h-[300px] rounded-md border mb-4">
+                <div ref={mapContainer} className="w-full h-full" />
+                {!isMapReady && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                  </div>
+                )}
+              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <FormField

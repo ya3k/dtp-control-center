@@ -25,16 +25,18 @@ interface GroupedDestinations {
     [key: number]: TourDestinationResType[]
 }
 
+interface DestinationActivity {
+    name: string;
+    startTime: string;
+    endTime: string;
+    sortOrder: number;
+}
+
 interface UpdateDestinationPayload {
     tourId: string;
     destinations: {
         destinationId: string;
-        destinationActivities: {
-            name: string;
-            startTime: string;
-            endTime: string;
-            sortOrder: number;
-        }[];
+        destinationActivities: DestinationActivity[];
         startTime: string;
         endTime: string;
         sortOrder: number;
@@ -46,7 +48,6 @@ interface UpdateDestinationPayload {
 export default function TourEditDetinationForm({ tourId, onUpdateSuccess }: TourEditDestinationFormProps) {
     const [isLoading, setIsLoading] = useState(true)
     const [groupedDestinations, setGroupedDestinations] = useState<GroupedDestinations>({})
-    const [addDialogOpen, setAddDialogOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     //fetch tour destination
@@ -95,7 +96,7 @@ export default function TourEditDetinationForm({ tourId, onUpdateSuccess }: Tour
                 .flat()
                 .map(destination => ({
                     destinationId: destination.id,
-                    destinationActivities: destination.destinationActivities.map(activity => ({
+                    destinationActivities: destination.destinationActivities.map((activity: DestinationActivity) => ({
                         name: activity.name,
                         startTime: activity.startTime,
                         endTime: activity.endTime,
@@ -134,7 +135,7 @@ export default function TourEditDetinationForm({ tourId, onUpdateSuccess }: Tour
                         <p className="text-muted-foreground">Quản lý các điểm đến trong tour</p>
                     </div>
                     <div className="flex items-center gap-4">
-                        <Button onClick={() => setAddDialogOpen(true)}>
+                        <Button>
                             <Plus className="h-4 w-4 mr-2" />
                             Thêm điểm đến
                         </Button>

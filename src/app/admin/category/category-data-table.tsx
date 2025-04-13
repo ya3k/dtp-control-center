@@ -5,16 +5,13 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { PlusCircle, RefreshCcw } from "lucide-react"
 import { TablePagination } from "@/components/admin/common-table/table-pagination"
-import destinationApiRequest from "@/apiRequests/destination"
-import { DestinationType } from "@/schemaValidations/admin-destination.schema"
-import { EditDestinationDialog } from "@/components/admin/destination/edit-destination-dialog"
-import { CreateDestinationDialog } from "@/components/admin/destination/create-destination-dialog"
-import { DestinationTable } from "@/components/admin/destination/destination-table"
-import { DestinationTableFilterCard } from "@/components/admin/destination/destination-table-filter"
-import { DeleteDestinationDialog } from "@/components/admin/destination/delete-destination-dialog" // Add this import
 import { CategoryType } from "@/schemaValidations/category.schema"
 import categoryApiRequest from "@/apiRequests/category"
 import { CategoryTable } from "@/components/admin/category/category-table"
+import { CreateCategoryDialog } from "@/components/admin/category/create-category-dialog"
+import { DeleteCategoryDialog } from "@/components/admin/category/delete-category-dialog"
+import { EditCategoryDialog } from "@/components/admin/category/edit-category-dialog"
+import { DestinationTableFilterCard } from "@/components/admin/destination/destination-table-filter"
 
 export default function CategoryDataTable() {
     // Data state
@@ -122,7 +119,7 @@ export default function CategoryDataTable() {
     }
 
     // Handle update
-    const handleEditDestination = (category: CategoryType) => {
+    const handleEditCategory = (category: CategoryType) => {
         setSelectedCategory(category)
         setIsEditDialogOpen(true)
     }
@@ -131,20 +128,25 @@ export default function CategoryDataTable() {
         fetchCategories()
     }
 
-    const handleEditComplete = (updatedDestination: DestinationType) => {
-        // Update the destination in the local state without refetching
-       
+    const handleEditComplete = (category: CategoryType) => {
+        setSelectedCategory(null)
+        setIsEditDialogOpen(false)
+        setCategory(prevCategories =>
+            prevCategories.map(cat => (cat.id === category.id ? category : cat))
+        )
+        // fetchCategories() // Refresh the data to ensure we have the latest version
     }
 
     // Handle delete
-    const handleEditCategory = (category: CategoryType) => {
+    const handleDeleteCategory = (category: CategoryType) => {
         setSelectedCategory(category)
         setIsDeleteDialogOpen(true)
     }
 
     const handleDeleteComplete = (deletedId: string) => {
-        // Update total count
-        setTotalCount(prevCount => prevCount - 1)
+        setCategory(prevCategories => prevCategories.filter(cat => cat.id !== deletedId))
+        setSelectedCategory(null)
+        setIsDeleteDialogOpen(false)
     }
 
     // Calculate total pages
@@ -206,7 +208,7 @@ export default function CategoryDataTable() {
                                 onClick={handleCreateDestination}
                             >
                                 <PlusCircle className="h-4 w-4" />
-                                <span>Thêm điểm đến</span>
+                                <span>Thêm danh mục</span>
                             </Button>
                         </div>
                     </div>
@@ -225,8 +227,8 @@ export default function CategoryDataTable() {
                     <CategoryTable
                         categories={category}
                         loading={loading}
-                        onEditCategory={handleEditDestination}
-                        onDeleteCategory={handleEditCategory} 
+                        onEditCategory={handleEditCategory}
+                        onDeleteCategory={handleDeleteCategory}
                         resetFilters={resetFilters}
                     />
                 </div>
@@ -243,17 +245,27 @@ export default function CategoryDataTable() {
             </Card>
 
             {/* Create Dialog */}
-            <CreateDestinationDialog
+            <CreateCategoryDialog
                 open={isCreateDialogOpen}
                 onOpenChange={setIsCreateDialogOpen}
                 onCreateComplete={handleCreateComplete}
             />
 
             {/* Edit Dialog */}
-           
+            <EditCategoryDialog
+                open={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+                category={selectedCategory}
+                onEditComplete={handleEditComplete}
+            />
 
             {/* Delete Dialog */}
-           
+            <DeleteCategoryDialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+                category={selectedCategory}
+                onDeleteComplete={handleDeleteComplete}
+            />
         </div>
     )
 }

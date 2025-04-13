@@ -11,7 +11,8 @@ export const CompanySchema = z.object({
     taxCode: z.string(),
     licensed: z.boolean(),
     staff: z.number(),
-    tourCount: z.number()
+    tourCount: z.number(),
+    commissionRate: z.number()
 })
 
 export type CompanyResType = z.infer<typeof CompanySchema>
@@ -55,6 +56,11 @@ export const CompanyPUTSchema = z.object({
     }),
     taxCode: z.string().min(1, {
         message: "Tax code is required.",
+    }),
+    commissionRate: z.number().min(0, {
+        message: "Commission rate must be at least 0.",
+    }).max(100, {
+        message: "Commission rate must be at most 100.",
     }),
 })
 

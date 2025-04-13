@@ -5,28 +5,28 @@ import React from 'react'
 function OperatorDashboard() {
   return (
     <div className="p-6 space-y-6">
-    <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+    <h1 className="text-2xl font-bold text-gray-800">Operator Dashboard</h1>
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
       {/* Stat Cards */}
       <Card>
         <CardHeader>
-          <CardTitle>Total Users</CardTitle>
+          <CardTitle>Doanh thu</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-3xl font-semibold text-gray-800">1,234</p>
+          <p className="text-3xl font-semibold text-gray-800">99999999</p>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Active Sessions</CardTitle>
+          <CardTitle>Tour đang hoạt động</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-3xl font-semibold text-gray-800">567</p>
+          <p className="text-3xl font-semibold text-gray-800">23</p>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Total Company</CardTitle>
+          <CardTitle>Tổng số</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-3xl font-semibold text-gray-800">10</p>

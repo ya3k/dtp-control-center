@@ -13,7 +13,6 @@ import type {
   tourOdataResType,
   TourResType,
 } from "@/schemaValidations/tour-operator.shema";
-import { toast } from "sonner";
 /**
  * Tour API service for handling tour-related API requests.
  */
@@ -122,7 +121,6 @@ const tourApiService = {
       const response = await http.delete(`${apiEndpoint.tours}/${id}`, {
         errorMessage: "Failed to delete tour",
       });
-      toast.success("Tour deleted successfully");
       return response;
     } catch (error) {
       console.error("Failed to delete tour:", error);
@@ -148,7 +146,6 @@ const tourApiService = {
   closeTour: async (id: string) => {
     try {
       const response = await http.put(`${apiEndpoint.closeTour}/${id}`, {});
-      toast.success("Đóng tour thành công");
       return response;
     } catch (error) {
       console.error("Đóng tour thất bại:", error);

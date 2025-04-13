@@ -1,5 +1,5 @@
 import SidebarItem from "@/types/sidebaritems";
-import { Building2, LayoutDashboard, Map, User } from "lucide-react";
+import { Building2, LayoutDashboard, Library, Map, User } from "lucide-react";
 
 export const adminItems: SidebarItem[] = [
     {
@@ -14,6 +14,12 @@ export const adminItems: SidebarItem[] = [
 
     },
     {
+        title: "Quản lí loại tour",
+        url: "/admin/category",
+        icon: Library
+
+    },
+    {
         title: "Quản lý địa điểm",
         url: "/admin/destinations",
         icon: Map
@@ -21,11 +27,7 @@ export const adminItems: SidebarItem[] = [
     },
     {
         title: "Quản lý công ty",
-        url: "",
+        url: "/admin/company",
         icon: Building2,
-        subItems: [
-            { title: "Danh sách công ty", url: "/admin/company", icon: Building2 },
-
-        ],
     },
 ];

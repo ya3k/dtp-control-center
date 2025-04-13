@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useUserStore } from "@/store/users/useUserStore"
 import type { User } from "@/types/user"
 import { Button } from "@/components/ui/button"
 import {
@@ -23,7 +22,6 @@ interface DeleteEmployeeDialogProps {
 }
 
 export function DeleteEmployeeDialog({ user, open, onOpenChange }: DeleteEmployeeDialogProps) {
-    const { deleteUser } = useUserStore()
     const [isDeleting, setIsDeleting] = useState(false)
 
     const handleDelete = async () => {
@@ -31,7 +29,6 @@ export function DeleteEmployeeDialog({ user, open, onOpenChange }: DeleteEmploye
 
         setIsDeleting(true)
         try {
-            await deleteUser(user.id)
             toast.success(`Employee ${user.email} delete successfully`)
             onOpenChange(false)
         } catch (error) {

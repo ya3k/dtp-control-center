@@ -15,13 +15,13 @@ export const operatorItems: SidebarItem[] = [
             { title: "Tạo Tours", url: "/operator/tours/create", icon: MapPin },
         ],
     },
-    {
-        title: "Nhân Viên",
-        url: "",
-        icon: Users,
-        subItems: [
-            { title: "Danh sách nhân viên", url: "/operator/employee", icon: Calendar },
+    // {
+    //     title: "Nhân Viên",
+    //     url: "",
+    //     icon: Users,
+    //     subItems: [
+    //         { title: "Danh sách nhân viên", url: "/operator/employee", icon: Calendar },
 
-        ],
-    }
+    //     ],
+    // }
 ];
