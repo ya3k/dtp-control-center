@@ -4,7 +4,10 @@ import { cookies } from "next/headers";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import AuthProvider from "@/providers/AuthProvider";
-import { ReactScan } from "@/components/common/ReactScanComponent";
+import TrackingToken from "@/components/common/TrackingToken";
+import userApiRequest from "@/apiRequests/user";
+import { UserProfile } from "@/types/user";
+
 const ibmPlexSans = IBM_Plex_Sans({
   variable: "--font-ibm-plex-sans",
   subsets: ["vietnamese"],
@@ -17,15 +20,28 @@ export const metadata: Metadata = {
   description: "Powered by BinhDinhTour",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const cookieStore = cookies();
-  const sessionToken = cookieStore.get("sessionToken");
+  const sessionToken = cookieStore.get("_auth");
   const role = cookieStore.get("role");
-  const refreshToken = cookieStore.get("refreshToken");
+  const refreshToken = cookieStore.get("cont_auth");
+
+  let user: UserProfile | null = null;
+
+  if (sessionToken) {
+    try {
+      const res = await userApiRequest.me(sessionToken.value);
+      if (res.status === 200) {
+        user = res.payload.data;
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  }
   return (
     <html lang="en">
       <head>
@@ -40,7 +56,9 @@ export default function RootLayout({
           initialSessionToken={sessionToken?.value}
           initialRole={role?.value}
           initialRefreshToken={refreshToken?.value}
+          user={user}
         >
+          <TrackingToken />
           {children}
           <Toaster closeButton richColors position="top-right" />
         </AuthProvider>

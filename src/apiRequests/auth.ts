@@ -33,7 +33,6 @@ const authApiRequest = {
   //next server
   setToken: (body: LoginResponseSchemaType) =>
     http.post<SetTokenResponseType>(nextServer.setToken, body, { baseUrl: "" }),
-  
   refreshFromNextClientToNextServer: () =>
     http.post<LoginResponseSchemaType | any>(
       nextServer.refreshToken,

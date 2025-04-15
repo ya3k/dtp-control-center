@@ -6,10 +6,15 @@ interface UserOdataResponse {
   "@odata.count"?: number
 }
 const userApiRequest = {
-  meServer: (sessionToken: string) =>
-    http.get(apiEndpoint.profile, { headers: { Authorization: `Bearer ${sessionToken}` } }),
-  me: () =>
-    http.get(apiEndpoint.profile),
+  me: (sessionToken?: string) =>
+    http.get(
+      apiEndpoint.profile,
+      sessionToken
+        ? {
+            headers: { Authorization: `Bearer ${sessionToken}` },
+          }
+        : {},
+    ),
   getWithOdata: (queryParams?: string) => {
     const finalQuery = queryParams ? `${queryParams}` : "";
     return http.get<UserOdataResponse>(`${apiEndpoint.odataUser}${finalQuery}`);

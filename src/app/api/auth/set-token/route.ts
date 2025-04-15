@@ -1,3 +1,5 @@
+import { getExpirationDateFromToken, getMaxAgeFromToken } from "@/lib/utils";
+
 export type SetTokenResponseType = {
   success: boolean;
   message: string;
@@ -8,13 +10,11 @@ export type SetTokenResponseType = {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  console.log("res", body);
   const sessionToken = body?.payload?.data.accessToken as string;
   const refreshToken = body?.payload?.data.refreshToken as string;
   const role = body?.payload?.data.role as string;
-  const maxAge = body?.payload?.data.expiresIn as string;
 
-  if (!sessionToken || !refreshToken) {
+  if (!sessionToken) {
     return Response.json(
       {
         success: false,
@@ -24,6 +24,14 @@ export async function POST(request: Request) {
       { status: 401 },
     );
   }
+  const exprirationDate = getExpirationDateFromToken(sessionToken);
+  const maxAge = getMaxAgeFromToken(sessionToken);
+
+  const cookies = [
+    `_auth=${sessionToken}; Max-Age=${maxAge}; Expires=${exprirationDate}; Path=/; HttpOnly; SameSite=Lax; Secure`,
+    `cont_auth=${refreshToken}; Max-Age=${maxAge}; Expires=${exprirationDate}; Path=/; HttpOnly; SameSite=Lax; Secure`,
+    `role=${role}; Max-Age=${maxAge}; Expires=${exprirationDate}; Path=/; HttpOnly; SameSite=Lax; Secure`,
+  ];
 
   return Response.json(
     {
@@ -33,7 +41,7 @@ export async function POST(request: Request) {
     {
       status: 200,
       headers: {
-        "Set-Cookie": `sessionToken=${sessionToken}; Max-Age=${maxAge}; Path=/; HttpOnly, role=${role}; Max-Age=${maxAge}; Path=/; HttpOnly, refreshToken=${refreshToken}; Max-Age=${maxAge}; Path=/; HttpOnly`,
+        "Set-Cookie": cookies.join(", "),
       },
     },
   );

@@ -15,13 +15,13 @@ const privatePath = [
   operatorLinks.createTour.href,
 ];
 
-const authPath = [links.login.href, links.register.href];
+const authPath = [links.login.href];
 
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const response = NextResponse.next();
-  const sessionToken = request.cookies.get("sessionToken");
+  const sessionToken = request.cookies.get("_auth");
   const role = request.cookies.get("role");
 
   // Redirect unauthenticated users trying to access private paths
@@ -78,7 +78,7 @@ export function middleware(request: NextRequest) {
     // Redirect admin after login
     if (
       userRole === UserRoleEnum.Admin &&
-      pathname === links.home.href
+      pathname === "/"
     ) {
       return NextResponse.redirect(new URL(adminLinks.dashboard.href, request.url));
     }
@@ -86,7 +86,7 @@ export function middleware(request: NextRequest) {
     // Redirect operator after login
     if (
       userRole === UserRoleEnum.Operator &&
-      pathname === links.home.href
+      pathname === "/"
     ) {
       return NextResponse.redirect(new URL(operatorLinks.dashboard.href, request.url));
     }

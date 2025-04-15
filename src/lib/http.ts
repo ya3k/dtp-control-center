@@ -245,7 +245,7 @@ const request = async <Response>(
           const sessionToken = (options?.headers as any)?.Authorization?.split(
             "Bearer ",
           )[1];
-          redirect("/logout?sessionToken=" + sessionToken);
+          redirect("/logout?_auth=" + sessionToken);
         }
       } else {
         // Show error toast for other errors if enabled

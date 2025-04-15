@@ -1,35 +1,38 @@
 "use client";
 import { refreshToken, sessionToken, userRole } from "@/lib/http";
-import { useState } from "react";
+import { UserProfile } from "@/types/user";
+import { createContext, useContext, useEffect, useState } from "react";
 
-// const AuthContext = createContext({
-//   sessionToken: "",
-//   setSessionToken: (token: string) => {},
-//   role: "",
-//   setRole: (role: string) => {},
-// });
+const AuthContext = createContext<{
+  user: UserProfile | null;
+  setUser: (user: UserProfile | null) => void;
+}>({
+  user: null,
+  setUser: () => {},
+});
 
-// export const useAuthContext = () => {
-//   const context = useContext(AuthContext);
-//   if (!context) {
-//     throw new Error("useAuthContext must be used within an AuthProvider");
-//   }
-//   return context;
-// };
+export const useAuthContext = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error(`useAuthContext must be used within AuthProvider`);
+  }
+  return context;
+};
 
 export default function AuthProvider({
   children,
   initialSessionToken = "",
   initialRole = "",
   initialRefreshToken = "",
+  user: userProp,
 }: {
   children: React.ReactNode;
   initialSessionToken?: string;
   initialRole?: string;
   initialRefreshToken?: string;
+  user: UserProfile | null;
 }) {
-  // const [sessionToken, setSessionToken] = useState(initialSessionToken);
-  // const [role, setRole] = useState(initialRole);
+  const [user, setUser] = useState<UserProfile | null>(null);
   useState(() => {
     if (typeof window !== "undefined") {
       sessionToken.value = initialSessionToken;
@@ -38,11 +41,13 @@ export default function AuthProvider({
     }
   });
 
+  useEffect(() => {
+    setUser(userProp);
+  }, [setUser, userProp])
+
   return (
-    // <AuthContext.Provider
-    //   value={{ sessionToken, setSessionToken, role, setRole }}
-    // >
-    <>{children}</>
-    // </AuthContext.Provider>
+    <AuthContext.Provider value={{ user, setUser }}>
+      {children}
+    </AuthContext.Provider>
   );
 }

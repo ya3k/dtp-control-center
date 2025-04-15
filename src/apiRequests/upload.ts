@@ -1,6 +1,6 @@
 //D:\FPT\capstoneprj\dtp-control-center\src\apiRequests\upload.ts
 import { apiEndpoint } from "@/configs/routes";
-import http, { sessionToken } from "@/lib/http";
+import { sessionToken } from "@/lib/http";
 
 const baseURL = process.env.NEXT_PUBLIC_API_ENDPOINT;
 
@@ -109,11 +109,6 @@ function getAuthToken() {
   // If you have access to sessionToken from your http module
   if (typeof sessionToken !== 'undefined' && sessionToken.value) {
     return sessionToken.value;
-  }
-
-  // Fallback: check localStorage if running in browser
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('sessionToken') || '';
   }
 
   return '';

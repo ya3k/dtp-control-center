@@ -1,38 +1,100 @@
-"use client"
-import authApiRequest from '@/apiRequests/auth'
-import { Button } from '@/components/ui/button'
-import { refreshToken, sessionToken, userRole } from '@/lib/http'
-import React from 'react'
-import Swal from 'sweetalert2'
+"use client";
+import { useCallback, useEffect } from "react";
+import { differenceInMinutes } from "date-fns";
+
+import authApiRequest from "@/apiRequests/auth";
+import { links } from "@/configs/routes";
+import { refreshToken, sessionToken } from "@/lib/http";
+import { decodeJwtTokenOnBrowser } from "@/lib/utils";
 
 export default function TrackingToken() {
-  const handleClick = async() => {
-    const response = await authApiRequest.refreshFromNextClientToNextServer();
-    console.log(response);
-    sessionToken.value = response?.payload?.data?.accessToken as string;
-    refreshToken.value = response?.payload?.data?.refreshToken as string;
-    userRole.value = response?.payload?.data?.role as string;
-  }
-    return (
-    <>
-        <Button onClick={() => handleClick()}>TrackingToken</Button>
-        <Button onClick={() => {
-            const Toast = Swal.mixin({
-                toast: true,
-                position: "top-end",
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-                didOpen: (toast) => {
-                  toast.onmouseenter = Swal.stopTimer;
-                  toast.onmouseleave = Swal.resumeTimer;
-                }
-              });
-              Toast.fire({
-                icon: "success",
-                title: "Signed in successfully"
-              });
-        }}>Test Sweet alert</Button>
-    </>
-  )
+  const accessToken = sessionToken.value;
+  
+  const getTokenExpiration = useCallback((): Date | null => {
+    if (!accessToken) return null;
+    const decoded = decodeJwtTokenOnBrowser(accessToken);
+    if (!decoded || !decoded.exp) return null;
+    return new Date(decoded.exp * 1000);
+  }, [accessToken]);
+
+  const handleInvalidToken = useCallback(() => {
+    authApiRequest.logoutFromNextClientToNextServer(true).then(() => {
+      setTimeout(() => {
+        window.location.replace(
+          `${links.login.href}?expiredToken=true`,
+        );
+      }, 1000);
+    });
+  }, []);
+
+  const refreshUserToken = useCallback(async () => {
+    try {
+      const response = await authApiRequest.refreshFromNextClientToNextServer();
+
+      if (response?.payload?.data) {
+        console.log("Token refreshed successfully");
+        sessionToken.value = response.payload.data.accessToken;
+        refreshToken.value = response.payload.data.refreshToken;
+
+        window.dispatchEvent(new CustomEvent("token-refreshed"));
+
+        return true;
+      } else {
+        console.error("Failed to refresh token");
+        handleInvalidToken();
+        return false;
+      }
+    } catch (error) {
+      console.error("Error refreshing token:", error);
+      handleInvalidToken();
+      return false;
+    }
+  }, [handleInvalidToken]);
+  useEffect(() => {
+    if (!accessToken) return;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const setupTokenRefresh = async() => {
+      const expirationTime = getTokenExpiration();
+      if (!expirationTime) return null;
+
+      const now = new Date();
+      const minutesUntilExpiry = differenceInMinutes(expirationTime, now);
+
+      // If token is already expired or will expire within 10 minutes
+      if (minutesUntilExpiry <= 10) {
+        // Try to refresh immediately
+        const success = await refreshUserToken();
+        if(success) {
+          setupTokenRefresh();
+        }
+      }
+
+      // Set timeout to refresh token 10 minutes before expiration
+      const refreshTime = minutesUntilExpiry - 10;
+      const refreshDelay = refreshTime * 60 * 1000;
+      console.log(`Token will refresh in ${refreshTime} minutes`);
+
+      timeoutId = setTimeout(
+        async () => {
+          const success = await refreshUserToken();
+          if (success) {
+            // Set up the next refresh
+            setupTokenRefresh();
+          }
+        },
+        refreshDelay,
+      );
+    };
+
+    // Set up first token refresh
+    setupTokenRefresh();
+
+    // Clean up on unmount
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [getTokenExpiration, refreshUserToken, accessToken]);
+
+  return null;
 }

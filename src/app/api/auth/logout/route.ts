@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 const clearCookies = () => {
-  return ["_auth", "cont_auth"]
+  return ["_auth", "cont_auth", "role"]
     .map(
       (name) =>
         `${name}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Strict`,

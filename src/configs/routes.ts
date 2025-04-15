@@ -1,16 +1,6 @@
 
 export const links = {
     login: { href: "/login", label: "Đăng nhập" },
-    register: { href: "/register", label: "Đăng ký" },
-    home: { href: "/", label: "Trang chủ" },
-    tour: { href: "/tour", label: "Tour Quy Nhơn" },
-    allTour: { href: "/tour/all", label: "Tất cả tour" },
-    blog: { href: "/blog", label: "Cẩm nang du lịch" },
-    about: { href: "/about", label: "Về chúng tôi" },
-    passenger: { href: "/passenger", label: "Khách hàng" },
-    shoppingCart: { href: "/shoppingcart", label: "Giỏ hàng" },
-    checkout: { href: "payment/checkout", label: "Thanh toán" },
-
 }
 
 export const adminLinks = {
