@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus, Trash2, PlusCircle, Upload, Pencil } from "lucide-react"
@@ -47,19 +47,17 @@ const formatTimeForInput = (time: string): string => {
 
 const formatTimeForStorage = (time: string): string => {
   if (!time) return ""
-  
-  // If already in HH:MM:SS format, return as is
-  if (/^\d{2}:\d{2}:\d{2}$/.test(time)) {
-    return time
-  }
-  
-  // If in HH:MM format, add seconds
-  if (/^\d{2}:\d{2}$/.test(time)) {
-    return `${time}:00`
-  }
-  
-  // Return original if it doesn't match expected formats
+  if (/^\d{2}:\d{2}:\d{2}$/.test(time)) return time
+  if (/^\d{2}:\d{2}$/.test(time)) return `${time}:00`
   return time
+}
+
+// Validation Functions
+const validateTimes = (startTime: string, endTime: string): boolean => {
+  if (!startTime || !endTime) return true // Allow empty times
+  const start = new Date(`1970-01-01T${startTime}`)
+  const end = new Date(`1970-01-01T${endTime}`)
+  return start < end
 }
 
 // Activity Form Component
@@ -68,23 +66,46 @@ const ActivityForm: React.FC<{
   activities: z.infer<typeof destinationActivities>[]
   setActivities: (index: number, activities: z.infer<typeof destinationActivities>[]) => void
   isParentEditing: boolean
-}> = ({ destinationIndex, activities, setActivities, isParentEditing }) => {
+  destinationStartTime?: string
+  destinationEndTime?: string
+}> = ({ 
+  destinationIndex, 
+  activities, 
+  setActivities, 
+  isParentEditing,
+  destinationStartTime,
+  destinationEndTime 
+}) => {
   const [activityName, setActivityName] = useState("")
   const [activityStartTime, setActivityStartTime] = useState("")
   const [activityEndTime, setActivityEndTime] = useState("")
   const [editingActivityIndex, setEditingActivityIndex] = useState<number | null>(null)
 
-  // Disable the form if parent destination is being edited
-  const isDisabled = isParentEditing
+  const validateActivityTime = useCallback((start: string, end: string): boolean => {
+    if (!start || !end) return false
+    if (!destinationStartTime || !destinationEndTime) return true
+
+    const actStart = new Date(`1970-01-01T${formatTimeForStorage(start)}`)
+    const actEnd = new Date(`1970-01-01T${formatTimeForStorage(end)}`)
+    const destStart = new Date(`1970-01-01T${destinationStartTime}`)
+    const destEnd = new Date(`1970-01-01T${destinationEndTime}`)
+
+    return actStart >= destStart && actEnd <= destEnd && actStart < actEnd
+  }, [destinationStartTime, destinationEndTime])
 
   const addActivity = () => {
-    if (isDisabled) {
+    if (isParentEditing) {
       toast.error("Hãy hoàn thành chỉnh sửa điểm đến trước")
       return
     }
 
     if (!activityName.trim()) {
-      toast.error("Activity name is required")
+      toast.error("Tên hoạt động không được để trống")
+      return
+    }
+
+    if (!validateActivityTime(activityStartTime, activityEndTime)) {
+      toast.error("Thời gian hoạt động không hợp lệ hoặc nằm ngoài thời gian của điểm đến")
       return
     }
 
@@ -100,8 +121,6 @@ const ActivityForm: React.FC<{
 
       setActivities(destinationIndex, updatedActivities)
       toast.success("Hoạt động đã được cập nhật")
-      
-      // Explicitly reset the editing state
       setEditingActivityIndex(null)
     } else {
       // Add new activity
@@ -116,11 +135,15 @@ const ActivityForm: React.FC<{
       toast.success("Đã thêm hoạt động mới")
     }
 
-    // Clear form inputs
     resetForm()
   }
 
   const editActivity = (index: number) => {
+    if (isParentEditing) {
+      toast.error("Hãy hoàn thành chỉnh sửa điểm đến trước")
+      return
+    }
+
     const activity = activities[index]
     setActivityName(activity.name)
     setActivityStartTime(formatTimeForInput(activity.startTime))
@@ -134,7 +157,7 @@ const ActivityForm: React.FC<{
     setActivityEndTime("")
     setEditingActivityIndex(null)
   }
-  
+
   const cancelActivityEdit = () => {
     setEditingActivityIndex(null)
     resetForm()
@@ -142,30 +165,37 @@ const ActivityForm: React.FC<{
   }
 
   const removeActivity = (index: number) => {
+    if (isParentEditing) {
+      toast.error("Hãy hoàn thành chỉnh sửa điểm đến trước")
+      return
+    }
+
     const updatedActivities = activities
       .filter((_, i) => i !== index)
       .map((act, idx) => ({ ...act, sortOrder: idx }))
-      
+
     setActivities(destinationIndex, updatedActivities)
 
     if (editingActivityIndex === index) {
       setEditingActivityIndex(null)
       resetForm()
     }
+
+    toast.success("Đã xóa hoạt động")
   }
 
   return (
-    <div className={`space-y-4 mt-4 p-4 border rounded-md ${isDisabled ? 'relative' : ''}`}>
-      {isDisabled && (
+    <div className={`space-y-4 mt-4 p-4 border rounded-md ${isParentEditing ? 'relative' : ''}`}>
+      {isParentEditing && (
         <div className="absolute inset-0 bg-background/60 flex items-center justify-center z-10 rounded-md">
           <div className="text-sm font-medium text-center p-3 rounded-md bg-muted">
             Hãy hoàn thành chỉnh sửa điểm đến trước khi thao tác với hoạt động
           </div>
         </div>
       )}
-      
+
       <h4 className="font-medium">Hoạt động</h4>
-      
+
       {editingActivityIndex !== null && (
         <div className="p-2 mb-3 bg-primary/10 border border-primary rounded-md text-primary text-sm">
           Đang chỉnh sửa hoạt động. Hoàn thành chỉnh sửa trước khi thực hiện các tác vụ khác.
@@ -179,7 +209,7 @@ const ActivityForm: React.FC<{
             value={activityName}
             onChange={(e) => setActivityName(e.target.value)}
             placeholder="Nhập tên hoạt động"
-            disabled={isDisabled}
+            disabled={isParentEditing}
           />
         </div>
 
@@ -190,7 +220,7 @@ const ActivityForm: React.FC<{
               type="time"
               value={activityStartTime}
               onChange={(e) => setActivityStartTime(e.target.value)}
-              disabled={isDisabled}
+              disabled={isParentEditing}
             />
           </div>
 
@@ -200,19 +230,19 @@ const ActivityForm: React.FC<{
               type="time"
               value={activityEndTime}
               onChange={(e) => setActivityEndTime(e.target.value)}
-              disabled={isDisabled}
+              disabled={isParentEditing}
             />
           </div>
         </div>
 
         <div className={editingActivityIndex !== null ? "grid grid-cols-2 gap-2" : ""}>
-          <Button 
-            type="button" 
+          <Button
+            type="button"
             variant={editingActivityIndex !== null ? "default" : "outline"}
-            size="sm" 
+            size="sm"
             className={`w-full ${editingActivityIndex !== null ? "bg-green-600 hover:bg-green-700" : "hover:bg-blue-50 hover:border-blue-200 text-blue-600"}`}
-            onClick={addActivity} 
-            disabled={isDisabled}
+            onClick={addActivity}
+            disabled={isParentEditing}
           >
             {editingActivityIndex !== null ? (
               <>Lưu chỉnh sửa hoạt động</>
@@ -225,13 +255,13 @@ const ActivityForm: React.FC<{
           </Button>
 
           {editingActivityIndex !== null && (
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm" 
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
               className="w-full hover:bg-red-50 hover:border-red-200 text-red-600"
-              onClick={cancelActivityEdit} 
-              disabled={isDisabled}
+              onClick={cancelActivityEdit}
+              disabled={isParentEditing}
             >
               Hủy chỉnh sửa
             </Button>
@@ -243,13 +273,12 @@ const ActivityForm: React.FC<{
         <div className="space-y-2 mt-2">
           <h5 className="text-sm font-medium">Hoạt động đã thêm</h5>
           {activities.map((activity, index) => (
-            <div 
-              key={index} 
-              className={`flex items-center justify-between p-2 rounded-md ${
-                editingActivityIndex === index 
-                  ? 'bg-primary/10 border border-primary' 
-                  : 'bg-muted'
-              }`}
+            <div
+              key={index}
+              className={`flex items-center justify-between p-2 rounded-md ${editingActivityIndex === index
+                ? 'bg-primary/10 border border-primary'
+                : 'bg-muted'
+                }`}
             >
               <div>
                 <p className="text-sm font-medium">{activity.name}</p>
@@ -263,20 +292,20 @@ const ActivityForm: React.FC<{
                 )}
               </div>
               <div className="flex gap-1">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => editActivity(index)}
-                  disabled={isDisabled || editingActivityIndex !== null && editingActivityIndex !== index}
+                  disabled={isParentEditing || editingActivityIndex !== null && editingActivityIndex !== index}
                   className="hover:bg-blue-50"
                 >
                   <Pencil className="h-3 w-3 text-blue-500" />
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => removeActivity(index)}
-                  disabled={isDisabled || editingActivityIndex !== null && editingActivityIndex !== index}
+                  disabled={isParentEditing || editingActivityIndex !== null && editingActivityIndex !== index}
                   className="hover:bg-red-50"
                 >
                   <Trash2 className="h-3 w-3 text-red-500" />
@@ -311,42 +340,45 @@ export function DestinationForm({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
 
-  // Form setup
+  // Form setup with better validation
   const form = useForm<TourCreateDestinationType & { imageFile?: File }>({
     resolver: zodResolver(DestinationSchema),
     defaultValues: {
       destinationId: "",
       startTime: "",
       endTime: "",
-      sortOrder: data.destinations?.length || 0,
-      sortOrderByDate: data.destinations?.length || 0,
+      sortOrder: 0,
+      sortOrderByDate: 0,
       img: "",
       destinationActivities: [],
     },
   })
 
-  // Helper Functions
-  const getDestinationName = (id: string) => {
+  // Memoized helper functions
+  const getDestinationName = useCallback((id: string) => {
     const destination = destinations.find((d) => d.id === id)
     return destination ? destination.name : "Unknown Destination"
-  }
+  }, [destinations])
 
-  const getNextSortOrderForDate = (sortOrderByDate: number): number => {
-    const destinationsForDate = (data.destinations || []).filter(
+  const getNextSortOrderForDate = useCallback((sortOrderByDate: number): number => {
+    const destinationsForDate = destinationsWithFiles.filter(
       dest => dest.sortOrderByDate === sortOrderByDate
     )
     return destinationsForDate.length
-  }
+  }, [destinationsWithFiles])
 
-  // Data Fetching
+  // Data Fetching with better error handling
   useEffect(() => {
     const fetchDestinations = async () => {
       try {
         const response = await destinationApiRequest.getAll()
-        setDestinations(response.payload?.value || [])
+        if (!response.payload?.value) {
+          throw new Error("No destinations data received")
+        }
+        setDestinations(response.payload.value)
       } catch (error) {
         console.error("Failed to fetch destinations:", error)
-        toast.error("Failed to load destinations")
+        toast.error("Không thể tải danh sách điểm đến")
       }
     }
 
@@ -362,36 +394,53 @@ export function DestinationForm({
     }
   }, [data.destinations])
 
-  // Event Handlers
-  const handleImageChange = (
+  // Event Handlers with validation
+  const handleImageChange = useCallback((
     e: React.ChangeEvent<HTMLInputElement>,
     field: { onChange: (value: string) => void }
   ) => {
     const file = e.target.files?.[0]
     if (!file) return
 
+    // Validate file type and size
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      toast.error("Chỉ chấp nhận file ảnh định dạng JPG, PNG hoặc WebP")
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      toast.error("Kích thước ảnh không được vượt quá 5MB")
+      return
+    }
+
     const previewUrl = URL.createObjectURL(file)
     setImagePreview(previewUrl)
     setSelectedImageFile(file)
     form.setValue("imageFile", file)
     field.onChange(previewUrl)
-  }
+  }, [form])
 
-  const clearImage = (field: { onChange: (value: string) => void }) => {
+  const clearImage = useCallback((field: { onChange: (value: string) => void }) => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview)
+    }
     setImagePreview(null)
     setSelectedImageFile(null)
     form.setValue("imageFile", undefined)
     field.onChange("")
-    if (fileInputRef.current) fileInputRef.current.value = ""
-  }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }, [imagePreview, form])
 
-  const setActivities = (destinationIndex: number, activities: z.infer<typeof destinationActivities>[]) => {
-    // Update the activities map
-    const newMap = new Map(destinationActivitiesMap)
-    newMap.set(destinationIndex, activities)
-    setDestinationActivitiesMap(newMap)
+  const setActivities = useCallback((destinationIndex: number, activities: z.infer<typeof destinationActivities>[]) => {
+    setDestinationActivitiesMap(prev => {
+      const newMap = new Map(prev)
+      newMap.set(destinationIndex, activities)
+      return newMap
+    })
 
-    // Update existing destination in the data
     if (destinationIndex >= 0 && destinationIndex < (data.destinations?.length || 0)) {
       const updatedDestinations = [...(data.destinations || [])]
       updatedDestinations[destinationIndex] = {
@@ -400,22 +449,22 @@ export function DestinationForm({
       }
       updateData({ destinations: updatedDestinations })
     }
-  }
+  }, [data.destinations, updateData])
 
   const editDestination = (index: number) => {
     if (index < 0 || index >= destinationsWithFiles.length) {
       toast.error("Error editing destination")
       return
     }
-    
+
     const destination = destinationsWithFiles[index]
-    
+
     // Format times for form input - handle possible empty values
     const formattedStartTime = destination.startTime ? formatTimeForInput(destination.startTime) : ""
     const formattedEndTime = destination.endTime ? formatTimeForInput(destination.endTime) : ""
-    
+
     // No need to validate times here, as they can be empty
-    
+
     form.reset({
       destinationId: destination.destinationId,
       startTime: formattedStartTime,
@@ -425,85 +474,90 @@ export function DestinationForm({
       img: destination.img || "",
       destinationActivities: destination.destinationActivities || [],
     })
-    
+
     setEditingIndex(index)
     setImagePreview(destination.imagePreview || destination.img || null)
-    
+
     if (destination.imageFile) {
       setSelectedImageFile(destination.imageFile)
       form.setValue("imageFile", destination.imageFile)
     } else {
       setSelectedImageFile(null)
     }
-    
+
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const addOrUpdateDestination = (values: TourCreateDestinationType & { imageFile?: File }) => {
     const imageFile = selectedImageFile || values.imageFile
-    
+
     // Format times - handle empty values
     const startTime = values.startTime ? formatTimeForStorage(values.startTime) : ""
     const endTime = values.endTime ? formatTimeForStorage(values.endTime) : ""
-    
+
     // Validate time formats - only if they're provided
-    if ((startTime && !/^\d{2}:\d{2}:\d{2}$/.test(startTime)) || 
-        (endTime && !/^\d{2}:\d{2}:\d{2}$/.test(endTime))) {
+    if ((startTime && !/^\d{2}:\d{2}:\d{2}$/.test(startTime)) ||
+      (endTime && !/^\d{2}:\d{2}:\d{2}$/.test(endTime))) {
       toast.error("Thời gian phải có định dạng HH:MM")
       return
     }
-    
+
+    // Get the next sortOrder for this date
+    const sortOrder = editingIndex !== null 
+      ? values.sortOrder 
+      : getNextSortOrderForDate(values.sortOrderByDate)
+
     // Create destination data
     const destinationData: TourCreateDestinationType = {
       destinationId: values.destinationId,
       startTime,
       endTime,
-      sortOrder: values.sortOrder,
+      sortOrder,
       sortOrderByDate: values.sortOrderByDate,
       img: values.img,
       destinationActivities: values.destinationActivities,
     }
-    
+
     const destinationWithFile: DestinationWithFile = {
       ...destinationData,
       imageFile,
       imagePreview: values.img,
     }
-    
+
     if (editingIndex !== null) {
       // Update existing destination
       const updatedDestinationsWithFiles = [...destinationsWithFiles]
       updatedDestinationsWithFiles[editingIndex] = destinationWithFile
       setDestinationsWithFiles(updatedDestinationsWithFiles)
-      
+
       const updatedDestinations = [...(data.destinations || [])]
       updatedDestinations[editingIndex] = destinationData
       updateData({ destinations: updatedDestinations })
-      
+
       if (imageFile) {
         addDestinationImageFile(editingIndex, imageFile)
       }
-      
+
       toast.success("Destination updated successfully")
       setEditingIndex(null)
     } else {
       // Add new destination
       setDestinationsWithFiles([...destinationsWithFiles, destinationWithFile])
-      
+
       const updatedDestinations = [...(data.destinations || []), destinationData]
       updateData({ destinations: updatedDestinations })
-      
+
       const newActivitiesMap = new Map(destinationActivitiesMap)
       newActivitiesMap.set(updatedDestinations.length - 1, [])
       setDestinationActivitiesMap(newActivitiesMap)
-      
+
       if (imageFile) {
         addDestinationImageFile(updatedDestinations.length - 1, imageFile)
       }
-      
+
       toast.success("Destination added successfully")
     }
-    
+
     // Reset form
     resetFormAndImageState()
   }
@@ -519,13 +573,11 @@ export function DestinationForm({
       startTime: "",
       endTime: "",
       sortOrder: 0,
-      sortOrderByDate: data.destinations?.length 
-        ? Math.max(...data.destinations.map(d => d.sortOrderByDate)) + 1
-        : 0,
+      sortOrderByDate: 0,
       img: "",
       destinationActivities: [],
     })
-    
+
     setImagePreview(null)
     setSelectedImageFile(null)
     if (fileInputRef.current) fileInputRef.current.value = ""
@@ -535,7 +587,7 @@ export function DestinationForm({
     // Remove from arrays
     const updatedDestinationsWithFiles = destinationsWithFiles.filter((_, i) => i !== index)
     setDestinationsWithFiles(updatedDestinationsWithFiles)
-    
+
     const updatedDestinations = (data.destinations || [])
       .filter((_, i) => i !== index)
       .map((dest, idx) => ({
@@ -543,18 +595,18 @@ export function DestinationForm({
         sortOrder: idx,
         sortOrderByDate: dest.sortOrderByDate, // Keep original date grouping
       }))
-    
+
     // Rebuild activities map
     const newActivitiesMap = new Map<number, z.infer<typeof destinationActivities>[]>()
     updatedDestinations.forEach((_, idx) => {
       const activities = destinationActivitiesMap.get(idx < index ? idx : idx + 1) || []
       newActivitiesMap.set(idx, activities)
     })
-    
+
     setDestinationActivitiesMap(newActivitiesMap)
     updateData({ destinations: updatedDestinations })
     toast.info("Destination removed")
-    
+
     if (editingIndex === index) {
       cancelEdit()
     }
@@ -590,8 +642,8 @@ export function DestinationForm({
         <Card className="md:sticky md:top-4 h-fit">
           <CardHeader>
             <CardTitle>
-              {editingIndex !== null 
-                ? `Chỉnh sửa điểm đến: ${getDestinationName(destinationsWithFiles[editingIndex]?.destinationId)}` 
+              {editingIndex !== null
+                ? `Chỉnh sửa điểm đến: ${getDestinationName(destinationsWithFiles[editingIndex]?.destinationId)}`
                 : 'Thêm điểm đến'}
             </CardTitle>
           </CardHeader>
@@ -632,9 +684,9 @@ export function DestinationForm({
                       <FormItem>
                         <FormLabel>Thời gian đến</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="time" 
-                            {...field} 
+                          <Input
+                            type="time"
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -649,9 +701,9 @@ export function DestinationForm({
                       <FormItem>
                         <FormLabel>Thời gian đi</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="time" 
-                            {...field} 
+                          <Input
+                            type="time"
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -677,41 +729,21 @@ export function DestinationForm({
                               const newSortOrderByDate = parseInt(e.target.value)
                               field.onChange(newSortOrderByDate)
                               
-                              // Auto update sort order
+                              // Auto update sort order based on existing destinations for this date
                               const nextSortOrder = getNextSortOrderForDate(newSortOrderByDate)
                               form.setValue("sortOrder", nextSortOrder)
                             }}
                           />
                         </FormControl>
                         <p className="text-xs text-muted-foreground">
-                          Ngày của lịch trình tour
+                          Ngày của lịch trình tour (0 = ngày đầu tiên)
                         </p>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="sortOrder"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Thứ tự điểm đến</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
-                            {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value))}
-                          />
-                        </FormControl>
-                        <p className="text-xs text-muted-foreground">
-                          Thứ tự trong ngày
-                        </p>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+               
                 </div>
 
                 {/* Image upload */}
@@ -769,8 +801,8 @@ export function DestinationForm({
 
                 {/* Submit buttons */}
                 <div className={editingIndex !== null ? "grid grid-cols-2 gap-2" : ""}>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className={`w-full ${editingIndex !== null ? "bg-green-600 hover:bg-green-700" : "hover:bg-blue-600"}`}
                   >
                     {editingIndex !== null ? (
@@ -844,8 +876,8 @@ export function DestinationForm({
                               );
 
                               return (
-                                <div 
-                                  key={index} 
+                                <div
+                                  key={index}
                                   className={`p-4 border rounded-md ${editingIndex === index ? 'border-2 border-primary bg-primary/5' : ''}`}
                                 >
                                   {/* Destination header */}
@@ -914,6 +946,8 @@ export function DestinationForm({
                                     activities={destinationActivitiesMap.get(index) || []}
                                     setActivities={setActivities}
                                     isParentEditing={editingIndex !== null}
+                                    destinationStartTime={destinationsWithFiles[index]?.startTime}
+                                    destinationEndTime={destinationsWithFiles[index]?.endTime}
                                   />
                                 </div>
                               );
@@ -930,14 +964,14 @@ export function DestinationForm({
 
       {/* Navigation buttons */}
       <div className="flex justify-between mt-8">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={onPrevious}
           className="hover:bg-gray-100"
         >
           Trước: Thông tin tour
         </Button>
-        <Button 
+        <Button
           onClick={handleContinue}
         >
           Tiếp theo: Vé
