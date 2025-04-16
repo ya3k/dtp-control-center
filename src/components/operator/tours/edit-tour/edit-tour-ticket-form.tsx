@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react"
-import { Loader2, Plus, Calendar as CalendarIcon } from "lucide-react"
+import { Loader2, Plus, Calendar as CalendarIcon, Pencil } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -109,7 +109,7 @@ export default function TourEditTicketForm({ tourId, onUpdateSuccess }: TourEdit
                     <p className="text-muted-foreground">Quản lý lịch vé cho tour</p>
                 </div>
                 <Button onClick={() => setIsEditDialogOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Pencil className="h-4 w-4 mr-2" />
                     Thêm/Cập nhật vé
                 </Button>
             </div>

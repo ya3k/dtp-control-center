@@ -27,9 +27,12 @@ export const CompanyRequestSchema = z.object({
     phone: z.string().min(10, {
         message: "Please enter a valid phone number.",
     }),
+    address: z.string(),
+
     taxCode: z.string().min(1, {
         message: "Tax code is required.",
     }),
+    commissionRate: z.number()
 })
 
 export type TCompanyQuestBodyType = z.infer<typeof CompanyRequestSchema>
@@ -38,6 +41,7 @@ export type TCompanyQuestBodyType = z.infer<typeof CompanyRequestSchema>
 
 export const CompanyGrantSchema = z.object({
     companyId: z.string(),
+    confirmUrl: z.string(),
     accept: z.boolean().default(true),
 })
 

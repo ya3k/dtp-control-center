@@ -51,9 +51,9 @@ const addScheduleSchema = z.object({
     closeDay: z.date({
         required_error: "Ngày kết thúc là bắt buộc",
     })
-    .refine(date => date > new Date(), {
-        message: "Ngày kết thúc phải ở trong tương lai",
-    }),
+        .refine(date => date > new Date(), {
+            message: "Ngày kết thúc phải ở trong tương lai",
+        }),
     scheduleFrequency: z.string({
         required_error: "Tần suất là bắt buộc",
     }),
@@ -70,9 +70,9 @@ interface AddScheduleDialogProps {
     onAddSuccess: () => void
 }
 
-export default function AddScheduleDialog({ 
-    open, 
-    onOpenChange, 
+export default function AddScheduleDialog({
+    open,
+    onOpenChange,
     tourId,
     frequencyOptions,
     onAddSuccess
@@ -116,7 +116,7 @@ export default function AddScheduleDialog({
         const conflicts = existingDates.filter(existingDate => {
             // Định dạng thành YYYY-MM-DD để so sánh chỉ ngày (không phải giờ)
             const existingDateStr = format(existingDate, 'yyyy-MM-dd')
-            
+
             // Kiểm tra các ngày trong phạm vi
             let currentDate = new Date(start)
             while (currentDate <= end) {
@@ -186,7 +186,7 @@ export default function AddScheduleDialog({
 
     // Kiểm tra xem một ngày đã có lịch trình chưa
     const isDateBooked = (date: Date) => {
-        return existingDates.some(existingDate => 
+        return existingDates.some(existingDate =>
             format(existingDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
         );
     };
@@ -197,7 +197,7 @@ export default function AddScheduleDialog({
             // Kiểm tra xung đột ngày một lần nữa trước khi gửi
             let hasConflict = false;
             let currentDate = new Date(values.openDay);
-            
+
             while (currentDate <= values.closeDay) {
                 if (isDateBooked(currentDate)) {
                     hasConflict = true;
@@ -206,7 +206,7 @@ export default function AddScheduleDialog({
                 }
                 currentDate = addDays(currentDate, 1);
             }
-            
+
             if (hasConflict) {
                 return;
             }
@@ -227,28 +227,31 @@ export default function AddScheduleDialog({
             }
 
             toast.success("Thêm lịch trình thành công");
-            
+
             // Reset form nhưng giữ dialog mở
             form.reset({
                 openDay: new Date(),
                 closeDay: new Date(),
                 scheduleFrequency: "Daily",
             });
-            
+
             // Gọi callback thành công
             onAddSuccess();
-            
+
             // Tạo các ngày giữa ngày bắt đầu và kết thúc để thêm vào existingDates
             const newDates: Date[] = [];
             let dateToAdd = new Date(values.openDay);
-            
+
             while (dateToAdd <= values.closeDay) {
                 newDates.push(new Date(dateToAdd));
                 dateToAdd = addDays(dateToAdd, 1);
             }
-            
+
             // Cập nhật state cục bộ của những ngày hiện có
             setExistingDates(prev => [...prev, ...newDates]);
+
+            // Close the dialog only on success
+            onOpenChange(false);
         } catch (error) {
             console.error("Lỗi khi thêm lịch trình:", error);
             toast.error("Không thể thêm lịch trình");
@@ -277,7 +280,7 @@ export default function AddScheduleDialog({
                                 </AlertDescription>
                             </Alert>
                         )}
-                        
+
                         <FormField
                             control={form.control}
                             name="openDay"
@@ -384,9 +387,9 @@ export default function AddScheduleDialog({
                                         <SelectContent>
                                             {frequencyOptions.map(option => (
                                                 <SelectItem key={option.value} value={option.value}>
-                                                    {option.label === "Daily" ? "Hàng ngày" : 
-                                                     option.label === "Weekly" ? "Hàng tuần" : 
-                                                     option.label === "Monthly" ? "Hàng tháng" : option.label}
+                                                    {option.label === "Daily" ? "Hàng ngày" :
+                                                        option.label === "Weekly" ? "Hàng tuần" :
+                                                            option.label === "Monthly" ? "Hàng tháng" : option.label}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>

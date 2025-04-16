@@ -58,7 +58,7 @@ export default async function RootLayout({
           initialRefreshToken={refreshToken?.value}
           user={user}
         >
-          <TrackingToken />
+          {/* <TrackingToken /> */}
           {children}
           <Toaster closeButton richColors position="top-right" />
         </AuthProvider>

@@ -68,7 +68,9 @@ export const apiEndpoint = {
     grant: `/api/company/grant`,
 
     //media
-    upload: `/api/media`
+    upload: `/api/media`,
+
+    wallet: `/api/wallet`,
 }
 
 

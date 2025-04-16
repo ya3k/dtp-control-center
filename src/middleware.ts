@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { UserRoleEnum } from "@/types/user";
@@ -17,12 +16,19 @@ const privatePath = [
 
 const authPath = [links.login.href];
 
+const publicPaths = ['/partner']; // Add public paths here
+
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const response = NextResponse.next();
   const sessionToken = request.cookies.get("_auth");
   const role = request.cookies.get("role");
+
+  // Allow access to public paths without authentication
+  if (publicPaths.some(path => pathname.startsWith(path))) {
+    return response;
+  }
 
   // Redirect unauthenticated users trying to access private paths
   if (privatePath.some((path) => pathname.startsWith(path)) && !sessionToken) {
@@ -98,21 +104,22 @@ export function middleware(request: NextRequest) {
 // See "Matching Paths" below to learn more
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-   
-    links.login.href,    
-    //admin
-    adminLinks.admin.href,
-    adminLinks.dashboard.href,
-    adminLinks.user.href,
+    // Catch all routes except api, static files, images, favicon and partner
+    '/((?!api|_next/static|_next/image|favicon.ico|partner).*)',
     
-    //operator
-    operatorLinks.operator.href,
-    operatorLinks.dashboard.href,
-    operatorLinks.employee.href,
-    operatorLinks.tour.href,
-    operatorLinks.createTour.href,
+    // Auth routes
+    '/login',
     
-    // links.orders.href,
-  ],
+    // Admin routes
+    '/admin',
+    '/admin/dashboard',
+    '/admin/users',
+    
+    // Operator routes
+    '/operator',
+    '/operator/dashboard',
+    '/operator/employees',
+    '/operator/tours',
+    '/operator/tours/create'
+  ]
 };

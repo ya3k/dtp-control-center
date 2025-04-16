@@ -204,7 +204,8 @@ export type POSTTourScheduleBodyType = z.infer<typeof POSTtourScheduleSchema>;
 export const DELETEtourScheduleSchema = z.object({
   tourId: z.string(),
   startDay: z.string(),
-  endDay: z.string()
+  endDay: z.string(),
+  remark: z.string()
 })
 
 export type DELETETourScheduleBodyType = z.infer<typeof DELETEtourScheduleSchema>;

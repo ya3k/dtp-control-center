@@ -10,6 +10,7 @@ import companyApiRequest from "@/apiRequests/company"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { toast } from "sonner"
+import envConfig from "@/configs/envConfig"
 
 interface ApproveCompanyDialogProps {
   open: boolean
@@ -38,6 +39,7 @@ export function ApproveCompanyDialog({ open, onOpenChange, onApprovalComplete }:
       params.append("$count", "true")
 
       const queryString = `?${params.toString()}`
+      console.log(queryString)
       const response = await companyApiRequest.getWithOData(queryString)
 
       setPendingCompanies(response.payload?.value || [])
@@ -61,6 +63,7 @@ export function ApproveCompanyDialog({ open, onOpenChange, onApprovalComplete }:
       console.log(company)
       const respones = await companyApiRequest.approve({
         companyId: company.id,
+        confirmUrl: `${envConfig.NEXT_PUBLIC_BASE_URL}/company/${company.id}`,
         accept: true,
       })
       console.log(`Request body: `, JSON.stringify(respones))

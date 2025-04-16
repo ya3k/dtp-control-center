@@ -18,7 +18,9 @@ export default function CompanyRequestForm() {
       name: "",
       email: "",
       phone: "",
+      address: "",
       taxCode: "",
+      commissionRate: 0
     },
   })
 
@@ -90,6 +92,20 @@ export default function CompanyRequestForm() {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Địa chỉ công ty</FormLabel>
+                  <FormControl>
+                    <Input type="text" placeholder="Số 1, ...." {...field} />
+                  </FormControl>
+                  <FormDescription>Địa chỉ công ty.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
@@ -101,6 +117,31 @@ export default function CompanyRequestForm() {
                     <Input placeholder="123456789" {...field} />
                   </FormControl>
                   <FormDescription>Mã số thuế của công ty.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="commissionRate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phần trăm hoa hồng mong muốn</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      placeholder="10" 
+                      {...field}
+                      onChange={(e) => {
+                        const value = e.target.value ? parseFloat(e.target.value) : 0;
+                        field.onChange(value);
+                      }}
+                      min={0}
+                      max={100}
+                      step={0.1}
+                    />
+                  </FormControl>
+                  <FormDescription>Phần trăm hoa hồng mong muốn (0-100%).</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
