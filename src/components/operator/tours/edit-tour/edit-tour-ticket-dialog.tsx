@@ -82,7 +82,7 @@ export function EditTourTicketDialog({
     const addTicket = () => {
         // Get current values from the form
         const currentValues = form.getValues("ticketKindUpdates.0");
-        
+
         // Only append if we have valid values
         if (currentValues.newNetCost > 0 && currentValues.newAvailableTicket > 0) {
             append({
@@ -90,11 +90,11 @@ export function EditTourTicketDialog({
                 newNetCost: currentValues.newNetCost,
                 newAvailableTicket: currentValues.newAvailableTicket,
             });
-            
+
             // Reset only the price and quantity fields, keep the ticket type
             form.setValue("ticketKindUpdates.0.newNetCost", 0);
             form.setValue("ticketKindUpdates.0.newAvailableTicket", 0);
-            
+
             toast.success("Đã thêm vé vào danh sách");
         } else {
             toast.error("Vui lòng nhập giá và số lượng vé lớn hơn 0");
@@ -118,11 +118,11 @@ export function EditTourTicketDialog({
             setIsSubmitting(true);
             // Remove the first ticket (input form) from submission
             const ticketsToSubmit = data.ticketKindUpdates.slice(1);
-            
+
             const formattedData = {
                 tourId,
-                startDate: data.startDate.toISOString(),
-                endDate: data.endDate.toISOString(),
+                startDate: format(data.startDate, 'yyyy-MM-dd'),
+                endDate: format(data.endDate, 'yyyy-MM-dd'),
                 ticketKindUpdates: ticketsToSubmit,
             };
 
@@ -141,6 +141,8 @@ export function EditTourTicketDialog({
             console.log('Raw formatted data:', JSON.stringify(formattedData, null, 2));
 
             await tourApiService.updateTourTickets(tourId, formattedData);
+            form.reset()
+
             toast.success("Cập nhật vé thành công");
             onUpdateSuccess();
             onOpenChange(false);

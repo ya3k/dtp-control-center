@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
+import Script from 'next/script'
 import {
   Dialog,
   DialogContent,
@@ -22,13 +23,12 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
-import { Loader2, Search } from "lucide-react"
+import { Loader2, Search, MapPin } from "lucide-react"
 import destinationApiRequest from "@/apiRequests/destination"
 import { 
   CreateDestinationBodySchema,
   CreateDestinationBodyType
 } from "@/schemaValidations/admin-destination.schema"
-import Script from 'next/script'
 
 // Define types for MapLibre GL
 interface MapLibreMap {
@@ -36,6 +36,16 @@ interface MapLibreMap {
   flyTo: (options: { center: [number, number]; zoom: number }) => void;
   addControl: (control: MapLibreNavigationControl) => void;
   on: (event: string, callback: (e: { lngLat: { lng: number; lat: number } }) => void) => void;
+}
+
+interface MarkerOptions {
+  color?: string;
+  draggable?: boolean;
+}
+
+interface LngLat {
+  lng: number;
+  lat: number;
 }
 
 interface MapLibreGL {
@@ -51,46 +61,44 @@ interface MapLibreGL {
     new (): MapLibreNavigationControl;
   };
   Marker: {
-    new (): {
-      setLngLat: (coords: [number, number]) => MapLibreMarker;
-      addTo: (map: MapLibreMap) => MapLibreMarker;
-      remove: () => void;
-    };
+    new (options?: MarkerOptions): MapLibreMarker;
   };
 }
 
-// Define navigation control interface
 interface MapLibreNavigationControl {
   onAdd?: (map: MapLibreMap) => HTMLElement;
   onRemove?: () => void;
 }
 
-// Define marker interface
 interface MapLibreMarker {
   setLngLat: (coords: [number, number]) => MapLibreMarker;
   addTo: (map: MapLibreMap) => MapLibreMarker;
   remove: () => void;
+  getLngLat: () => LngLat;
+  on: (event: string, callback: () => void) => void;
 }
 
-// Define types for search results
-interface SearchResult {
-  place_id: number;
-  licence: string;
-  osm_type: string;
-  osm_id: number;
-  lat: string;
-  lon: string;
-  display_name: string;
-  address: {
-    city?: string;
-    state?: string;
-    country?: string;
-    tourism?: string;
-    attraction?: string;
-    name?: string;
+// Define types for ZIOMAP API response
+interface ZiomapResult {
+  address_components: {
+    long_name: string;
+    short_name: string;
+    types: string[];
+  }[];
+  formatted_address: string;
+  geometry: {
+    location: {
+      lat: number;
+      lng: number;
+    };
   };
-  type: string;
-  importance: number;
+  place_id: string;
+  types: string[];
+}
+
+interface ZiomapResponse {
+  results: ZiomapResult[];
+  status: string;
 }
 
 declare global {
@@ -111,10 +119,11 @@ export function CreateDestinationDialog({
   onCreateComplete,
 }: CreateDestinationDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isMapReady, setIsMapReady] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+  const [searchResults, setSearchResults] = useState<ZiomapResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
+  const [isMapReady, setIsMapReady] = useState(false)
+  const [showMap, setShowMap] = useState(false)
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<MapLibreMap | null>(null)
   const marker = useRef<MapLibreMarker | null>(null)
@@ -128,23 +137,24 @@ export function CreateDestinationDialog({
     },
   })
 
-  // Initialize map when dialog opens
+  // Initialize map when showing map and it's ready
   useEffect(() => {
-    if (!open || !isMapReady || !mapContainer.current || map.current) return;
+    if (!showMap || !isMapReady || !mapContainer.current || map.current) return;
 
     try {
-      // Initialize map centered on Vietnam
+      const lat = parseFloat(form.getValues('latitude')) || 21.0278;
+      const lng = parseFloat(form.getValues('longitude')) || 105.8342;
+
       map.current = new window.maplibregl.Map({
         container: mapContainer.current,
-        style: 'https://tiles.openfreemap.org/styles/liberty',
-        center: [105.8342, 21.0278], // Hanoi coordinates
-        zoom: 5
+        style: 'https://api.maptiler.com/maps/streets/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL',
+        center: [lng, lat],
+        zoom: 15
       });
 
-      // Add navigation control
       map.current.addControl(new window.maplibregl.NavigationControl());
 
-      // Add click handler
+      // Add click handler for location adjustment
       map.current.on('click', (e) => {
         const { lng, lat } = e.lngLat;
         updateMarkerPosition(lng, lat);
@@ -152,35 +162,21 @@ export function CreateDestinationDialog({
         form.setValue('latitude', lat.toFixed(6));
       });
 
-      toast.success('Bản đồ đã sẵn sàng');
+      // Add initial marker
+      updateMarkerPosition(lng, lat);
+
     } catch (error) {
       console.error('Error initializing map:', error);
       toast.error('Không thể tải bản đồ');
     }
 
-    // Cleanup on dialog close
     return () => {
       if (map.current) {
         map.current.remove();
         map.current = null;
       }
     };
-  }, [open, isMapReady]);
-
-  // Reset map state when dialog closes
-  useEffect(() => {
-    if (!open) {
-      if (map.current) {
-        map.current.remove();
-        map.current = null;
-      }
-      if (marker.current) {
-        marker.current.remove();
-        marker.current = null;
-      }
-      setIsMapReady(false);
-    }
-  }, [open]);
+  }, [showMap, isMapReady, form]);
 
   // Update marker position
   const updateMarkerPosition = (lng: number, lat: number) => {
@@ -190,104 +186,74 @@ export function CreateDestinationDialog({
       marker.current.remove();
     }
 
-    marker.current = new window.maplibregl.Marker()
+    marker.current = new window.maplibregl.Marker({
+      color: '#FF0000',
+      draggable: true
+    })
       .setLngLat([lng, lat])
       .addTo(map.current);
+
+    // Add drag end event to update form values
+    marker.current.on('dragend', () => {
+      const lngLat = marker.current?.getLngLat();
+      if (lngLat) {
+        form.setValue('longitude', lngLat.lng.toFixed(6));
+        form.setValue('latitude', lngLat.lat.toFixed(6));
+      }
+    });
   };
 
-  // Handle search with better error handling and filtering
+  // Handle search using our proxy API
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      toast.error('Vui lòng nhập địa điểm cần tìm');
       return;
     }
-    
+
     setIsSearching(true);
     try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?` + 
-        new URLSearchParams({
-          q: searchQuery,
-          format: 'json',
-          limit: '5',
-          addressdetails: '1', // Get detailed address information
-          'accept-language': 'vi' // Get Vietnamese results when available
-        })
-      );
-      
+      const response = await fetch(`/api/proxy/geocoding?address=${encodeURIComponent(searchQuery)}`);
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error('Search request failed');
       }
-
-      const data: SearchResult[] = await response.json();
       
-      // Filter and sort results to prioritize tourist destinations
-      const sortedResults = data
-        .filter(result => {
-          // Keep results that are likely tourist destinations
-          return (
-            result.type === 'tourism' ||
-            result.type === 'attraction' ||
-            result.address?.tourism ||
-            result.address?.attraction ||
-            result.importance > 0.5
-          );
-        })
-        .sort((a, b) => b.importance - a.importance);
+      const data: ZiomapResponse = await response.json();
 
-      setSearchResults(sortedResults);
-      
-      if (sortedResults.length === 0) {
-        toast.info('Không tìm thấy địa điểm phù hợp');
+      if (data.status === 'OK' && data.results.length > 0) {
+        setSearchResults(data.results);
+      } else {
+        toast.error('Không tìm thấy địa điểm');
+        setSearchResults([]);
       }
     } catch (error) {
       console.error('Search error:', error);
-      toast.error('Không thể tìm kiếm địa điểm');
+      toast.error('Lỗi tìm kiếm địa điểm');
     } finally {
       setIsSearching(false);
     }
   };
 
-  // Handle location selection with better name formatting
-  const handleSelectLocation = (result: SearchResult) => {
-    const lat = parseFloat(result.lat);
-    const lng = parseFloat(result.lon);
+  const handleSelectLocation = (result: ZiomapResult) => {
+    const { lat, lng } = result.geometry.location;
     
-    // Format the name to be more tourist-friendly
-    const name = formatLocationName(result);
+    form.setValue('latitude', lat.toString());
+    form.setValue('longitude', lng.toString());
+    form.setValue('name', result.formatted_address);
     
-    // Update form
-    form.setValue('name', name);
-    form.setValue('latitude', lat.toFixed(6));
-    form.setValue('longitude', lng.toFixed(6));
+    // Show map after location selection
+    setShowMap(true);
     
-    // Update map
-    updateMarkerPosition(lng, lat);
-    map.current?.flyTo({ center: [lng, lat], zoom: 15 });
+    // If map is already initialized, update view
+    if (map.current) {
+      map.current.flyTo({
+        center: [lng, lat],
+        zoom: 15
+      });
+      updateMarkerPosition(lng, lat);
+    }
     
-    // Clear search
+    // Clear search results after selection
     setSearchQuery('');
     setSearchResults([]);
-  };
-
-  // Format location name for better display
-  const formatLocationName = (result: SearchResult): string => {
-    // Try to get the most relevant name for a tourist destination
-    const name = result.address?.tourism || 
-                 result.address?.attraction ||
-                 result.address?.name ||
-                 result.display_name.split(',')[0];
-
-    const city = result.address?.city;
-    const country = result.address?.country;
-
-    if (city && country) {
-      return `${name}, ${city}, ${country}`;
-    } else if (city) {
-      return `${name}, ${city}`;
-    } else {
-      return name;
-    }
   };
 
   // Handle form submission
@@ -301,6 +267,7 @@ export function CreateDestinationDialog({
         toast.success("Tạo điểm đến mới thành công")
         onOpenChange(false)
         form.reset()
+        setShowMap(false)
       }
     } catch (error: unknown) {
       console.error("Error creating destination:", error)
@@ -314,22 +281,9 @@ export function CreateDestinationDialog({
     }
   }
 
-  // Handle coordinate input changes
-  const handleCoordinateChange = (field: 'latitude' | 'longitude', value: string) => {
-    const numValue = parseFloat(value);
-    if (!isNaN(numValue)) {
-      const lng = field === 'longitude' ? numValue : parseFloat(form.getValues('longitude'));
-      const lat = field === 'latitude' ? numValue : parseFloat(form.getValues('latitude'));
-      if (map.current && !isNaN(lng) && !isNaN(lat)) {
-        updateMarkerPosition(lng, lat);
-        map.current.flyTo({ center: [lng, lat], zoom: 12 });
-      }
-    }
-  };
-
   return (
     <>
-      {/* Load MapLibre scripts */}
+      {/* Load MapLibre scripts when dialog is open */}
       {open && (
         <>
           <Script
@@ -355,7 +309,7 @@ export function CreateDestinationDialog({
           <DialogHeader>
             <DialogTitle>Thêm điểm đến mới</DialogTitle>
             <DialogDescription>
-              Tìm kiếm hoặc chọn vị trí trên bản đồ cho điểm đến mới.
+              Tìm kiếm địa điểm và điều chỉnh vị trí chính xác trên bản đồ.
             </DialogDescription>
           </DialogHeader>
 
@@ -368,7 +322,8 @@ export function CreateDestinationDialog({
                     placeholder="Tìm kiếm địa điểm..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+                    onKeyUp={(e) => e.key === 'Enter' && handleSearch()}
                   />
                   <Button
                     type="button"
@@ -393,10 +348,7 @@ export function CreateDestinationDialog({
                         className="w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground text-sm"
                         onClick={() => handleSelectLocation(result)}
                       >
-                        <div className="font-medium">{formatLocationName(result)}</div>
-                        <div className="text-xs text-muted-foreground truncate">
-                          {result.display_name}
-                        </div>
+                        <div className="font-medium">{result.formatted_address}</div>
                       </button>
                     ))}
                   </div>
@@ -417,15 +369,23 @@ export function CreateDestinationDialog({
                 )}
               />
 
-              {/* Map Container with loading state */}
-              <div className="relative w-full h-[300px] rounded-md border mb-4">
-                <div ref={mapContainer} className="w-full h-full" />
-                {!isMapReady && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-background/80">
-                    <Loader2 className="h-8 w-8 animate-spin" />
+              {/* Map Container */}
+              {showMap && (
+                <div className="relative w-full h-[300px] rounded-md border overflow-hidden">
+                  <div ref={mapContainer} className="w-full h-full" />
+                  {!isMapReady && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+                      <Loader2 className="h-8 w-8 animate-spin" />
+                    </div>
+                  )}
+                  <div className="absolute bottom-2 left-2 right-2 bg-white/90 p-2 rounded-md text-sm">
+                    <p className="text-muted-foreground">
+                      <MapPin className="inline-block w-4 h-4 mr-1" />
+                      Kéo thả điểm đánh dấu hoặc click vào bản đồ để điều chỉnh vị trí chính xác
+                    </p>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <FormField
@@ -435,13 +395,7 @@ export function CreateDestinationDialog({
                     <FormItem>
                       <FormLabel>Vĩ độ</FormLabel>
                       <FormControl>
-                        <Input 
-                          {...field} 
-                          onChange={(e) => {
-                            field.onChange(e);
-                            handleCoordinateChange('latitude', e.target.value);
-                          }}
-                        />
+                        <Input {...field} readOnly />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -455,13 +409,7 @@ export function CreateDestinationDialog({
                     <FormItem>
                       <FormLabel>Kinh độ</FormLabel>
                       <FormControl>
-                        <Input 
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            handleCoordinateChange('longitude', e.target.value);
-                          }}
-                        />
+                        <Input {...field} readOnly />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -473,7 +421,10 @@ export function CreateDestinationDialog({
                 <Button
                   type="button"
                   variant="destructive"
-                  onClick={() => onOpenChange(false)}
+                  onClick={() => {
+                    onOpenChange(false);
+                    setShowMap(false);
+                  }}
                 >
                   Hủy
                 </Button>

@@ -15,7 +15,10 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import tourApiService from "@/apiRequests/tour"
+import { Textarea } from "@/components/ui/textarea"
 
 interface DeleteScheduleDialogProps {
     schedule: string
@@ -32,9 +35,15 @@ export default function DeleteScheduleDialog({
 }: DeleteScheduleDialogProps) {
     const [open, setOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [remark, setRemark] = useState("")
 
     // Handle deleting a schedule
     const handleDelete = async () => {
+        if (!remark.trim()) {
+            toast.error("Vui lòng nhập lý do xóa lịch trình");
+            return;
+        }
+
         try {
             setIsSubmitting(true)
 
@@ -61,6 +70,7 @@ export default function DeleteScheduleDialog({
                 tourId: tourId,
                 startDay: formattedDate,
                 endDay: formattedDate,
+                remark: remark.trim()
             }
 
             console.log("Delete request data:", JSON.stringify(deleteData));
@@ -71,12 +81,12 @@ export default function DeleteScheduleDialog({
                 throw new Error('Failed to delete schedule');
             }
 
-            toast.success("Schedule deleted successfully");
+            toast.success("Xóa lịch trình thành công");
             onDeleteSuccess();
             setOpen(false); // Close the dialog after successful deletion
         } catch (error) {
             console.error("Error deleting schedule:", error);
-            toast.error("Failed to delete schedule");
+            toast.error("Không thể xóa lịch trình");
         } finally {
             setIsSubmitting(false);
         }
@@ -88,6 +98,9 @@ export default function DeleteScheduleDialog({
             if (isSubmitting && newOpen === false) {
                 return;
             }
+            if (!newOpen) {
+                setRemark(""); // Reset remark when dialog closes
+            }
             setOpen(newOpen);
         }}>
             <DialogTrigger asChild>
@@ -98,13 +111,26 @@ export default function DeleteScheduleDialog({
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Confirm Deletion</DialogTitle>
+                    <DialogTitle>Xác nhận xóa lịch trình</DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to delete the schedule for {formattedDate}?
-                        This action cannot be undone.
+                        Bạn có chắc chắn muốn xóa lịch trình ngày  <span className="text-red-600 font-bold">{formattedDate}</span> không?
+                        Hành động này không thể hoàn tác.
                     </DialogDescription>
                 </DialogHeader>
-                <DialogFooter className="flex justify-between gap-2 pt-4">
+                <div className="py-4">
+                    <Label htmlFor="remark" className="text-right">
+                        Lý do xóa lịch trình
+                    </Label>
+                    <Textarea
+                        id="remark"
+                        cols={3}
+                        value={remark}
+                        onChange={(e) => setRemark(e.target.value)}
+                        placeholder="Nhập lý do xóa lịch trình..."
+                        className="mt-2"
+                    />
+                </div>
+                <DialogFooter className="flex justify-between gap-2">
                     <Button
                         type="button"
                         variant="outline"
@@ -115,7 +141,7 @@ export default function DeleteScheduleDialog({
                         }}
                         disabled={isSubmitting}
                     >
-                        Cancel
+                        Hủy
                     </Button>
                     <Button
                         type="button"
@@ -127,10 +153,10 @@ export default function DeleteScheduleDialog({
                         {isSubmitting ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Deleting...
+                                Đang xóa...
                             </>
                         ) : (
-                            "Delete"
+                            "Xóa"
                         )}
                     </Button>
                 </DialogFooter>

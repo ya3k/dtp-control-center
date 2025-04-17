@@ -61,11 +61,11 @@ export function UpdateTourDialog({ tour: initialTour, open, onOpenChange, onUpda
                     <div className="p-4 text-center text-red-500">{error}</div>
                 ) : (
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="flex flex-auto mb-4">
+                        <TabsList className="flex flex-auto mb-2">
                             <TabsTrigger value="info">Thông tin cơ bản</TabsTrigger>
-                            <TabsTrigger value="destinations">Lịch trình Tour</TabsTrigger>
-                            <TabsTrigger value="schedule">Tour Schedule</TabsTrigger>
-                            <TabsTrigger value="tickets">Vé</TabsTrigger>
+                            <TabsTrigger value="destinations">Timeline Tour</TabsTrigger>
+                            <TabsTrigger value="schedule">Lịch trình</TabsTrigger>
+                            <TabsTrigger  value="tickets">Vé</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="info" className="space-y-4">

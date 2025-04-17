@@ -101,9 +101,9 @@ export default function UserDataTable() {
       console.log(queryString)
 
       // Use userApiRequest instead of userApi
-      const response = await userApiRequest.getWithOdata()
+      const response = await userApiRequest.getWithOdata(queryString)
       console.log(JSON.stringify(response))
-      setUsers(response.payload?.data)
+      setUsers(response.payload?.value)
       setTotalCount(response.payload["@odata.count"] || 0)
     } catch (error) {
       console.error("Error fetching user data:", error)
