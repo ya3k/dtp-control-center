@@ -16,7 +16,7 @@ const ticketKindLabels: Record<TicketKind, string> = {
 };
 
 export default function ReviewForm() {
-  const { submitForm, prevStep, formData } = useTourStore();
+  const { submitForm, prevStep, formData, isSubmitting } = useTourStore();
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     about: false,
     include: false,
@@ -266,6 +266,7 @@ export default function ReviewForm() {
           onClick={prevStep} 
           variant="outline"
           className="gap-2"
+          disabled={isSubmitting}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
           Quay lại
@@ -273,9 +274,22 @@ export default function ReviewForm() {
         <Button 
           onClick={submitForm}
           className="gap-2"
+          disabled={isSubmitting}
         >
-          Xác nhận tạo tour
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          {isSubmitting ? (
+            <>
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Đang tạo tour...
+            </>
+          ) : (
+            <>
+              Xác nhận tạo tour
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </>
+          )}
         </Button>
       </div>
     </div>

@@ -24,21 +24,18 @@ import useTourStore from '@/store/tourStore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { z } from 'zod';
-
-// Mock data for destinations - Replace with actual API call
-const MOCK_DESTINATIONS = [
-  { id: "550e8400-e29b-41d4-a716-446655440000", name: "Phú Quốc" },
-  { id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", name: "Đà Lạt" },
-  { id: "6ba7b811-9dad-11d1-80b4-00c04fd430c9", name: "Nha Trang" },
-];
+import destinationApiRequest from '@/apiRequests/destination';
+import { Destination } from '@/types/destination';
+import { toast } from 'sonner';
 
 export default function TourDestinationForm() {
   const { nextStep, prevStep, formData, setTourDestination } = useTourStore();
   const [error, setError] = useState<string>("");
-
+  const [destinations, setDestinations] = useState<Destination[]>([])
+  const [isLoading, setIsLoading] = useState(true);
   const form = useForm<{ destinations: POSTTourDestinationType[] }>({
     resolver: zodResolver(
       z.object({
@@ -62,6 +59,26 @@ export default function TourDestinationForm() {
     };
     form.setValue('destinations', updatedDestinations);
   };
+
+
+  useEffect(() => {
+    const fetchCategory = async () => {
+      try {
+        setIsLoading(true);
+        const response = await destinationApiRequest.getAll()
+        const data = await response.payload.value
+        setDestinations(data)
+      } catch (error) {
+        console.error("Failed to fetch destinations:", error)
+        toast.error("Failed to load destinations")
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchCategory()
+
+  }, [])
+
 
   const addDestination = () => {
     const newDestination: POSTTourDestinationType = {
@@ -197,12 +214,12 @@ export default function TourDestinationForm() {
                                 onValueChange={(value) => handleDestinationChange('destinationId', value, destinationIndex)}
                               >
                                 <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Chọn điểm đến" />
+                                  <SelectTrigger disabled={isLoading}>
+                                    <SelectValue placeholder={isLoading ? "Loading destinations..." : "Chọn điểm đến"} />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {MOCK_DESTINATIONS.map((dest) => (
+                                  {destinations.map((dest) => (
                                     <SelectItem key={dest.id} value={dest.id}>
                                       {dest.name}
                                     </SelectItem>

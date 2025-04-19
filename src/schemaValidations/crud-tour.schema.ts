@@ -15,8 +15,7 @@ export const BasicTourInfoSchema = z.object({
   title: z.string()
     .min(5, "Title must be at least 5 characters")
     .max(100, "Title must not exceed 100 characters"),
-  img: z.array(z.string())
-    .min(1, "At least one image is required"),
+  img: z.array(z.string()),
   categoryid: z.string(),
   description: z.string()
     .min(20, "Description must be at least 20 characters")
@@ -122,8 +121,7 @@ export const TourSchema = z.object({
   title: z.string()
     .min(5, "Title must be at least 5 characters")
     .max(100, "Title must not exceed 100 characters"),
-  img: z.array(z.string())
-    .min(1, "At least one image is required"),
+  img: z.array(z.string()),
   categoryid: z.string(),
   description: z.string()
     .min(20, "Description must be at least 20 characters")

@@ -12,12 +12,12 @@ const stepInfo: Record<number, StepInfo> = {
     description: "Tên tour, mô tả, hình ảnh"
   },
   2: {
-    title: "Thông tin thêm",
-    description: "Thông tin chi tiết về tour"
-  },
-  3: {
     title: "Lịch trình",
     description: "Thời gian hoạt động"
+  },
+  3: {
+    title: "Thông tin thêm",
+    description: "Thông tin chi tiết về tour"
   },
   4: {
     title: "Địa điểm",
