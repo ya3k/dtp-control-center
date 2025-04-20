@@ -142,10 +142,33 @@ const useTourStore = create<POSTTourState>((set, get) => ({
                 finalTourImageUrls = [...finalTourImageUrls, ...tourUploadResponse.urls];
             }
 
+
+            const updatedDestinations = [...formData.destinations];
+
+            // For each destination with pending images, upload them
+            for (const [indexStr, files] of Object.entries(pendingImages.destinationImages)) {
+                const destinationIndex = parseInt(indexStr, 10);
+                
+                if (files.length > 0 && updatedDestinations[destinationIndex]) {
+                    console.log(`Uploading ${files.length} pending images for destination ${destinationIndex}...`);
+                    
+                    const destUploadResponse = await uploadApiRequest.uploadDestinationImages(files);
+                    console.log(`Destination ${destinationIndex} images upload response:`, destUploadResponse);
+                    
+                    // Add new images to existing destination images
+                    const existingImages = updatedDestinations[destinationIndex].img || [];
+                    updatedDestinations[destinationIndex] = {
+                        ...updatedDestinations[destinationIndex],
+                        img: [...existingImages, ...destUploadResponse.urls]
+                    };
+                }
+            }
+
             // Prepare the tour data with all uploaded image URLs
             const tourData = {
                 ...formData,
                 img: finalTourImageUrls,
+                destinations: updatedDestinations
             };
 
             // Submit the tour data

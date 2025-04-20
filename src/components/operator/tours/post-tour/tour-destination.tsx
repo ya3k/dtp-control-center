@@ -5,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -22,7 +21,7 @@ import { Input } from '@/components/ui/input';
 import { DestinationSchema, POSTTourDestinationType, POSTTourType } from '@/schemaValidations/crud-tour.schema';
 import useTourStore from '@/store/tourStore';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, FileImage, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -30,12 +29,28 @@ import { z } from 'zod';
 import destinationApiRequest from '@/apiRequests/destination';
 import { Destination } from '@/types/destination';
 import { toast } from 'sonner';
+import Image from 'next/image';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger
+} from "@/components/ui/collapsible"
 
 export default function TourDestinationForm() {
-  const { nextStep, prevStep, formData, setTourDestination } = useTourStore();
+  const { nextStep, prevStep, formData, pendingImages, setPendingDestinationImages, removePendingDestinationImage } = useTourStore();
   const [error, setError] = useState<string>("");
-  const [destinations, setDestinations] = useState<Destination[]>([])
+  const [destinations, setDestinations] = useState<Destination[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [days, setDays] = useState<number[]>([1]); // Default to at least one day
+  const [expandedDays, setExpandedDays] = useState<string[]>(["day-1"]);
+  const [expandedDestinations, setExpandedDestinations] = useState<string[]>([]);
+
   const form = useForm<{ destinations: POSTTourDestinationType[] }>({
     resolver: zodResolver(
       z.object({
@@ -46,6 +61,64 @@ export default function TourDestinationForm() {
       destinations: formData.destinations || []
     }
   });
+
+  // Handle data fetching
+  useEffect(() => {
+    const fetchDestinations = async () => {
+      try {
+        setIsLoading(true);
+        const response = await destinationApiRequest.getAll();
+        const data = await response.payload.value;
+        setDestinations(data);
+      } catch (error) {
+        console.error("Failed to fetch destinations:", error);
+        toast.error("Failed to load destinations");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDestinations();
+  }, []);
+
+  // Calculate the maximum day in the tour based on selected destinations
+  useEffect(() => {
+    const currentDestinations = form.getValues().destinations || [];
+    if (currentDestinations.length === 0) {
+      setDays([1]);
+      return;
+    }
+    
+    const maxDay = Math.max(...currentDestinations.map(d => 
+      typeof d.sortOrderByDate === 'number' ? d.sortOrderByDate : 1
+    ));
+    
+    setDays(Array.from({ length: maxDay }, (_, i) => i + 1));
+  }, [form.watch('destinations')]);
+
+  // Initialize all destinations as expanded on first load
+  useEffect(() => {
+    const currentDestinations = form.getValues().destinations || [];
+    if (currentDestinations.length > 0 && expandedDestinations.length === 0) {
+      // Only set initial expanded state if we haven't done it before
+      const destKeys = [];
+      for (let day = 1; day <= days.length; day++) {
+        const dayDestinations = currentDestinations.filter(d => d.sortOrderByDate === day);
+        for (let idx = 0; idx < dayDestinations.length; idx++) {
+          destKeys.push(`day-${day}-dest-${idx}`);
+        }
+      }
+      setExpandedDestinations(destKeys);
+    }
+  }, [days.length, expandedDestinations.length]);  // Only run on mount and when days change
+
+  // Toggle destination expansion
+  const toggleDestination = (destId: string) => {
+    setExpandedDestinations(prev => 
+      prev.includes(destId) 
+        ? prev.filter(id => id !== destId) 
+        : [...prev, destId]
+    );
+  };
 
   const handleDestinationChange = (
     field: keyof POSTTourDestinationType,
@@ -60,38 +133,48 @@ export default function TourDestinationForm() {
     form.setValue('destinations', updatedDestinations);
   };
 
-
-  useEffect(() => {
-    const fetchCategory = async () => {
-      try {
-        setIsLoading(true);
-        const response = await destinationApiRequest.getAll()
-        const data = await response.payload.value
-        setDestinations(data)
-      } catch (error) {
-        console.error("Failed to fetch destinations:", error)
-        toast.error("Failed to load destinations")
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchCategory()
-
-  }, [])
-
-
-  const addDestination = () => {
+  const addDestination = (dayNumber: number = days.length) => {
+    // Find the highest sortOrder for this day
+    const destinationsForThisDay = form.getValues().destinations?.filter(
+      d => d.sortOrderByDate === dayNumber
+    ) || [];
+    
+    const maxSortOrder = destinationsForThisDay.length > 0 
+      ? Math.max(...destinationsForThisDay.map(d => d.sortOrder))
+      : -1;
+    
     const newDestination: POSTTourDestinationType = {
       destinationId: "",
       destinationActivities: [],
       startTime: "08:00:00",
       endTime: "17:00:00",
-      sortOrder: form.getValues().destinations?.length || 0,
-      sortOrderByDate: (form.getValues().destinations?.length || 0) + 1,
+      sortOrder: maxSortOrder + 1, // Next order within the day
+      sortOrderByDate: dayNumber, // Which day this belongs to
       img: [],
     };
 
-    form.setValue('destinations', [...(form.getValues().destinations || []), newDestination]);
+    const updatedDestinations = [...(form.getValues().destinations || []), newDestination];
+    form.setValue('destinations', updatedDestinations);
+    
+    // Auto-expand the day when adding a new destination
+    if (!expandedDays.includes(`day-${dayNumber}`)) {
+      setExpandedDays([...expandedDays, `day-${dayNumber}`]);
+    }
+    
+    // Auto-expand the new destination
+    const newDestinationKey = `day-${dayNumber}-dest-${destinationsForThisDay.length}`;
+    if (!expandedDestinations.includes(newDestinationKey)) {
+      setExpandedDestinations([...expandedDestinations, newDestinationKey]);
+    }
+  };
+
+  const addDay = () => {
+    const newDayNumber = days.length + 1;
+    setDays([...days, newDayNumber]);
+    // Automatically add a first destination for this day
+    addDestination(newDayNumber);
+    // Auto-expand the new day
+    setExpandedDays([...expandedDays, `day-${newDayNumber}`]);
   };
 
   const removeDestination = (idx: number) => {
@@ -135,6 +218,12 @@ export default function TourDestinationForm() {
     form.setValue('destinations', updatedDestinations);
   };
 
+  const handleFileChange = (destinationIndex: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setPendingDestinationImages(destinationIndex, Array.from(event.target.files));
+    }
+  };
+
   const validateAndNext = () => {
     try {
       const data = form.getValues();
@@ -142,9 +231,13 @@ export default function TourDestinationForm() {
         destinations: z.array(DestinationSchema).min(1, "Phải có ít nhất một điểm đến")
       }).parse(data);
       setError("");
-      const sortedDestinations = [...data.destinations].sort((a, b) => a.sortOrderByDate - b.sortOrderByDate);
-      sortedDestinations.forEach((destination, index) => {
-        destination.sortOrder = index;
+      
+      // Sort destinations by day first, then by sortOrder within each day
+      const sortedDestinations = [...data.destinations].sort((a, b) => {
+        if (a.sortOrderByDate === b.sortOrderByDate) {
+          return a.sortOrder - b.sortOrder;
+        }
+        return a.sortOrderByDate - b.sortOrderByDate;
       });
       
       // Update the formData in the store
@@ -154,11 +247,69 @@ export default function TourDestinationForm() {
       useTourStore.setState((state) => ({
         formData: { ...state.formData, ...updatedFormData }
       }));
-      console.log(formData)
+      
       nextStep();
     } catch (err: unknown) {
       const error = err as z.ZodError;
       setError(error.errors?.[0]?.message || "Vui lòng điền đầy đủ thông tin điểm đến.");
+    }
+  };
+
+  // Get destinations for a specific day
+  const getDestinationsForDay = (day: number) => {
+    return form.watch('destinations')?.filter(
+      destination => destination.sortOrderByDate === day
+    ) || [];
+  };
+
+  // Move destination up in the order within a day
+  const moveDestinationUp = (destinationIndex: number) => {
+    const destinations = [...form.getValues().destinations];
+    const destination = destinations[destinationIndex];
+    const day = destination.sortOrderByDate;
+    
+    // Find destinations for the same day
+    const currentSortOrder = destination.sortOrder;
+    
+    if (currentSortOrder > 0) {
+      // Find the destination with the previous sort order
+      const previousDestIndex = destinations.findIndex(
+        d => d.sortOrderByDate === day && d.sortOrder === currentSortOrder - 1
+      );
+      
+      if (previousDestIndex !== -1) {
+        // Swap the sort orders
+        destinations[destinationIndex].sortOrder--;
+        destinations[previousDestIndex].sortOrder++;
+        
+        form.setValue('destinations', destinations);
+      }
+    }
+  };
+
+  // Move destination down in the order within a day
+  const moveDestinationDown = (destinationIndex: number) => {
+    const destinations = [...form.getValues().destinations];
+    const destination = destinations[destinationIndex];
+    const day = destination.sortOrderByDate;
+    
+    // Find destinations for the same day
+    const dayDestinations = getDestinationsForDay(day);
+    const currentSortOrder = destination.sortOrder;
+    
+    if (currentSortOrder < dayDestinations.length - 1) {
+      // Find the destination with the next sort order
+      const nextDestIndex = destinations.findIndex(
+        d => d.sortOrderByDate === day && d.sortOrder === currentSortOrder + 1
+      );
+      
+      if (nextDestIndex !== -1) {
+        // Swap the sort orders
+        destinations[destinationIndex].sortOrder++;
+        destinations[nextDestIndex].sortOrder--;
+        
+        form.setValue('destinations', destinations);
+      }
     }
   };
 
@@ -168,14 +319,14 @@ export default function TourDestinationForm() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold">Điểm đến trong tour</h2>
+              <h2 className="text-lg font-semibold">Lịch trình tour theo ngày</h2>
               <Button
                 type="button"
                 variant="outline"
-                onClick={addDestination}
+                onClick={addDay}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Thêm điểm đến
+                Thêm ngày mới
               </Button>
             </div>
 
@@ -186,169 +337,154 @@ export default function TourDestinationForm() {
             )}
 
             <ScrollArea className="h-[600px] pr-4">
-              <div className="space-y-6">
-                {form.watch('destinations')?.map((destination, destinationIndex) => (
-                  <Card key={destinationIndex}>
-                    <CardContent className="pt-6 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-base font-medium">Điểm đến {destinationIndex + 1}</h3>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeDestination(destinationIndex)}
-                        >
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name={`destinations.${destinationIndex}.destinationId`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Điểm đến</FormLabel>
-                              <Select
-                                value={field.value}
-                                onValueChange={(value) => handleDestinationChange('destinationId', value, destinationIndex)}
-                              >
-                                <FormControl>
-                                  <SelectTrigger disabled={isLoading}>
-                                    <SelectValue placeholder={isLoading ? "Loading destinations..." : "Chọn điểm đến"} />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {destinations.map((dest) => (
-                                    <SelectItem key={dest.id} value={dest.id}>
-                                      {dest.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`destinations.${destinationIndex}.sortOrderByDate`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Ngày thứ</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  min={1}
-                                  {...field}
-                                  onChange={(e) => handleDestinationChange('sortOrderByDate', parseInt(e.target.value), destinationIndex)}
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                Thứ tự ngày trong tour
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name={`destinations.${destinationIndex}.startTime`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Thời gian bắt đầu</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="time"
-                                  step="1"
-                                  {...field}
-                                  onChange={(e) => handleDestinationChange('startTime', e.target.value, destinationIndex)}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`destinations.${destinationIndex}.endTime`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Thời gian kết thúc</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="time"
-                                  step="1"
-                                  {...field}
-                                  onChange={(e) => handleDestinationChange('endTime', e.target.value, destinationIndex)}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      {/* Activities Section */}
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-medium">Hoạt động trong ngày</h4>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => addActivity(destinationIndex)}
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Thêm hoạt động
-                          </Button>
+              <Accordion 
+                type="multiple" 
+                value={expandedDays} 
+                onValueChange={setExpandedDays}
+                className="space-y-4"
+              >
+                {days.map((day) => {
+                  const dayKey = `day-${day}`;
+                  const dayDestinations = getDestinationsForDay(day);
+                  
+                  return (
+                    <AccordionItem 
+                      key={dayKey} 
+                      value={dayKey}
+                      className="border border-border rounded-lg overflow-hidden bg-card"
+                    >
+                      <AccordionTrigger className="px-4 hover:no-underline">
+                        <div className="flex justify-between items-center w-full">
+                          <h3 className="text-base font-medium">Ngày {day}</h3>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">
+                              {dayDestinations.length} điểm đến
+                            </span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent accordion from toggling
+                                addDestination(day);
+                              }}
+                              className="ml-2"
+                            >
+                              <Plus className="w-3.5 h-3.5 mr-1" />
+                              Thêm điểm đến
+                            </Button>
+                          </div>
                         </div>
-
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4">
                         <div className="space-y-4">
-                          {destination.destinationActivities?.map((activity, activityIndex) => (
-                            <Card key={activityIndex}>
-                              <CardContent className="pt-4">
-                                <div className="flex items-center justify-between mb-4">
-                                  <h5 className="text-sm font-medium">Hoạt động {activityIndex + 1}</h5>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => removeActivity(destinationIndex, activityIndex)}
-                                  >
-                                    <Trash2 className="w-4 h-4 text-destructive" />
-                                  </Button>
-                                </div>
-
-                                <div className="space-y-4">
+                          {dayDestinations.map((destination, idx) => {
+                            // Find the actual index in the overall destinations array
+                            const destinationIndex = form.getValues().destinations.findIndex(
+                              d => d === destination
+                            );
+                            const destKey = `day-${day}-dest-${idx}`;
+                            const isExpanded = expandedDestinations.includes(destKey);
+                            
+                            return (
+                              <Collapsible
+                                key={destKey}
+                                open={isExpanded}
+                                onOpenChange={() => toggleDestination(destKey)}
+                                className="border rounded-lg overflow-hidden"
+                              >
+                                <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left hover:bg-accent/30 transition-colors">
+                                  <div className="flex items-center gap-2">
+                                    <ChevronRight className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
+                                    <span className="text-base font-medium">Điểm đến {idx + 1}</span>
+                                    {destination.destinationId && 
+                                      <span className="text-sm text-muted-foreground">
+                                        ({destinations.find(d => d.id === destination.destinationId)?.name || ''})
+                                      </span>
+                                    }
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        moveDestinationUp(destinationIndex);
+                                      }}
+                                      disabled={idx === 0}
+                                    >
+                                      <ChevronUp className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        moveDestinationDown(destinationIndex);
+                                      }}
+                                      disabled={idx === dayDestinations.length - 1}
+                                    >
+                                      <ChevronDown className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeDestination(destinationIndex);
+                                      }}
+                                    >
+                                      <Trash2 className="w-4 h-4 text-destructive" />
+                                    </Button>
+                                  </div>
+                                </CollapsibleTrigger>
+                                
+                                <CollapsibleContent className="p-4 space-y-4">
                                   <FormField
                                     control={form.control}
-                                    name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.name`}
+                                    name={`destinations.${destinationIndex}.destinationId`}
                                     render={({ field }) => (
                                       <FormItem>
-                                        <FormLabel>Tên hoạt động</FormLabel>
-                                        <FormControl>
-                                          <Input {...field} />
-                                        </FormControl>
+                                        <FormLabel>Điểm đến</FormLabel>
+                                        <Select
+                                          value={field.value}
+                                          onValueChange={(value) => handleDestinationChange('destinationId', value, destinationIndex)}
+                                        >
+                                          <FormControl>
+                                            <SelectTrigger disabled={isLoading}>
+                                              <SelectValue placeholder={isLoading ? "Loading destinations..." : "Chọn điểm đến"} />
+                                            </SelectTrigger>
+                                          </FormControl>
+                                          <SelectContent>
+                                            {destinations.map((dest) => (
+                                              <SelectItem key={dest.id} value={dest.id}>
+                                                {dest.name}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
                                         <FormMessage />
                                       </FormItem>
                                     )}
                                   />
 
-                                  <div className="grid grid-cols-2 gap-4">
+                                  <div className="grid grid-cols-2 gap-6">
                                     <FormField
                                       control={form.control}
-                                      name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.startTime`}
+                                      name={`destinations.${destinationIndex}.startTime`}
                                       render={({ field }) => (
                                         <FormItem>
                                           <FormLabel>Thời gian bắt đầu</FormLabel>
                                           <FormControl>
-                                            <Input type="time" step="1" {...field} />
+                                            <Input
+                                              type="time"
+                                              step="1"
+                                              {...field}
+                                              onChange={(e) => handleDestinationChange('startTime', e.target.value, destinationIndex)}
+                                            />
                                           </FormControl>
                                           <FormMessage />
                                         </FormItem>
@@ -357,28 +493,184 @@ export default function TourDestinationForm() {
 
                                     <FormField
                                       control={form.control}
-                                      name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.endTime`}
+                                      name={`destinations.${destinationIndex}.endTime`}
                                       render={({ field }) => (
                                         <FormItem>
                                           <FormLabel>Thời gian kết thúc</FormLabel>
                                           <FormControl>
-                                            <Input type="time" step="1" {...field} />
+                                            <Input
+                                              type="time"
+                                              step="1"
+                                              {...field}
+                                              onChange={(e) => handleDestinationChange('endTime', e.target.value, destinationIndex)}
+                                            />
                                           </FormControl>
                                           <FormMessage />
                                         </FormItem>
                                       )}
                                     />
                                   </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
+
+                                  {/* Image Upload Section */}
+                                  <FormItem>
+                                    <FormLabel>Hình ảnh điểm đến</FormLabel>
+                                    <FormControl>
+                                      <div className="flex flex-col gap-2">
+                                        <div className="flex flex-wrap gap-2 mb-2">
+                                          {destination.img?.map((imgUrl, imgIdx) => (
+                                            <div key={`img-${imgIdx}`} className="relative w-24 h-24 rounded overflow-hidden">
+                                              <Image 
+                                                src={imgUrl} 
+                                                alt={`Destination image ${imgIdx + 1}`} 
+                                                width={96} 
+                                                height={96} 
+                                                className="object-cover"
+                                              />
+                                              <Button
+                                                type="button"
+                                                variant="destructive"
+                                                size="sm"
+                                                className="absolute top-0 right-0 w-6 h-6 p-0"
+                                                onClick={() => {
+                                                  const newImgs = [...destination.img];
+                                                  newImgs.splice(imgIdx, 1);
+                                                  handleDestinationChange('img', newImgs, destinationIndex);
+                                                }}
+                                              >
+                                                ×
+                                              </Button>
+                                            </div>
+                                          ))}
+                                          
+                                          {pendingImages.destinationImages[destinationIndex]?.map((file, fileIdx) => (
+                                            <div key={`pending-${fileIdx}`} className="relative w-24 h-24 rounded overflow-hidden bg-muted flex items-center justify-center">
+                                              <div className="text-xs text-center p-1 truncate w-full">
+                                                {file.name}
+                                              </div>
+                                              <Button
+                                                type="button"
+                                                variant="destructive"
+                                                size="sm"
+                                                className="absolute top-0 right-0 w-6 h-6 p-0"
+                                                onClick={() => removePendingDestinationImage(destinationIndex, fileIdx)}
+                                              >
+                                                ×
+                                              </Button>
+                                            </div>
+                                          ))}
+                                        </div>
+                                        
+                                        <div>
+                                          <label className="cursor-pointer">
+                                            <Input
+                                              type="file"
+                                              accept="image/*"
+                                              multiple
+                                              className="hidden"
+                                              onChange={(e) => handleFileChange(destinationIndex, e)}
+                                            />
+                                            <div className="flex items-center gap-2 p-2 border border-dashed rounded hover:bg-muted">
+                                              <FileImage className="w-4 h-4" />
+                                              <span>Thêm hình ảnh</span>
+                                            </div>
+                                          </label>
+                                        </div>
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+
+                                  {/* Activities Section */}
+                                  <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                      <h4 className="text-sm font-medium">Hoạt động trong ngày</h4>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => addActivity(destinationIndex)}
+                                      >
+                                        <Plus className="w-4 h-4 mr-2" />
+                                        Thêm hoạt động
+                                      </Button>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                      {destination.destinationActivities?.map((activity, activityIndex) => (
+                                        <Card key={activityIndex}>
+                                          <CardContent className="pt-4">
+                                            <div className="flex items-center justify-between mb-4">
+                                              <h5 className="text-sm font-medium">Hoạt động {activityIndex + 1}</h5>
+                                              <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => removeActivity(destinationIndex, activityIndex)}
+                                              >
+                                                <Trash2 className="w-4 h-4 text-destructive" />
+                                              </Button>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                              <FormField
+                                                control={form.control}
+                                                name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.name`}
+                                                render={({ field }) => (
+                                                  <FormItem>
+                                                    <FormLabel>Tên hoạt động</FormLabel>
+                                                    <FormControl>
+                                                      <Input {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                  </FormItem>
+                                                )}
+                                              />
+
+                                              <div className="grid grid-cols-2 gap-4">
+                                                <FormField
+                                                  control={form.control}
+                                                  name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.startTime`}
+                                                  render={({ field }) => (
+                                                    <FormItem>
+                                                      <FormLabel>Thời gian bắt đầu</FormLabel>
+                                                      <FormControl>
+                                                        <Input type="time" step="1" {...field} />
+                                                      </FormControl>
+                                                      <FormMessage />
+                                                    </FormItem>
+                                                  )}
+                                                />
+
+                                                <FormField
+                                                  control={form.control}
+                                                  name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.endTime`}
+                                                  render={({ field }) => (
+                                                    <FormItem>
+                                                      <FormLabel>Thời gian kết thúc</FormLabel>
+                                                      <FormControl>
+                                                        <Input type="time" step="1" {...field} />
+                                                      </FormControl>
+                                                      <FormMessage />
+                                                    </FormItem>
+                                                  )}
+                                                />
+                                              </div>
+                                            </div>
+                                          </CardContent>
+                                        </Card>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </CollapsibleContent>
+                              </Collapsible>
+                            );
+                          })}
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
+              </Accordion>
             </ScrollArea>
           </CardContent>
         </Card>
