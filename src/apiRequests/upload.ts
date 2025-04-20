@@ -1,4 +1,3 @@
-//D:\FPT\capstoneprj\dtp-control-center\src\apiRequests\upload.ts
 import { apiEndpoint } from "@/configs/routes";
 import { sessionToken } from "@/lib/http";
 
@@ -22,45 +21,153 @@ interface UploadResponse {
 
 const uploadApiRequest = {
   /**
-   * Upload a tour image - Only requires the file
-   * @param file File to upload
-   * @returns Promise with upload response containing URLs
+   * Upload multiple files with a single API call
+   * @param files Array of Files to upload
+   * @param imageTypes Array of image types corresponding to each file (or single type for all)
+   * @param resourceType Resource type for all files
+   * @returns Promise with upload response containing all URLs in a single array
    */
-  uploadTourImage: async (file: File): Promise<UploadResponse> => {
+  uploadMultipleFiles: async (
+    files: File[],
+    imageTypes: string | string[],
+    resourceType: string = RESOURCE_TYPES.IMAGE
+  ): Promise<UploadResponse> => {
     const formData = new FormData();
-    formData.append("files", file);
-    formData.append("types", IMAGE_TYPES.TOUR);
-    formData.append("resourceType", RESOURCE_TYPES.IMAGE);
+    
+    // Add each file individually with its corresponding type
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+    
+    // Handle image types - can be a single type for all files or array of types
+    if (Array.isArray(imageTypes)) {
+      // If array has single item, use it for all files
+      if (imageTypes.length === 1) {
+        files.forEach(() => {
+          formData.append("types", imageTypes[0]);
+        });
+      } else {
+        // Must match files array length
+        if (imageTypes.length !== files.length) {
+          throw new Error("imageTypes array must match files array length");
+        }
+        
+        // Add each type
+        imageTypes.forEach(type => {
+          formData.append("types", type);
+        });
+      }
+    } else {
+      // Single type for all files
+      files.forEach(() => {
+        formData.append("types", imageTypes);
+      });
+    }
+    
+    // Add resource type for each file
+    files.forEach(() => {
+      formData.append("resourceType", resourceType);
+    });
+
+    // Debug log for FormData
+    console.log('FormData structure:');
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`${key}:`, {
+          name: value.name,
+          type: value.type,
+          size: `${(value.size / 1024 / 1024).toFixed(2)} MB`
+        });
+      } else {
+        console.log(`${key}:`, value);
+      }
+    }
     
     return uploadApiRequest.uploadWithFormData(formData);
   },
 
   /**
-   * Upload a destination image - Only requires the file
-   * @param file File to upload
+   * Upload multiple images of the same type
+   * @param files Array of Files to upload
+   * @param imageType Single image type for all files
+   * @param resourceType Resource type
    * @returns Promise with upload response containing URLs
    */
-  uploadDestinationImage: async (file: File): Promise<UploadResponse> => {
-    const formData = new FormData();
-    formData.append("files", file);
-    formData.append("types", IMAGE_TYPES.DESTINATION);
-    formData.append("resourceType", RESOURCE_TYPES.IMAGE);
-    
-    return uploadApiRequest.uploadWithFormData(formData);
+  uploadImages: async (
+    files: File[], 
+    imageType: string = IMAGE_TYPES.REVIEW,
+    resourceType: string = RESOURCE_TYPES.IMAGE
+  ): Promise<UploadResponse> => {
+    return uploadApiRequest.uploadMultipleFiles(files, imageType, resourceType);
   },
 
   /**
-   * Upload a review image - Only requires the file
-   * @param file File to upload
+   * Upload multiple tour images
+   * @param files Array of Files to upload
    * @returns Promise with upload response containing URLs
    */
-  uploadReviewImage: async (file: File): Promise<UploadResponse> => {
-    const formData = new FormData();
-    formData.append("files", file);
-    formData.append("types", IMAGE_TYPES.REVIEW);
-    formData.append("resourceType", RESOURCE_TYPES.IMAGE);
+  uploadTourImages: async (files: File[]): Promise<UploadResponse> => {
+    console.log('uploadTourImages called with:', {
+      numberOfFiles: files.length,
+      files: files.map(f => ({
+        name: f.name,
+        type: f.type,
+        size: `${(f.size / 1024 / 1024).toFixed(2)} MB`
+      }))
+    });
+
+    // Create an array of tour image types matching the number of files
+    const imageTypes = Array(files.length).fill(IMAGE_TYPES.TOUR);
     
-    return uploadApiRequest.uploadWithFormData(formData);
+    return uploadApiRequest.uploadMultipleFiles(files, imageTypes, RESOURCE_TYPES.IMAGE);
+  },
+
+  /**
+   * Upload multiple destination images
+   * @param files Array of Files to upload
+   * @returns Promise with upload response containing URLs
+   */
+  uploadDestinationImages: async (files: File[]): Promise<UploadResponse> => {
+    return uploadApiRequest.uploadImages(files, IMAGE_TYPES.DESTINATION, RESOURCE_TYPES.IMAGE);
+  },
+
+  /**
+   * Upload multiple review images
+   * @param files Array of Files to upload
+   * @returns Promise with upload response containing URLs
+   */
+  uploadReviewImages: async (files: File[]): Promise<UploadResponse> => {
+    return uploadApiRequest.uploadImages(files, IMAGE_TYPES.REVIEW);
+  },
+
+  /**
+   * Upload mixed types of images in a single request
+   * @param files Array of Files to upload
+   * @param typeMapping Object mapping file indexes to image types
+   * @returns Promise with upload response containing URLs
+   */
+  uploadMixedImages: async (
+    files: File[],
+    typeMapping: Record<number, string>
+  ): Promise<UploadResponse> => {
+    const types = files.map((_, index) => 
+      typeMapping[index] || IMAGE_TYPES.REVIEW // Default to REVIEW if not specified
+    );
+    
+    return uploadApiRequest.uploadMultipleFiles(files, types);
+  },
+
+  /**
+   * For backward compatibility - Upload a single image
+   * @param file File to upload
+   * @param imageType Image type
+   * @returns Promise with upload response containing URLs
+   */
+  uploadSingleImage: async (
+    file: File,
+    imageType: string
+  ): Promise<UploadResponse> => {
+    return uploadApiRequest.uploadImages([file], imageType);
   },
 
   /**
@@ -70,35 +177,51 @@ const uploadApiRequest = {
    */
   uploadWithFormData: async (formData: FormData): Promise<UploadResponse> => {
     try {
-      // Log FormData contents for debugging
-      console.log(`FormData contents:`);
+      // Enhanced FormData logging
+      console.log('FormData contents:');
       for (const pair of formData.entries()) {
-        console.log(`${pair[0]}:`, pair[1] instanceof File ?
-          `File: ${pair[1].name}, size: ${pair[1].size}, type: ${pair[1].type}` :
-          pair[1]);
+        if (pair[1] instanceof File) {
+          console.log(`${pair[0]}: File`, {
+            name: pair[1].name,
+            type: pair[1].type,
+            size: `${(pair[1].size / 1024 / 1024).toFixed(2)} MB`
+          });
+        } else {
+          console.log(`${pair[0]}:`, pair[1]);
+        }
       }
 
-      // Use fetch API directly instead of http.post
+      // Log request details
+      console.log('Upload request URL:', `${baseURL}${apiEndpoint.upload}`);
+      console.log('Upload request headers:', {
+        Authorization: 'Bearer [TOKEN]' // Don't log actual token
+      });
+
       const response = await fetch(`${baseURL}${apiEndpoint.upload}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${getAuthToken()}`
         },
-        body: formData // Pass FormData directly
+        body: formData
       });
 
-      // Handle non-ok responses
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`Upload failed with status ${response.status}:`, errorText);
+        console.error('Upload failed with status:', response.status);
+        console.error('Error response:', errorText);
+        console.error('Response headers:', Object.fromEntries(response.headers.entries()));
         throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
-      console.log(`Response:`, JSON.stringify(data));
+      console.log('Upload successful. Response:', data);
       return data;
     } catch (error) {
-      console.error("Upload failed:", error);
+      console.error('Upload error:', {
+        error,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
       throw error;
     }
   }

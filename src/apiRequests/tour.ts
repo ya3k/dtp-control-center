@@ -1,5 +1,6 @@
 import { apiEndpoint } from "@/configs/routes";
 import http from "@/lib/http";
+import { POSTTourTicketType, POSTTourType } from "@/schemaValidations/crud-tour.schema";
 import type {
   CreateTourBodyType,
   DELETETourScheduleBodyType,
@@ -101,6 +102,18 @@ const tourApiService = {
     return response;
   },
 
+  postTour: async (body: POSTTourType) => {
+    try {
+      const response = await http.post<TourResType>(
+        `${apiEndpoint.tours}`,
+        body,
+      );
+      return response;
+    } catch (error) {
+      console.error("Failed to create tour:", error);
+      throw error;
+    }
+  },
   create: async (body: CreateTourBodyType) => {
     try {
       const response = await http.post<TourResType>(

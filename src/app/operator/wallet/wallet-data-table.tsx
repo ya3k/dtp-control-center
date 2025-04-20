@@ -1,61 +1,134 @@
 'use client'
 
 import { walletApiRequest } from "@/apiRequests/wallet"
+import { formatCurrency } from "@/lib/utils"
 import { WalletResType } from "@/schemaValidations/wallet.schema"
 import { useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowDownIcon, Loader2, RefreshCcw } from "lucide-react"
+import { WalletWithdrawDialog } from "@/components/operator/wallet/wallet-withdraw-dialog"
+import { toast } from "sonner"
 
 function WalletDataTable() {
     const [isLoading, setIsLoading] = useState(false)
+    const [isWithdrawing, setIsWithdrawing] = useState(false)
     const [wallet, setWallet] = useState<WalletResType | undefined>(undefined)
+    const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false)
+    const [isRefreshing, setIsRefreshing] = useState(false)
 
-    useEffect(() => {
-        const fetchWallet = async () => {
-            setIsLoading(true)
-            try {
-                const res = await walletApiRequest.get();
-                if (res.status !== 200) {
-                    throw new Error("Failed to fetch wallet data")
-                }
-                const data = await res.payload;
-                setWallet(data)
-            } catch (error) {
-                console.log(error)
-                setWallet(undefined)
-            } finally {
-                setIsLoading(false)
+    const fetchWallet = async (showToast = false) => {
+        setIsLoading(true)
+        setIsRefreshing(true)
+        try {
+            const res = await walletApiRequest.get();
+            if (res.status !== 200) {
+                throw new Error("Failed to fetch wallet data")
             }
+            const data = await res.payload;
+            setWallet(data)
+            if (showToast) {
+                toast.success("Đã cập nhật thông tin ví")
+            }
+        } catch (error) {
+            console.error(error)
+            toast.error("Không thể tải thông tin ví")
+            setWallet(undefined)
+        } finally {
+            setIsLoading(false)
+            setIsRefreshing(false)
         }
-
+    }
+    
+    useEffect(() => {
         fetchWallet()
     }, [])
 
+    const handleRefresh = () => {
+        fetchWallet(true)
+    }
+
+    const handleWithdraw = () => {
+        if (!wallet || wallet.balance <= 0) {
+            toast.error("Số dư không đủ để thực hiện giao dịch")
+            return
+        }
+        
+        setWithdrawDialogOpen(true)
+    }
+
+    const handleWithdrawComplete = () => {
+        // Refresh wallet data after successful withdrawal
+        fetchWallet()
+    }
+
     return (
-        <div className="overflow-hidden rounded-md border border-slate-200 shadow-md">
-            <table className="w-full table-auto">
-                <thead>
-                    <tr>
-                        <th className="px-4 py-2 text-left">User ID</th>
-                        <th className="px-4 py-2 text-left">Balance</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {isLoading ? (
-                        <tr>
-                            <td colSpan={2} className="px-4 py-2 text-center">Loading...</td>
-                        </tr>
+        <>
+            <Card className="w-full max-w-md mx-auto">
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle className="text-2xl font-bold">Ví của tôi</CardTitle>
+                        <CardDescription>Quản lý số dư và rút tiền</CardDescription>
+                    </div>
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                        title="Làm mới"
+                    >
+                        <RefreshCcw className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                    </Button>
+                </CardHeader>
+                <CardContent>
+                    {isLoading && !isRefreshing ? (
+                        <div className="flex justify-center items-center h-32">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                            <span className="ml-2 text-muted-foreground">Đang tải...</span>
+                        </div>
                     ) : wallet ? (
-                        <tr>
-                            <td className="px-4 py-2">{wallet.userId}</td>
-                            <td className="px-4 py-2">{wallet.balance}</td>
-                        </tr>
-                    ) : (   
-                        <tr>
-                            <td colSpan={2} className="px-4 py-2 text-center">No data available</td>
-                        </tr>
+                        <div className="space-y-6">
+                            <div className="flex flex-col items-center p-6 bg-muted/30 rounded-lg border">
+                                <p className="text-sm text-muted-foreground mb-1">Số dư hiện tại</p>
+                                <p className="text-3xl font-bold text-primary">{formatCurrency(wallet.balance)}</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
+                            <p>Không có dữ liệu</p>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="mt-2"
+                                onClick={() => fetchWallet()}
+                            >
+                                Tải lại
+                            </Button>
+                        </div>
                     )}
-                </tbody>
-            </table>
-        </div>
+                </CardContent>
+                {wallet && wallet.balance > 0 && (
+                    <CardFooter>
+                        <Button 
+                            className="w-full" 
+                            onClick={handleWithdraw}
+                        >
+                            <ArrowDownIcon className="mr-2 h-4 w-4" />
+                            Rút tiền
+                        </Button>
+                    </CardFooter>
+                )}
+            </Card>
+
+            {wallet && (
+                <WalletWithdrawDialog 
+                    open={withdrawDialogOpen}
+                    onOpenChange={setWithdrawDialogOpen}
+                    currentBalance={wallet.balance}
+                    onWithdrawComplete={handleWithdrawComplete}
+                />
+            )}
+        </>
     )
 }
 
