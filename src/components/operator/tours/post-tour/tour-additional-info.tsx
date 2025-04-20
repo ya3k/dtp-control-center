@@ -11,7 +11,6 @@ import {
   FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form"
 import { Card, CardContent } from "@/components/ui/card"
@@ -57,7 +56,9 @@ export default function TourAdditionalInfo() {
               className="border rounded-lg"
             >
               <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-3 font-medium transition-colors hover:bg-muted/50">
-                Thông tin về tour
+                <h4 className="text-sm font-semibold">
+                  Giới thiệu về tour <span className="text-red-600">*</span>
+                </h4>
                 <ChevronDown className={`h-4 w-4 transition-transform ${openSections.about ? 'transform rotate-180' : ''}`} />
               </CollapsibleTrigger>
               <CollapsibleContent className="px-4 pb-4">
@@ -66,7 +67,6 @@ export default function TourAdditionalInfo() {
                   name="about"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
-                      <FormLabel className="text-base font-medium">Giới thiệu về tour</FormLabel>
                       <FormControl>
                         <TiptapEditor
                           value={field.value}
@@ -91,7 +91,10 @@ export default function TourAdditionalInfo() {
               className="border rounded-lg"
             >
               <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-3 font-medium transition-colors hover:bg-muted/50">
-                Dịch vụ bao gồm
+              <h4 className="text-sm font-semibold">
+              Các dịch vụ bao gồm của tour
+              <span className="text-red-600">*</span>
+                </h4>
                 <ChevronDown className={`h-4 w-4 transition-transform ${openSections.include ? 'transform rotate-180' : ''}`} />
               </CollapsibleTrigger>
               <CollapsibleContent className="px-4 pb-4">
@@ -100,7 +103,7 @@ export default function TourAdditionalInfo() {
                   name="include"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
-                      <FormLabel className="text-base font-medium">Các dịch vụ bao gồm của tour</FormLabel>
+                      
                       <FormControl>
                         <TiptapEditor
                           value={field.value}
@@ -125,7 +128,10 @@ export default function TourAdditionalInfo() {
               className="border rounded-lg"
             >
               <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-3 font-medium transition-colors hover:bg-muted/50">
-                Thông tin đón khách
+              <h4 className="text-sm font-semibold">
+              Chi tiết thông tin đón / trả khách.
+              <span className="text-red-600">*</span>
+                </h4>
                 <ChevronDown className={`h-4 w-4 transition-transform ${openSections.pickup ? 'transform rotate-180' : ''}`} />
               </CollapsibleTrigger>
               <CollapsibleContent className="px-4 pb-4">
@@ -134,7 +140,7 @@ export default function TourAdditionalInfo() {
                   name="pickinfor"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
-                      <FormLabel className="text-base font-medium">Chi tiết đón/trả khách</FormLabel>
+                     
                       <FormControl>
                         <TiptapEditor
                           value={field.value}

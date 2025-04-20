@@ -3,6 +3,7 @@ import { create } from "zustand";
 import tourApiService from "@/apiRequests/tour";
 import { toast } from "sonner";
 import uploadApiRequest from "@/apiRequests/upload";
+import { Destination } from "@/types/destination";
 
 // Type for pending images
 interface PendingImageState {
@@ -15,6 +16,11 @@ interface POSTTourState {
     formData: POSTTourType;
     pendingImages: PendingImageState;
     isSubmitting: boolean;
+
+    destinations: Destination[];
+    isLoadingDestinations: boolean;
+    setDestinations: (destinations: Destination[]) => void;
+
     nextStep: () => void;
     prevStep: () => void;
     getTotalSteps: () => number;
@@ -57,9 +63,13 @@ const useTourStore = create<POSTTourState>((set, get) => ({
     formData: initialFormData,
     pendingImages: initialPendingImages,
     isSubmitting: false,
+    destinations: [],
+    isLoadingDestinations: false, setDestinations: (destinations) => set({ destinations }),
+    setIsLoadingDestinations: (isLoading: boolean) => set({ isLoadingDestinations: isLoading }),
     nextStep: () => set((state) => ({ step: state.step + 1 })),
     prevStep: () => set((state) => ({ step: state.step - 1 })),
     getTotalSteps: () => 6,
+
     setBasicTourInfo: (data) => set((state) => ({
         formData: { ...state.formData, ...data }
     })),
@@ -129,7 +139,6 @@ const useTourStore = create<POSTTourState>((set, get) => ({
         set({ isSubmitting: true });
 
         try {
-
             // 1.upload img tour first
             let finalTourImageUrls = [...formData.img];
 
@@ -148,13 +157,13 @@ const useTourStore = create<POSTTourState>((set, get) => ({
             // For each destination with pending images, upload them
             for (const [indexStr, files] of Object.entries(pendingImages.destinationImages)) {
                 const destinationIndex = parseInt(indexStr, 10);
-                
+
                 if (files.length > 0 && updatedDestinations[destinationIndex]) {
                     console.log(`Uploading ${files.length} pending images for destination ${destinationIndex}...`);
-                    
+
                     const destUploadResponse = await uploadApiRequest.uploadDestinationImages(files);
                     console.log(`Destination ${destinationIndex} images upload response:`, destUploadResponse);
-                    
+
                     // Add new images to existing destination images
                     const existingImages = updatedDestinations[destinationIndex].img || [];
                     updatedDestinations[destinationIndex] = {
@@ -175,7 +184,14 @@ const useTourStore = create<POSTTourState>((set, get) => ({
             await tourApiService.postTour(tourData);
             console.log("Tour created successfully:", JSON.stringify(tourData, null, 2));
             toast.success("Tour đã được tạo thành công!");
-            set({ formData: initialFormData, step: 1, isSubmitting: false });
+
+            // Reset form data, step, and clear pending images
+            set({
+                formData: initialFormData,
+                step: 1,
+                isSubmitting: false,
+                pendingImages: initialPendingImages  // Clear all pending images
+            });
         } catch (error) {
             console.error("Failed to submit tour:", error);
             toast.error("Có lỗi xảy ra khi tạo tour. Vui lòng thử lại!");

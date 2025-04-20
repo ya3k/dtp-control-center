@@ -13,13 +13,13 @@ export enum TicketKind {
 // Basic information schema (Step 1)
 export const BasicTourInfoSchema = z.object({
   title: z.string()
-    .min(5, "Title must be at least 5 characters")
-    .max(100, "Title must not exceed 100 characters"),
+    .min(5, "Tên tour phải có ít nhất 5 ký tự")
+    .max(100, "Tên tour không được vượt quá 100 ký tự"),
   img: z.array(z.string()),
   categoryid: z.string(),
   description: z.string()
-    .min(20, "Description must be at least 20 characters")
-    .max(1000, "Description must not exceed 1000 characters"),
+    .min(20, "Mô tả phải có ít nhất 20 ký tự")
+    .max(1000, "Mô tả không được vượt quá 1000 ký tự"),
 
 });
 
@@ -27,18 +27,18 @@ export const BasicTourInfoSchema = z.object({
 export const ScheduleInfoSchema = z.object({
   // Can be today or in future
   openDay: z.date()
-    .min(new Date(new Date().setHours(0, 0, 0, 0)), "Open day must be today or in the future"),
+    .min(new Date(new Date().setHours(0, 0, 0, 0)), "Ngày bắt đầu phải từ hôm nay trở đi"),
   // Can be today or in future
   closeDay: z.date()
-    .min(new Date(new Date().setHours(0, 0, 0, 0)), "Close day must be today or in the future"),
+    .min(new Date(new Date().setHours(0, 0, 0, 0)), "Ngày kết thúc phải từ hôm nay trở đi"),
   scheduleFrequency: z.string()
-    .min(1, "Schedule frequency is required"),
+    .min(1, "Vui lòng chọn tần suất lịch trình"),
 }).superRefine((data, ctx) => {
   // Allow closeDay to be the same as openDay
   if (data.closeDay < data.openDay) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "Close day must be on or after open day",
+      message: "Ngày kết thúc phải sau ngày bắt đầu",
       path: ["closeDay"],
     });
   }
@@ -47,71 +47,71 @@ export const ScheduleInfoSchema = z.object({
 //destination activities schema
 export const destinationActivities = z.object({
   name: z.string()
-    .min(3, "Activity name must be at least 3 characters"),
+    .min(3, "Tên hoạt động phải có ít nhất 3 ký tự"),
   startTime: z.string()
-    .regex(/^\d{2}:\d{2}:\d{2}$/, "Invalid time format. Use HH:MM:SS"),
+    .regex(/^\d{2}:\d{2}:\d{2}$/, "Định dạng thời gian không hợp lệ. Sử dụng HH:MM:SS"),
   endTime: z.string()
-    .regex(/^\d{2}:\d{2}:\d{2}$/, "Invalid time format. Use HH:MM:SS"),
+    .regex(/^\d{2}:\d{2}:\d{2}$/, "Định dạng thời gian không hợp lệ. Sử dụng HH:MM:SS"),
   sortOrder: z.number()
-    .int("Sort order must be an integer")
-    .nonnegative("Sort order must be non-negative"),
+    .int("Thứ tự phải là số nguyên")
+    .nonnegative("Thứ tự không được âm"),
 }).refine((data) => {
   const start = new Date(`1970-01-01T${data.startTime}`);
   const end = new Date(`1970-01-01T${data.endTime}`);
   return end > start;
 }, {
-  message: "End time must be after start time",
+  message: "Thời gian kết thúc phải sau thời gian bắt đầu",
   path: ["endTime"],
 });
 
 // Destination schema (Step 3)
 export const DestinationSchema = z.object({
-  destinationId: z.string().uuid("Invalid destination ID"),
+  destinationId: z.string().uuid("ID điểm đến không hợp lệ"),
   destinationActivities: z.array(destinationActivities),
   startTime: z.string()
-    .regex(/^\d{2}:\d{2}:\d{2}$/, "Invalid time format. Use HH:MM:SS"),
+    .regex(/^\d{2}:\d{2}:\d{2}$/, "Định dạng thời gian không hợp lệ. Sử dụng HH:MM:SS"),
   endTime: z.string()
-    .regex(/^\d{2}:\d{2}:\d{2}$/, "Invalid time format. Use HH:MM:SS"),
+    .regex(/^\d{2}:\d{2}:\d{2}$/, "Định dạng thời gian không hợp lệ. Sử dụng HH:MM:SS"),
   sortOrder: z.number()
-    .int("Sort order must be an integer")
-    .nonnegative("Sort order must be non-negative"),
+    .int("Thứ tự phải là số nguyên")
+    .nonnegative("Thứ tự không được âm"),
   sortOrderByDate: z.number()
-    .int("Sort order by date must be an integer")
-    .nonnegative("Sort order by date must be non-negative"),
-  img: z.array(z.string().url("Invalid image URL")),
+    .int("Thứ tự theo ngày phải là số nguyên")
+    .nonnegative("Thứ tự theo ngày không được âm"),
+  img: z.array(z.string().url("URL hình ảnh không hợp lệ")),
 }).refine((data) => {
   const start = new Date(`1970-01-01T${data.startTime}`);
   const end = new Date(`1970-01-01T${data.endTime}`);
   return end > start;
 }, {
-  message: "End time must be after start time",
+  message: "Thời gian kết thúc phải sau thời gian bắt đầu",
   path: ["endTime"],
 });
 
 // Ticket schema (Step 4)
 export const TicketSchema = z.object({
   defaultNetCost: z.coerce.number()
-    .positive("Price must be positive")
-    .nonnegative("Price cannot be negative"),
+    .positive("Giá vé phải lớn hơn 0")
+    .nonnegative("Giá vé không được âm"),
   minimumPurchaseQuantity: z.number()
-    .int("Quantity must be an integer")
-    .positive("Quantity must be positive")
-    .min(1, "Minimum purchase quantity must be at least 1"),
+    .int("Số lượng phải là số nguyên")
+    .positive("Số lượng phải lớn hơn 0")
+    .min(1, "Số lượng mua tối thiểu phải từ 1 trở lên"),
   ticketKind: z.nativeEnum(TicketKind, {
-    errorMap: () => ({ message: "Invalid ticket type" }),
+    errorMap: () => ({ message: "Loại vé không hợp lệ" }),
   }),
 });
 
 // Additional Information schema (Step 5)
 export const AdditionalInfoSchema = z.object({
   about: z.string()
-    .min(20, "About section must be at least 20 characters"),
+    .min(50, "Phần giới thiệu phải có ít nhất 30 ký tự"),
 
   include: z.string()
-    .min(10, "Include section must be at least 10 characters"),
+    .min(50, "Phần bao gồm phải có ít nhất 30 ký tự"),
 
   pickinfor: z.string()
-    .min(10, "Pick information must be at least 10 characters")
+    .min(50, "Thông tin đón khách phải có ít nhất 30 ký tự")
 
 });
 
@@ -119,43 +119,43 @@ export const AdditionalInfoSchema = z.object({
 export const TourSchema = z.object({
   // Basic Info
   title: z.string()
-    .min(5, "Title must be at least 5 characters")
-    .max(100, "Title must not exceed 100 characters"),
+    .min(5, "Tên tour phải có ít nhất 5 ký tự")
+    .max(100, "Tên tour không được vượt quá 100 ký tự"),
   img: z.array(z.string()),
   categoryid: z.string(),
   description: z.string()
-    .min(20, "Description must be at least 20 characters")
-    .max(1000, "Description must not exceed 1000 characters"),
+    .min(20, "Mô tả phải có ít nhất 20 ký tự")
+    .max(1000, "Mô tả không được vượt quá 1000 ký tự"),
 
 
   // Schedule Info
   openDay: z.date()
-    .min(new Date(), "Open day must be in the future"),
+    .min(new Date(), "Ngày bắt đầu phải từ hôm nay trở đi"),
   closeDay: z.date(),
   scheduleFrequency: z.string()
-    .min(1, "Schedule frequency is required"),
+    .min(1, "Vui lòng chọn tần suất lịch trình"),
 
   // Destinations and Tickets
   destinations: z.array(DestinationSchema)
-    .min(1, "At least one destination is required"),
+    .min(1, "Phải có ít nhất một điểm đến"),
   tickets: z.array(TicketSchema)
-    .min(1, "At least one ticket type is required"),
+    .min(1, "Phải có ít nhất một loại vé"),
 
   // Additional Info
   about: z.string()
-    .min(20, "About section must be at least 20 characters")
-    .max(2000, "About section must not exceed 2000 characters"),
+    .min(20, "Phần giới thiệu phải có ít nhất 20 ký tự")
+    .max(2000, "Phần giới thiệu không được vượt quá 2000 ký tự"),
   include: z.string()
-    .min(10, "Include section must be at least 10 characters")
-    .max(1000, "Include section must not exceed 1000 characters"),
+    .min(10, "Phần bao gồm phải có ít nhất 10 ký tự")
+    .max(1000, "Phần bao gồm không được vượt quá 1000 ký tự"),
   pickinfor: z.string()
-    .min(10, "Pick information must be at least 10 characters")
-    .max(1000, "Pick information must not exceed 1000 characters"),
+    .min(10, "Thông tin đón khách phải có ít nhất 10 ký tự")
+    .max(1000, "Thông tin đón khách không được vượt quá 1000 ký tự"),
 }).superRefine((data, ctx) => {
   if (data.closeDay <= data.openDay) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "Close day must be after open day",
+      message: "Ngày kết thúc phải sau ngày bắt đầu",
       path: ["closeDay"],
     });
   }

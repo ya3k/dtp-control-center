@@ -18,11 +18,16 @@ import useTourStore from '@/store/tourStore'
 import { BasicTourInfoSchema, POSTBasicTourInfoType } from "@/schemaValidations/crud-tour.schema"
 import { Card, CardContent } from "@/components/ui/card"
 import { useEffect, useState } from "react"
-import { X, ImageIcon } from "lucide-react"
+import { X, ImageIcon, AlertCircle } from "lucide-react"
 import { CategoryType } from "@/schemaValidations/category.schema"
 import categoryApiRequest from "@/apiRequests/category"
 import { toast } from "sonner"
 import CategorySearch from "../categories-search"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import Image from "next/image"
+
+// Maximum number of images allowed
+const MAX_IMAGES = 5;
 
 interface ImagePreview {
   file?: File;
@@ -43,6 +48,7 @@ export default function BasicTourInfoForm() {
   
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [imagePreviews, setImagePreviews] = useState<ImagePreview[]>([]);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   const form = useForm<POSTBasicTourInfoType>({
     resolver: zodResolver(BasicTourInfoSchema),
@@ -71,6 +77,14 @@ export default function BasicTourInfoForm() {
 
   // Initialize previews from existing URLs and pending files
   useEffect(() => {
+    // Clear all previews when both formData.img and pendingImages are empty
+    // This ensures previews are cleared after form submission
+    if (formData.img.length === 0 && pendingImages.tourImages.length === 0) {
+      setImagePreviews([]);
+      setImageError(null);
+      return;
+    }
+    
     const existingImages = formData.img.map(url => ({ 
       url, 
       isPending: false 
@@ -83,6 +97,14 @@ export default function BasicTourInfoForm() {
     }));
     
     setImagePreviews([...existingImages, ...pendingPreviews]);
+    
+    // Check if total images exceeds the limit
+    const totalImages = existingImages.length + pendingPreviews.length;
+    if (totalImages > MAX_IMAGES) {
+      setImageError(`Số lượng hình ảnh vượt quá giới hạn cho phép (tối đa ${MAX_IMAGES} hình)`);
+    } else {
+      setImageError(null);
+    }
     
     // Clean up object URLs when component unmounts or when dependencies change
     return () => {
@@ -99,6 +121,17 @@ export default function BasicTourInfoForm() {
     if (!files || files.length === 0) return;
 
     const fileArray = Array.from(files);
+    
+    // Check if adding these files would exceed the limit
+    const totalImagesAfterAdd = formData.img.length + pendingImages.tourImages.length + fileArray.length;
+    
+    if (totalImagesAfterAdd > MAX_IMAGES) {
+      toast.error(`Không thể tải lên hơn ${MAX_IMAGES} hình ảnh. Hiện tại: ${formData.img.length + pendingImages.tourImages.length} / ${MAX_IMAGES}`);
+      // Reset the input field
+      e.target.value = '';
+      return;
+    }
+    
     setPendingTourImages(fileArray);
     
     // Reset the input field so the same files can be uploaded again if needed
@@ -117,9 +150,18 @@ export default function BasicTourInfoForm() {
       // It's a pending image
       removePendingTourImage(index - existingImagesCount);
     }
+    
+    // Clear any error message since we've removed an image
+    setImageError(null);
   };
 
   function onSubmit(data: POSTBasicTourInfoType) {
+    // Check if there are too many images
+    if (imagePreviews.length > MAX_IMAGES) {
+      setImageError(`Số lượng hình ảnh vượt quá giới hạn cho phép (tối đa ${MAX_IMAGES} hình)`);
+      return;
+    }
+    
     // Make sure form data is updated with the latest values
     setBasicTourInfo(data);
     nextStep();
@@ -135,12 +177,12 @@ export default function BasicTourInfoForm() {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tour Title</FormLabel>
+                  <FormLabel>Tên tour</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter tour title" {...field} />
+                    <Input placeholder="Nhập tên tour" {...field} />
                   </FormControl>
                   <FormDescription>
-                    This is your tour&apos;s display title.
+                    Đây là tên hiển thị của tour.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -152,7 +194,7 @@ export default function BasicTourInfoForm() {
               name="img"
               render={() => (
                 <FormItem>
-                  <FormLabel>Tour Images</FormLabel>
+                  <FormLabel>Hình ảnh tour (tối đa {MAX_IMAGES} hình)</FormLabel>
                   <div className="space-y-4">
                     <div className="flex items-center gap-4">
                       <Input
@@ -161,23 +203,39 @@ export default function BasicTourInfoForm() {
                         multiple
                         onChange={handleImageSelect}
                         className="cursor-pointer"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || imagePreviews.length >= MAX_IMAGES}
                       />
+                      <div className="text-sm text-muted-foreground whitespace-nowrap">
+                        {imagePreviews.length}/{MAX_IMAGES}
+                      </div>
                     </div>
+
+                    {imageError && (
+                      <Alert variant="destructive" className="mt-2">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          {imageError}
+                        </AlertDescription>
+                      </Alert>
+                    )}
 
                     {imagePreviews.length > 0 && (
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {imagePreviews.map((preview, index) => (
                           <div key={index} className="relative group">
-                            <div className="aspect-video rounded-lg overflow-hidden bg-gray-100 border">
-                              <img
+                            <div className="aspect-video rounded-lg overflow-hidden bg-gray-100 border relative">
+                              <Image
                                 src={preview.url}
-                                alt={`Preview ${index + 1}`}
-                                className="w-full h-full object-cover"
+                                alt={`Xem trước ${index + 1}`}
+                                className="object-cover"
+                                fill
+                                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                                unoptimized={preview.url.startsWith('blob:')}
+                                priority={index === 0}
                               />
                               {preview.isPending && (
-                                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1">
-                                  Pending upload
+                                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 z-10">
+                                  Đang chờ tải lên
                                 </div>
                               )}
                             </div>
@@ -199,12 +257,12 @@ export default function BasicTourInfoForm() {
                     {imagePreviews.length === 0 && (
                       <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg">
                         <ImageIcon className="w-12 h-12 text-gray-400 mb-4" />
-                        <p className="text-sm text-gray-500">No images selected yet</p>
+                        <p className="text-sm text-gray-500">Chưa có hình ảnh nào được chọn</p>
                       </div>
                     )}
                   </div>
                   <FormDescription>
-                    Images will be uploaded when you submit the final form. Supported formats: JPG, PNG, WebP. Maximum size: 5MB per image.
+                    Hình ảnh sẽ được tải lên khi bạn gửi biểu mẫu. Định dạng hỗ trợ: JPG, PNG, WebP. Kích thước tối đa: 5MB mỗi hình.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -231,16 +289,16 @@ export default function BasicTourInfoForm() {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Điểm nổi bật</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter tour description"
+                      placeholder="Nhập các điểm nổi bật của tour"
                       className="min-h-[120px]"
                       {...field}
                     />
                   </FormControl>
                   <FormDescription>
-                    Provide a detailed description of the tour.
+                    Cung cấp các điểm nổi bật của tour.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -248,8 +306,11 @@ export default function BasicTourInfoForm() {
             />
 
             <div className="flex justify-end space-x-4">
-              <Button type="submit" disabled={isSubmitting}>
-                Next Step
+              <Button 
+                type="submit" 
+                disabled={isSubmitting || !!imageError || imagePreviews.length > MAX_IMAGES}
+              >
+                Bước tiếp theo
               </Button>
             </div>
           </form>

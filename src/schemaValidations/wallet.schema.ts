@@ -6,4 +6,8 @@ export const WalletResSchema = z.object({
 
 })
 
+export const WithDrawSchema = z.object({
+    amount: z.number().positive().min(100000, "Số tiền tối thiểu là 100,000 VNĐ"),
+})
+
 export type WalletResType = z.infer<typeof WalletResSchema>

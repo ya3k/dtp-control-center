@@ -16,20 +16,11 @@ export const operatorItems: SidebarItem[] = [
         ],
     },
     {
-        title: "Wallet",
-        url: "",
-        icon: Wallet2,
-        subItems: [
-            { title: "Ví", url: "/operator/wallet", icon: Wallet },
-           
-        ],
+        title: "Ví",
+        url: "/operator/wallet",
+        icon: Wallet2
     },
-    {
-        title: "Test",
-        url: "/operator/test",
-        icon: TestTube,
-        
-    },
+   
     // {
     //     title: "Nhân Viên",
     //     url: "",

@@ -10,24 +10,16 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Input } from '@/components/ui/input';
 import { DestinationSchema, POSTTourDestinationType, POSTTourType } from '@/schemaValidations/crud-tour.schema';
 import useTourStore from '@/store/tourStore';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Trash2, FileImage, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, FileImage, ChevronDown, ChevronUp, ChevronRight, AlertCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { z } from 'zod';
 import destinationApiRequest from '@/apiRequests/destination';
-import { Destination } from '@/types/destination';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import {
@@ -41,11 +33,14 @@ import {
   CollapsibleContent,
   CollapsibleTrigger
 } from "@/components/ui/collapsible"
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import DestinationSearch from '../destinations-search';
+
+const MAX_IMAGES = 5;
 
 export default function TourDestinationForm() {
-  const { nextStep, prevStep, formData, pendingImages, setPendingDestinationImages, removePendingDestinationImage } = useTourStore();
+  const { nextStep, prevStep, formData, pendingImages, setPendingDestinationImages, removePendingDestinationImage, destinations, setDestinations } = useTourStore();
   const [error, setError] = useState<string>("");
-  const [destinations, setDestinations] = useState<Destination[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [days, setDays] = useState<number[]>([1]); // Default to at least one day
   const [expandedDays, setExpandedDays] = useState<string[]>(["day-1"]);
@@ -220,7 +215,24 @@ export default function TourDestinationForm() {
 
   const handleFileChange = (destinationIndex: number, event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      setPendingDestinationImages(destinationIndex, Array.from(event.target.files));
+      const files = Array.from(event.target.files);
+      
+      // Get current images for this destination
+      const destination = form.getValues().destinations[destinationIndex];
+      const existingImages = destination.img || [];
+      const pendingImages = useTourStore.getState().pendingImages.destinationImages[destinationIndex] || [];
+      
+      // Check if adding these files would exceed the limit
+      const totalImagesAfterAdd = existingImages.length + pendingImages.length + files.length;
+      
+      if (totalImagesAfterAdd > MAX_IMAGES) {
+        toast.error(`Không thể tải lên hơn ${MAX_IMAGES} hình ảnh cho mỗi điểm đến. Hiện tại: ${existingImages.length + pendingImages.length} / ${MAX_IMAGES}`);
+        // Reset the input field
+        event.target.value = '';
+        return;
+      }
+      
+      setPendingDestinationImages(destinationIndex, files);
     }
   };
 
@@ -312,6 +324,19 @@ export default function TourDestinationForm() {
       }
     }
   };
+
+  // Reset UI when pending images are cleared on submission
+  useEffect(() => {
+    // If all pending images are cleared (like after submission), update UI accordingly
+    const hasPendingImages = Object.values(pendingImages.destinationImages).some(
+      files => files && files.length > 0
+    );
+    
+    if (!hasPendingImages) {
+      // This forces a re-render of any destination cards with pending images
+      form.setValue('destinations', [...form.getValues().destinations]);
+    }
+  }, [pendingImages.destinationImages, form]);
 
   return (
     <Form {...form}>
@@ -449,23 +474,12 @@ export default function TourDestinationForm() {
                                     render={({ field }) => (
                                       <FormItem>
                                         <FormLabel>Điểm đến</FormLabel>
-                                        <Select
+                                        <DestinationSearch
+                                          destinations={destinations}
                                           value={field.value}
-                                          onValueChange={(value) => handleDestinationChange('destinationId', value, destinationIndex)}
-                                        >
-                                          <FormControl>
-                                            <SelectTrigger disabled={isLoading}>
-                                              <SelectValue placeholder={isLoading ? "Loading destinations..." : "Chọn điểm đến"} />
-                                            </SelectTrigger>
-                                          </FormControl>
-                                          <SelectContent>
-                                            {destinations.map((dest) => (
-                                              <SelectItem key={dest.id} value={dest.id}>
-                                                {dest.name}
-                                              </SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
+                                          onChange={(value) => handleDestinationChange('destinationId', value, destinationIndex)}
+                                          disabled={isLoading}
+                                        />
                                         <FormMessage />
                                       </FormItem>
                                     )}
@@ -513,7 +527,7 @@ export default function TourDestinationForm() {
 
                                   {/* Image Upload Section */}
                                   <FormItem>
-                                    <FormLabel>Hình ảnh điểm đến</FormLabel>
+                                    <FormLabel>Hình ảnh điểm đến (tối đa {MAX_IMAGES} hình)</FormLabel>
                                     <FormControl>
                                       <div className="flex flex-col gap-2">
                                         <div className="flex flex-wrap gap-2 mb-2">
@@ -560,21 +574,38 @@ export default function TourDestinationForm() {
                                           ))}
                                         </div>
                                         
-                                        <div>
-                                          <label className="cursor-pointer">
+                                        <div className="flex items-center gap-2">
+                                          <label className={`cursor-pointer flex-1 ${
+                                            ((destination.img?.length || 0) + (pendingImages.destinationImages[destinationIndex]?.length || 0) >= MAX_IMAGES) 
+                                              ? 'opacity-50 cursor-not-allowed' 
+                                              : ''
+                                          }`}>
                                             <Input
                                               type="file"
                                               accept="image/*"
                                               multiple
                                               className="hidden"
                                               onChange={(e) => handleFileChange(destinationIndex, e)}
+                                              disabled={(destination.img?.length || 0) + (pendingImages.destinationImages[destinationIndex]?.length || 0) >= MAX_IMAGES}
                                             />
                                             <div className="flex items-center gap-2 p-2 border border-dashed rounded hover:bg-muted">
                                               <FileImage className="w-4 h-4" />
                                               <span>Thêm hình ảnh</span>
                                             </div>
                                           </label>
+                                          <div className="text-sm text-muted-foreground whitespace-nowrap">
+                                            {(destination.img?.length || 0) + (pendingImages.destinationImages[destinationIndex]?.length || 0)}/{MAX_IMAGES}
+                                          </div>
                                         </div>
+                                        
+                                        {((destination.img?.length || 0) + (pendingImages.destinationImages[destinationIndex]?.length || 0) > MAX_IMAGES) && (
+                                          <Alert variant="destructive" className="mt-2">
+                                            <AlertCircle className="h-4 w-4" />
+                                            <AlertDescription>
+                                              Số lượng hình ảnh vượt quá giới hạn cho phép (tối đa {MAX_IMAGES} hình)
+                                            </AlertDescription>
+                                          </Alert>
+                                        )}
                                       </div>
                                     </FormControl>
                                     <FormMessage />
