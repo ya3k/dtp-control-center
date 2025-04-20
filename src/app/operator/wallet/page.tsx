@@ -4,9 +4,10 @@ function WalletPage() {
 
 
     return (
-        <>
+        <div>
             <WalletDataTable />
-        </>
+
+        </div>
     )
 }
 

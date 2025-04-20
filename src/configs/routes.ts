@@ -71,6 +71,13 @@ export const apiEndpoint = {
     upload: `/api/media`,
 
     wallet: `/api/wallet`,
+    otp: `/api/wallet/otp`,
+    transaction: `/api/wallet/transaction`,
+    transactionOdata: `/odata/wallet`,
+
+    // analys
+    opAnalys: `/api/tour/operator/analys`,
+    adAnalys: `/api/tour/admin/analys`,
 }
 
 

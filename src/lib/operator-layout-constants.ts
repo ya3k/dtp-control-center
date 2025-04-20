@@ -1,5 +1,5 @@
 import SidebarItem from "@/types/sidebaritems";
-import { Calendar, Home, MapPin, TestTube, Torus, Users, Wallet, Wallet2 } from "lucide-react";
+import { Banknote, BookCheck, Calendar, History, Home, MapPin, TestTube, Torus, Users, Wallet, Wallet2 } from "lucide-react";
 export const operatorItems: SidebarItem[] = [
     {
         title: "Dashboard",
@@ -16,11 +16,20 @@ export const operatorItems: SidebarItem[] = [
         ],
     },
     {
-        title: "Ví",
-        url: "/operator/wallet",
-        icon: Wallet2
+        title: "Order",
+        url: "/operator/order",
+        icon: BookCheck
     },
-   
+    {
+        title: "Ví",
+        url: "",
+        icon: Wallet2,
+        subItems: [
+            { title: "Số dư", url: "/operator/wallet", icon: Banknote },
+            { title: "Lịch sử giao dịch", url: "/operator/wallet/transaction", icon: History },
+        ],
+    },
+
     // {
     //     title: "Nhân Viên",
     //     url: "",

@@ -47,6 +47,7 @@ interface TiptapEditorProps {
 export function TiptapEditor({ value, onChange, placeholder, className }: TiptapEditorProps) {
   const [isFocused, setIsFocused] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const imageInputRef = useRef<HTMLInputElement>(null)
 
   const editor = useEditor({
@@ -113,32 +114,52 @@ export function TiptapEditor({ value, onChange, placeholder, className }: Tiptap
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) {
-      const file = e.target.files[0]
+      const files = Array.from(e.target.files)
       setIsUploading(true)
+      setUploadProgress(0)
 
       try {
-        // Call the upload API from your existing service
-        const uploadResponse = await uploadApiRequest.uploadTourImage(file)
+        // Process each file in sequence
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i]
+          
+          // Update progress for each file
+          setUploadProgress(Math.round(((i) / files.length) * 100))
+          
+          // Call the upload API from your existing service
+          const uploadResponse = await uploadApiRequest.uploadTourImages([file])
 
-        // Check if we got URLs back and use the first one
-        if (uploadResponse && uploadResponse.urls && uploadResponse.urls.length > 0) {
-          editor
-            .chain()
-            .focus()
-            .setImage({
-              src: uploadResponse.urls[0],
-              alt: file.name
-            })
-            .run()
+          // Check if we got URLs back and use the first one
+          if (uploadResponse && uploadResponse.urls && uploadResponse.urls.length > 0) {
+            editor
+              .chain()
+              .focus()
+              .setImage({
+                src: uploadResponse.urls[0],
+                alt: file.name
+              })
+              .run()
+          } else {
+            throw new Error('No image URL returned from server')
+          }
+        }
+        
+        // Set progress to 100% when done
+        setUploadProgress(100)
+        
+        // Show success message with count of uploaded images
+        if (files.length === 1) {
+          toast.success("Image uploaded successfully")
         } else {
-          throw new Error('No image URL returned from server')
+          toast.success(`${files.length} images uploaded successfully`)
         }
       } catch (error) {
         console.error('Image upload failed:', error)
         toast.error("Image upload failed. Please try again.")
       } finally {
         setIsUploading(false)
-        // Clear the input so the same file can be selected again
+        setUploadProgress(0)
+        // Clear the input so the same files can be selected again
         if (imageInputRef.current) {
           imageInputRef.current.value = ''
         }
@@ -347,14 +368,19 @@ export function TiptapEditor({ value, onChange, placeholder, className }: Tiptap
                   className={cn("transition-colors")}
                 >
                   {isUploading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <div className="flex items-center gap-1">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {uploadProgress > 0 && (
+                        <span className="text-xs">{uploadProgress}%</span>
+                      )}
+                    </div>
                   ) : (
                     <ImageIcon className="h-4 w-4" />
                   )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                <p>{isUploading ? "Uploading..." : "Insert image"}</p>
+                <p>{isUploading ? "Uploading..." : "Insert images (multiple allowed)"}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -364,6 +390,7 @@ export function TiptapEditor({ value, onChange, placeholder, className }: Tiptap
             onChange={handleImageUpload}
             accept="image/png, image/jpeg, image/gif"
             className="hidden"
+            multiple
           />
         </div>
 

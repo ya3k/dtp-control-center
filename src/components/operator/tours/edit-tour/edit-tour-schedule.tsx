@@ -158,7 +158,7 @@ export default function TourEditScheduleForm({ tourId, onUpdateSuccess }: TourEd
                     </Button>
                 </CardTitle>
                 <CardDescription>
-                    Quản lý các ngày khả dụng của tour
+                    Quản lý tất cả các ngày của tour (quá khứ và tương lai)
                 </CardDescription>
             </CardHeader>
 
@@ -246,23 +246,49 @@ export default function TourEditScheduleForm({ tourId, onUpdateSuccess }: TourEd
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
-                                            schedules.map((schedule, index) => (
-                                                <TableRow key={`schedule-${index}`}>
-                                                    <TableCell className="font-medium">
-                                                        {formatDate(schedule)}
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        <DeleteScheduleDialog
-                                                            schedule={schedule}
-                                                            formattedDate={formatDate(schedule)}
-                                                            tourId={tourId}
-                                                            onDeleteSuccess={() => {
-                                                                fetchTourSchedule();
-                                                            }}
-                                                        />
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))
+                                            schedules.map((schedule, index) => {
+                                                // Parse the date to check if it's in the past
+                                                let scheduleDate;
+                                                try {
+                                                    if (schedule.includes('.') || (schedule.includes(' ') && schedule.split(' ')[0].match(/^\d{4}-\d{2}-\d{2}$/))) {
+                                                        scheduleDate = parseISO(schedule.split(' ')[0]);
+                                                    } else if (schedule.includes('T')) {
+                                                        scheduleDate = parseISO(schedule);
+                                                    } else if (schedule.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                                                        scheduleDate = parseISO(schedule);
+                                                    } else {
+                                                        scheduleDate = new Date(schedule);
+                                                    }
+                                                } catch (error) {
+                                                    console.error("Error parsing date:", schedule, error);
+                                                    scheduleDate = new Date();
+                                                }
+                                                
+                                                const isPast = isBefore(scheduleDate, startOfDay(new Date()));
+                                                
+                                                return (
+                                                    <TableRow key={`schedule-${index}`}>
+                                                        <TableCell className={`font-medium ${isPast ? 'text-muted-foreground line-through' : ''}`}>
+                                                            {formatDate(schedule)}
+                                                            {isPast && (
+                                                                <span className="ml-2 text-xs px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground">
+                                                                    Đã qua
+                                                                </span>
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
+                                                            <DeleteScheduleDialog
+                                                                schedule={schedule}
+                                                                formattedDate={formatDate(schedule)}
+                                                                tourId={tourId}
+                                                                onDeleteSuccess={() => {
+                                                                    fetchTourSchedule();
+                                                                }}
+                                                            />
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })
                                         )}
                                     </TableBody>
                                 </Table>

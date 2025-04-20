@@ -108,12 +108,12 @@ export type Destination = z.infer<typeof DestinationUI>;
 export const tourInfoSchema = z.object({
   tourId: z.string(),
   title: z.string().min(1, "Title is required"),
-  category: z.string().min(1, "Category is required"),
   description: z.string().min(1, "Description is required"),
+  category: z.string().min(1, "Category is required"),
   about: z.string().min(1, "Về dịch vụ này là bắt buộc."),
   include: z.string().min(1, "Bao gồm là bắt buộc."),
   pickinfor: z.string().min(1, "Đón và gặp khách là bắt buộc."),
-  img: z.string()
+  img: z.array(z.string())
 })
 
 export type PUTTourInfoBodyType = z.infer<typeof tourInfoSchema>;
@@ -127,12 +127,12 @@ export type TicketScheduleFormData = z.infer<typeof TicketScheduleFormSchema>;
 export const tourInfoResSchema = z.object({
   tourId: z.string(),
   title: z.string().min(1, "Title is required"),
-  category: z.string().min(1, "Category is required"),
   description: z.string().min(1, "Description is required"),
+  category: z.string().min(1, "Category is required"),
   about: z.string().min(1, "about is required"),
   include: z.string().min(1, "include is required"),
   pickinfor: z.string().min(1, "pickifor is required"),
-  img: z.string()
+  img: z.array(z.string())
 })
 export type TourInfoResType = z.infer<typeof tourInfoResSchema>;
 

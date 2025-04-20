@@ -6,9 +6,10 @@ import { WalletResType } from "@/schemaValidations/wallet.schema"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowDownIcon, Loader2, RefreshCcw } from "lucide-react"
+import { ArrowDownIcon, Loader2, LockIcon, RefreshCcw } from "lucide-react"
 import { WalletWithdrawDialog } from "@/components/operator/wallet/wallet-withdraw-dialog"
 import { toast } from "sonner"
+import Link from "next/link"
 
 function WalletDataTable() {
     const [isLoading, setIsLoading] = useState(false)
@@ -63,8 +64,8 @@ function WalletDataTable() {
     }
 
     return (
-        <>
-            <Card className="w-full max-w-md mx-auto">
+        <div className="w-full flex flex-col justify-center items-center py-4 gap-4">
+            <Card className="w-full max-w-md">
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                         <CardTitle className="text-2xl font-bold">Ví của tôi</CardTitle>
@@ -120,6 +121,29 @@ function WalletDataTable() {
                 )}
             </Card>
 
+            <Card className="w-full max-w-md">
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle>Thiết lập xác thực OTP</CardTitle>
+                        <CardDescription>Thiết lập xác thực OTP để bảo vệ giao dịch</CardDescription>
+                    </div>
+                    <LockIcon className="h-5 w-5 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                        Thiết lập xác thực OTP sẽ giúp bảo vệ giao dịch của bạn. 
+                        Mỗi khi rút tiền, bạn sẽ cần nhập mã xác thực từ ứng dụng.
+                    </p>
+                </CardContent>
+                <CardFooter>
+                    <Link href="/operator/wallet/otp-setup" className="w-full">
+                        <Button className="w-full" variant="outline">
+                            Thiết lập xác thực OTP
+                        </Button>
+                    </Link>
+                </CardFooter>
+            </Card>
+
             {wallet && (
                 <WalletWithdrawDialog 
                     open={withdrawDialogOpen}
@@ -128,7 +152,7 @@ function WalletDataTable() {
                     onWithdrawComplete={handleWithdrawComplete}
                 />
             )}
-        </>
+        </div>
     )
 }
 
