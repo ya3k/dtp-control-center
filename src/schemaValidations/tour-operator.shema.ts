@@ -159,21 +159,23 @@ export const tourDestinationResSchema = z.object({
 
 export type TourDestinationResType = z.infer<typeof tourDestinationResSchema>;
 
-export const PUTtourDestinationSchema = z.object({
-  id: z.string().uuid(),
+export const PUTDestinationSchema = z.object({
   destinationId: z.string().uuid(),
-  destinationName: z.string(),
-  destinationActivities: z.array(destinationActivitySchema),
+  destinationActivities: z.array(destinationActivities),
   startTime: z.string(),
   endTime: z.string(),
   sortOrder: z.number(),
   sortOrderByDate: z.number(),
-  img: z.array(z.any())
+  img: z.array(z.string()),
+});
+export type PUTDestinationType = z.infer<typeof PUTDestinationSchema>;
+
+export const PUTTourDestinationSchema = z.object({
+  tourId: z.string().uuid(),
+  destinations: z.array(DestinationSchema),
 });
 
-export type PUTTDestinationBodyType = z.infer<typeof PUTtourDestinationSchema>;
-
-
+export type PUTTourDestinationType = z.infer<typeof PUTTourDestinationSchema>;
 
 
 export const tourOdataResSchema = z.object({
