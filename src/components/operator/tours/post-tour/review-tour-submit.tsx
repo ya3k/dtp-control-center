@@ -148,7 +148,27 @@ export default function ReviewForm() {
   };
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-8">
+    <div className="space-y-8 max-w-5xl mx-auto pb-8 relative">
+      {/* Loading Overlay */}
+      {isSubmitting && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
+          <div className="bg-white p-8 rounded-lg shadow-xl flex flex-col items-center space-y-4">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-t-teal-600 border-teal-200 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg className="w-8 h-8 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-gray-900">Đang tạo tour</h3>
+              <p className="text-sm text-gray-500 mt-1">Vui lòng đợi trong giây lát...</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold tracking-tight">Xem lại thông tin tour</h2>
         <p className="text-muted-foreground">
@@ -463,20 +483,22 @@ export default function ReviewForm() {
         </Button>
         <Button 
           onClick={submitForm}
-          className="gap-2"
+          className="gap-2 min-w-[180px] relative"
           disabled={isSubmitting}
         >
           {isSubmitting ? (
             <>
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Đang tạo tour...
+              <div className="absolute left-0 inset-y-0 flex items-center justify-center w-10">
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+              <span className="ml-2">Đang tạo tour...</span>
             </>
           ) : (
             <>
-              Xác nhận tạo tour
+              <span>Xác nhận tạo tour</span>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </>
           )}

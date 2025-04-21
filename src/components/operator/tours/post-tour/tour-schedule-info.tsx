@@ -48,6 +48,7 @@ export default function TourScheduleInfoForm() {
   });
 
   function onSubmit(data: POSTTourScheduleInfoType) {
+    console.log(JSON.stringify(data))
     setTourScheDuleInfo(data);
     nextStep();
   }
@@ -76,7 +77,7 @@ export default function TourScheduleInfoForm() {
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "EEEE, dd MMMM yyyy", { locale: vi })
+                              format(field.value, "dd/MM/yyyy")
                             ) : (
                               <span>Chọn ngày</span>
                             )}
@@ -93,7 +94,6 @@ export default function TourScheduleInfoForm() {
                             date < new Date()
                           }
                           initialFocus
-                          locale={vi}
                         />
                       </PopoverContent>
                     </Popover>
@@ -112,38 +112,51 @@ export default function TourScheduleInfoForm() {
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Ngày ngừng khai thác tour</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "EEEE, dd MMMM yyyy", { locale: vi })
-                            ) : (
-                              <span>Chọn ngày</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date <= (form.getValues().openDay || new Date())
-                          }
-                          initialFocus
-                          locale={vi}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <div className="space-y-2">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "dd/MM/yyyy")
+                              ) : (
+                                <span>Chọn ngày</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={(date) => {
+                              if (date) {
+                                // Set time to 12:00 PM
+                                const newDate = new Date(date);
+                                newDate.setHours(12, 0, 0, 0);
+                                field.onChange(newDate);
+                              } else {
+                                field.onChange(date);
+                              }
+                            }}
+                            disabled={(date) =>
+                              date <= (form.getValues().openDay || new Date())
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <div className="text-sm text-muted-foreground">
+                        Thời gian kết thúc: 12:00 PM
+                      </div>
+                    </div>
                     <FormDescription>
                       Chọn ngày ngừng khai thác tour
                     </FormDescription>

@@ -51,7 +51,11 @@ const addScheduleSchema = z.object({
     closeDay: z.date({
         required_error: "Ngày kết thúc là bắt buộc",
     })
-        .refine(date => date > new Date(), {
+        .refine(date => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return date >= today;
+        }, {
             message: "Ngày kết thúc phải ở trong tương lai",
         }),
     scheduleFrequency: z.string({

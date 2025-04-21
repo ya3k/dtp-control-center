@@ -50,6 +50,7 @@ export const walletApiRequest = {
   transactionDetail: async (transactionId: string) => {
     try {
       const response = await http.get<DetailedTransactionType>(`${apiEndpoint.transaction}/${transactionId}`);
+    
       return response;
     } catch (error) {
       console.error("Failed to fetch transaction detail:", error);

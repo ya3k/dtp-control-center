@@ -115,7 +115,7 @@ function WalletDataTable() {
                             onClick={handleWithdraw}
                         >
                             <ArrowDownIcon className="mr-2 h-4 w-4" />
-                            Rút tiền
+                           Tạo Yêu Cầu Rút tiền
                         </Button>
                     </CardFooter>
                 )}

@@ -108,8 +108,8 @@ export type Destination = z.infer<typeof DestinationUI>;
 export const tourInfoSchema = z.object({
   tourId: z.string(),
   title: z.string().min(1, "Title is required"),
-  description: z.string().min(1, "Description is required"),
   category: z.string().min(1, "Category is required"),
+  description: z.string().min(1, "Description is required"),
   about: z.string().min(1, "Về dịch vụ này là bắt buộc."),
   include: z.string().min(1, "Bao gồm là bắt buộc."),
   pickinfor: z.string().min(1, "Đón và gặp khách là bắt buộc."),
@@ -153,30 +153,26 @@ export const tourDestinationResSchema = z.object({
   endTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/), // Định dạng HH:MM:SS
   sortOrder: z.number(),
   sortOrderByDate: z.number(),
-  img: z.string().url(), // Kiểm tra URL hợp lệ
-  destinationActivities: z.array(destinationActivitySchema), // Dùng schema đã tách
+  img: z.string().url(),
+  destinationActivities: z.array(destinationActivitySchema),
 });
 
 export type TourDestinationResType = z.infer<typeof tourDestinationResSchema>;
 
 export const PUTtourDestinationSchema = z.object({
+  id: z.string().uuid(),
   destinationId: z.string().uuid(),
+  destinationName: z.string(),
   destinationActivities: z.array(destinationActivitySchema),
   startTime: z.string(),
   endTime: z.string(),
   sortOrder: z.number(),
   sortOrderByDate: z.number(),
-  img: z.string(),
+  img: z.array(z.any())
 });
 
 export type PUTTDestinationBodyType = z.infer<typeof PUTtourDestinationSchema>;
 
-export const PUTFULLtourDestinationSchema = z.object({
-  tourId: z.string().uuid(),
-  destinations: z.array(PUTtourDestinationSchema),
-});
-
-export type PUTFULLTourDestinationBodyType = z.infer<typeof PUTFULLtourDestinationSchema>;
 
 
 

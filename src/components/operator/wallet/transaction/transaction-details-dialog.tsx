@@ -12,10 +12,12 @@ import {
   DetailedTransactionType, 
   TransactionType 
 } from "@/schemaValidations/wallet.schema"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, formatPrice } from "@/lib/utils"
 import { walletApiRequest } from "@/apiRequests/wallet"
-import { Loader2 } from "lucide-react"
+import { Loader2, Copy, Check } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 
 interface TransactionDetailsDialogProps {
   open: boolean
@@ -37,15 +39,29 @@ export function TransactionDetailsDialog({
   )
   const [isLoading, setIsLoading] = useState<boolean>(initialIsLoading)
   const [error, setError] = useState<string | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  const handleCopy = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedId(text)
+      toast.success(`Đã sao chép ${label}`)
+      setTimeout(() => setCopiedId(null), 2000)
+    } catch {
+      toast.error(`Không thể sao chép ${label}`)
+    }
+  }
 
   // Fetch transaction details if not provided
   useEffect(() => {
     const fetchTransactionDetails = async () => {
+      
       if (open && !initialDetailedTransaction && !initialIsLoading) {
         setIsLoading(true)
         setError(null)
         try {
-          const response = await walletApiRequest.transactionDetail(transaction.transactionId)
+
+          const response = await walletApiRequest.transactionDetail(transaction.transactionId);
           if (response.status === 200) {
             setDetailedTransaction(response.payload)
           } else {
@@ -94,38 +110,37 @@ export function TransactionDetailsDialog({
   // Get transaction type label based on numeric type code
   const getTransactionTypeLabel = (type: number) => {
     switch (type) {
-      case 0: return { label: "Nạp tiền", variant: "success" } // Deposit
-      case 1: return { label: "Rút tiền", variant: "destructive" } // Withdraw
-      case 2: return { label: "Chuyển tiền", variant: "warning" } // Transfer
-      case 3: return { label: "Thanh toán bên thứ ba", variant: "outline" } // ThirdPartyPayment
-      case 4: return { label: "Thanh toán", variant: "secondary" } // Payment
-      case 5: return { label: "Nhận tiền", variant: "success" } // Receive
-      case 6: return { label: "Hoàn tiền", variant: "default" } // Refund
-      default: return { label: "Không xác định", variant: "default" }
+      case 0: return { label: "Nạp tiền", variant: "success" as const } // Deposit
+      case 1: return { label: "Rút tiền", variant: "destructive" as const } // Withdraw
+      case 2: return { label: "Chuyển tiền", variant: "warning" as const } // Transfer
+      case 3: return { label: "Thanh toán bên thứ ba", variant: "outline" as const } // ThirdPartyPayment
+      case 4: return { label: "Thanh toán", variant: "secondary" as const } // Payment
+      case 5: return { label: "Nhận tiền", variant: "success" as const } // Receive
+      case 6: return { label: "Hoàn tiền", variant: "refund" as const } // Refund
+      default: return { label: "Không xác định", variant: "default" as const }
     }
   }
 
   // Map string transaction type to the same styling as numeric types (for consistency)
   const getStringTransactionTypeStyle = (typeString: string) => {
     switch (typeString) {
-      case "Deposit": return { label: "Nạp tiền", variant: "success" }
-      case "Withdraw": return { label: "Rút tiền", variant: "destructive" } 
-      case "Transfer": return { label: "Chuyển tiền", variant: "warning" }
-      case "ThirdPartyPayment": return { label: "Thanh toán bên thứ ba", variant: "outline" }
-      case "Payment": return { label: "Thanh toán", variant: "secondary" } 
-      case "Receive": return { label: "Nhận tiền", variant: "success" }
-      case "Refund": return { label: "Hoàn tiền", variant: "default" } 
-      default: return { label: "Không xác định", variant: "default" }
+      case "Deposit": return { label: "Nạp tiền", variant: "success" as const }
+      case "Withdraw": return { label: "Rút tiền", variant: "destructive" as const } 
+      case "Transfer": return { label: "Chuyển tiền", variant: "warning" as const }
+      case "ThirdPartyPayment": return { label: "Thanh toán bên thứ ba", variant: "outline" as const }
+      case "Payment": return { label: "Thanh toán", variant: "secondary" as const } 
+      case "Receive": return { label: "Nhận tiền", variant: "success" as const }
+      case "Refund": return { label: "Hoàn tiền", variant: "refund" as const } 
+      default: return { label: "Không xác định", variant: "default" as const }
     }
   }
 
   // Get transaction status label
   const getTransactionStatusLabel = (status: number) => {
     switch (status) {
-      case 0: return { label: "Đang xử lý", variant: "warning" as const }
-      case 1: return { label: "Thành công", variant: "success" as const }
-      case 2: return { label: "Thất bại", variant: "destructive" as const }
-      case 3: return { label: "Đã hủy", variant: "secondary" as const }
+      case 0: return { label: "Đang xử lý", variant: "outline" as const }
+      case 1: return { label: "Thành công", variant: "secondary" as const }
+      case 2: return { label: "Đã hủy", variant: "destructive" as const }
       default: return { label: "Không xác định", variant: "default" as const }
     }
   }
@@ -171,7 +186,7 @@ export function TransactionDetailsDialog({
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">Số tiền</p>
                 <p className={`font-bold ${transaction.type === "Withdraw" ? "text-destructive" : "text-green-600"}`}>
-                  {transaction.type === "Withdraw" ? "-" : "+"}{formatCurrency(Math.abs(transaction.amount))}
+                  {transaction.type === "Withdraw" ? "-" : "+"}{formatPrice(Math.abs(transaction.amount || 0))}
                 </p>
               </div>
             </div>
@@ -206,7 +221,7 @@ export function TransactionDetailsDialog({
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">Số tiền</p>
                 <p className={`font-bold ${transaction.type === "Withdraw" ? "text-destructive" : "text-green-600"}`}>
-                  {transaction.type === "Withdraw" ? "-" : "+"}{formatCurrency(Math.abs(transaction.amount))}
+                  {transaction.type === "Withdraw" ? "-" : "+"}{formatPrice(Math.abs(transaction.amount || 0))}
                 </p>
               </div>
               
@@ -223,15 +238,62 @@ export function TransactionDetailsDialog({
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">Mã giao dịch</p>
-                <p className="font-medium break-all">{detailedTransaction.transactionCode}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium break-all">{detailedTransaction.transactionCode}</p>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => handleCopy(detailedTransaction.transactionCode, "mã giao dịch")}
+                  >
+                    {copiedId === detailedTransaction.transactionCode ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
 
               {detailedTransaction.refTransactionCode && (
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Mã giao dịch tham chiếu</p>
-                  <p className="font-medium break-all">{detailedTransaction.refTransactionCode}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium break-all">{detailedTransaction.refTransactionCode}</p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => handleCopy(detailedTransaction.refTransactionCode, "mã giao dịch tham chiếu")}
+                    >
+                      {copiedId === detailedTransaction.refTransactionCode ? (
+                        <Check className="h-4 w-4" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
               )}
+
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">ID Giao dịch</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium break-all">{detailedTransaction.transactionId}</p>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => handleCopy(detailedTransaction.transactionId, "ID giao dịch")}
+                  >
+                    {copiedId === detailedTransaction.transactionId ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
 
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">Thời gian giao dịch</p>
@@ -249,8 +311,8 @@ export function TransactionDetailsDialog({
 
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">Số tiền</p>
-                <p className={`font-bold ${detailedTransaction.type === 1 ? "text-destructive" : "text-green-600"}`}>
-                  {detailedTransaction.type === 1 ? "-" : "+"}{formatCurrency(Math.abs(detailedTransaction.amount))}
+                <p className={`font-bold ${detailedTransaction.type === 1 ? "text-destructive" : detailedTransaction.type === 6 ? "text-yellow-600" : "text-green-600"}`}>
+                  {detailedTransaction.type === 1 ? "-" : detailedTransaction.type === 6 ? "" : "+"}{formatCurrency(Math.abs(detailedTransaction.amount))}
                 </p>
               </div>
 

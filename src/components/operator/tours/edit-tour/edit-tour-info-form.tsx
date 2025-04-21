@@ -125,12 +125,24 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
 
     const removeSelectedImage = () => {
         if (tourImageFiles.length === 0) {
-            setPreviewImages([]);
-            form.setValue("img", []);
+            // Remove only the selected image from existing images
+            const newPreviews = [...previewImages];
+            newPreviews.splice(selectedImageIndex, 1);
+            setPreviewImages(newPreviews);
+            
+            // Update form value to match the new previews
+            form.setValue("img", newPreviews);
+            
+            // Adjust selected index as needed
+            if (selectedImageIndex >= newPreviews.length && newPreviews.length > 0) {
+                setSelectedImageIndex(newPreviews.length - 1);
+            } else if (newPreviews.length === 0) {
+                setSelectedImageIndex(-1);
+            }
             return;
         }
-
-        // Remove the selected image
+        
+        // ...existing code for handling newly uploaded files...
         const newFiles = tourImageFiles.filter((_, i) => i !== selectedImageIndex);
         const newPreviews = previewImages.filter((_, i) => i !== selectedImageIndex);
         

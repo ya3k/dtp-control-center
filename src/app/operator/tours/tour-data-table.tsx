@@ -13,7 +13,6 @@ import Link from "next/link"
 import { UpdateTourDialog } from "@/components/operator/tours/edit-tour/edit-tour-dialog"
 import { TablePagination } from "@/components/admin/common-table/table-pagination"
 import { CloseToursDialog } from "@/components/operator/tours/delete-tour/close-tour-dialog"
-import { is } from "date-fns/locale"
 
 export default function OpTourDataTable() {
   // Data state

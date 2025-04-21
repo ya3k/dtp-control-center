@@ -4,10 +4,11 @@ import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Eye, Loader2 } from "lucide-react"
+import { Eye, Loader2, Copy, Check } from "lucide-react"
 import { TransactionType } from "@/schemaValidations/wallet.schema"
 import { ColumnDef, ColumnToggleDropdown } from "@/components/common/table/column-toggle-dropdown"
-import { formatCurrency } from "@/lib/utils"
+import { formatPrice } from "@/lib/utils"
+import { toast } from "sonner"
 
 interface TransactionTableProps {
   transactions: TransactionType[]
@@ -22,23 +23,44 @@ export function TransactionTable({
   resetFilters,
   onViewDetails
 }: TransactionTableProps) {
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  const handleCopy = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedId(text)
+      toast.success(`Đã sao chép ${label}`)
+      setTimeout(() => setCopiedId(null), 2000)
+    } catch {
+      toast.error(`Không thể sao chép ${label}`)
+    }
+  }
+
   // Define column configuration
   const columns: ColumnDef<TransactionType>[] = [
     {
       id: "id",
       header: "ID",
       accessorKey: "id",
-      cell: (transaction) => <span className="font-mono text-xs">{transaction.id.substring(0, 8)}...</span>,
+      cell: (transaction) => (
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-xs">{transaction.id.substring(0, 8)}...</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => handleCopy(transaction.id, "ID")}
+          >
+            {copiedId === transaction.id ? (
+              <Check className="h-3 w-3" />
+            ) : (
+              <Copy className="h-3 w-3" />
+            )}
+          </Button>
+        </div>
+      ),
       enableHiding: true,
-      defaultHidden: true
-    },
-    {
-      id: "transactionId",
-      header: "Mã giao dịch",
-      accessorKey: "transactionId",
-      cell: (transaction) => <span className="font-mono text-xs">{transaction.transactionId.substring(0, 8)}...</span>,
-      enableHiding: true,
-      defaultHidden: true
+      defaultHidden: false
     },
     {
       id: "createdAt",
@@ -59,9 +81,9 @@ export function TransactionTable({
       accessorKey: "type",
       cell: (transaction) => {
         const type = transaction.type;
-        let badgeVariant = "default";
+        type BadgeVariant = "default" | "destructive" | "outline" | "secondary" | "refund" | "active";
+        let badgeVariant: BadgeVariant = "default";
         let label = "Không xác định";
-
 
         switch (type) {
           case "Withdraw":
@@ -69,11 +91,11 @@ export function TransactionTable({
             label = "Rút tiền";
             break;
           case "Deposit":
-            badgeVariant = "success";
+            badgeVariant = "secondary";
             label = "Nạp tiền";
             break;
           case "Transfer":
-            badgeVariant = "warning";
+            badgeVariant = "outline";
             label = "Chuyển tiền";
             break;
           case "ThirdPartyPayment":
@@ -85,11 +107,11 @@ export function TransactionTable({
             label = "Thanh toán";
             break;
           case "Receive":
-            badgeVariant = "success";
+            badgeVariant = "active";
             label = "Nhận tiền";
             break;
           case "Refund":
-            badgeVariant = "default";
+            badgeVariant = "refund";
             label = "Hoàn tiền";
             break;
           default:
@@ -98,7 +120,7 @@ export function TransactionTable({
         }
 
         return (
-          <Badge variant={badgeVariant as any}>
+          <Badge variant={badgeVariant}>
             {label}
           </Badge>
         );
@@ -113,10 +135,11 @@ export function TransactionTable({
       cell: (transaction) => {
         const amount = transaction.amount;
         const isNegative = transaction.type === "Withdraw";
+        const isRefund = transaction.type === "Refund";
 
         return (
-          <span className={isNegative ? "text-destructive" : "text-green-600"}>
-            {isNegative ? "-" : "+"}{formatCurrency(Math.abs(amount))}
+          <span className={`font-semibold text-lg ${isNegative ? "text-destructive" : isRefund ? "text-yellow-600" : "text-green-600"}`}>
+            {isNegative ? "- " : isRefund ? "" : "+ "}{formatPrice(Math.abs(amount))}
           </span>
         );
       },
