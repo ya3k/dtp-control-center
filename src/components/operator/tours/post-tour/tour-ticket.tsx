@@ -177,7 +177,7 @@ export default function TourTicketForm() {
                   name="minimumPurchaseQuantity"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Số lượng tối thiểu</FormLabel>
+                      <FormLabel>Số lượng vé mua tối thiểu</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -192,9 +192,11 @@ export default function TourTicketForm() {
                       <FormMessage />
                     </FormItem>
                   )}
-                />
 
+                />
+                <div className='text-sm italic font-light text-black-600'><span>Số lượng mặc định của mỗi vé là <span className='font-bold text-red-600'>100</span> có thể chỉnh sửa sau khi tạo tour thành công</span></div>
                 <div className="flex space-x-2">
+
                   <Button type="submit" className="flex-1">
                     {editingIndex !== null ? "Cập nhật" : "Thêm vé"}
                   </Button>
@@ -247,7 +249,7 @@ export default function TourTicketForm() {
                             size="sm"
                             onClick={() => startEditing(index)}
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
                           </Button>
                           <Button
                             type="button"

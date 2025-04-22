@@ -106,7 +106,7 @@ export default function ReviewForm() {
   const destinationsByDay = useMemo(() => {
     // Create a map to hold destinations grouped by day
     const groupedByDay = new Map<number, typeof formData.destinations>();
-    
+
     // Sort destinations by day first, then by sortOrder within each day
     const sortedDestinations = [...formData.destinations].sort((a, b) => {
       if (a.sortOrderByDate === b.sortOrderByDate) {
@@ -114,7 +114,7 @@ export default function ReviewForm() {
       }
       return a.sortOrderByDate - b.sortOrderByDate;
     });
-    
+
     // Group destinations by day
     sortedDestinations.forEach(destination => {
       const day = destination.sortOrderByDate;
@@ -123,7 +123,7 @@ export default function ReviewForm() {
       }
       groupedByDay.get(day)!.push(destination);
     });
-    
+
     // Convert map to array of {day, destinations} objects
     return Array.from(groupedByDay.entries()).map(([day, destinations]) => ({
       day,
@@ -145,6 +145,11 @@ export default function ReviewForm() {
   const truncateText = (text: string, maxLength: number = 150) => {
     if (text.length <= maxLength) return text;
     return text.slice(0, maxLength) + "...";
+  };
+
+  // Function to render HTML content safely
+  const renderHtml = (htmlContent: string) => {
+    return { __html: htmlContent };
   };
 
   return (
@@ -175,12 +180,12 @@ export default function ReviewForm() {
           Vui lòng kiểm tra kỹ thông tin trước khi tạo tour
         </p>
       </div>
-      
+
       {/* Basic Info */}
       <Card className="shadow-md hover:shadow-lg transition-shadow">
         <CardHeader className="space-y-1">
           <CardTitle className="text-xl flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
             Thông tin cơ bản
           </CardTitle>
         </CardHeader>
@@ -201,8 +206,8 @@ export default function ReviewForm() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {tourImagePreviews.map((preview, index) => (
                   <div key={index} className="relative aspect-[4/3] group">
-                    <Image 
-                      src={preview.url} 
+                    <Image
+                      src={preview.url}
                       alt={`Tour image ${index + 1}`}
                       width={400}
                       height={300}
@@ -234,7 +239,7 @@ export default function ReviewForm() {
       <Card className="shadow-md hover:shadow-lg transition-shadow">
         <CardHeader className="space-y-1">
           <CardTitle className="text-xl flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></svg>
             Lịch trình
           </CardTitle>
         </CardHeader>
@@ -262,7 +267,7 @@ export default function ReviewForm() {
       <Card className="shadow-md hover:shadow-lg transition-shadow">
         <CardHeader className="space-y-1">
           <CardTitle className="text-xl flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
             Lịch trình tour
           </CardTitle>
         </CardHeader>
@@ -282,7 +287,7 @@ export default function ReviewForm() {
                     </div>
                     <h3 className="text-lg font-medium">Ngày {day}</h3>
                   </div>
-                  
+
                   <div className="pl-10 space-y-6">
                     {destinations.map((destination, destIndex) => {
                       // Get actual destination index in overall array (needed for pendingImages)
@@ -292,7 +297,7 @@ export default function ReviewForm() {
 
                       // Get image previews for this destination
                       const imagePreviews = getDestinationImagePreviews(
-                        destinationArrayIndex, 
+                        destinationArrayIndex,
                         destination.img || []
                       );
 
@@ -309,7 +314,7 @@ export default function ReviewForm() {
                               )}
                             </div>
                           </div>
-                          
+
                           <div className="grid gap-6">
                             <div className="grid grid-cols-2 gap-4">
                               <div className="space-y-1">
@@ -328,8 +333,8 @@ export default function ReviewForm() {
                                 <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
                                   {imagePreviews.map((preview, imgIndex) => (
                                     <div key={imgIndex} className="aspect-square rounded-md overflow-hidden border relative">
-                                      <Image 
-                                        src={preview.url} 
+                                      <Image
+                                        src={preview.url}
                                         alt={`Destination image ${imgIndex + 1}`}
                                         width={200}
                                         height={200}
@@ -346,7 +351,7 @@ export default function ReviewForm() {
                                 </div>
                               </div>
                             )}
-                            
+
                             {destination.destinationActivities && destination.destinationActivities.length > 0 && (
                               <div>
                                 <h5 className="text-sm text-muted-foreground mb-2">Hoạt động</h5>
@@ -379,11 +384,14 @@ export default function ReviewForm() {
       <Card className="shadow-md hover:shadow-lg transition-shadow">
         <CardHeader className="space-y-1">
           <CardTitle className="text-xl flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" /><path d="M13 5v2" /><path d="M13 17v2" /><path d="M13 11v2" /></svg>
             Vé
           </CardTitle>
         </CardHeader>
+
         <CardContent>
+          <div className='text-sm italic font-light text-black-600 mb-2 '><span>Số lượng mặc định của mỗi vé là <span className='font-bold text-red-600'>100</span> có thể chỉnh sửa sau khi tạo tour thành công.</span>
+          </div>
           <div className="grid gap-4">
             {formData.tickets.map((ticket, index) => (
               <div key={index} className="border rounded-lg p-4 hover:border-teal-500 transition-colors">
@@ -397,7 +405,7 @@ export default function ReviewForm() {
                     <p className="font-medium text-teal-600">{formatCurrency(ticket.defaultNetCost)}</p>
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-sm text-muted-foreground">Số lượng tối thiểu</h4>
+                    <h4 className="text-sm text-muted-foreground">Số lượng vé mua tối thiểu</h4>
                     <p className="font-medium">{ticket.minimumPurchaseQuantity}</p>
                   </div>
                 </div>
@@ -411,7 +419,7 @@ export default function ReviewForm() {
       <Card className="shadow-md hover:shadow-lg transition-shadow">
         <CardHeader className="space-y-1">
           <CardTitle className="text-xl flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
             Thông tin bổ sung
           </CardTitle>
         </CardHeader>
@@ -419,9 +427,10 @@ export default function ReviewForm() {
           <div>
             <h3 className="font-medium text-sm text-muted-foreground mb-2">Về tour</h3>
             <div className="relative">
-              <p className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                {expandedSections.about ? formData.about : truncateText(formData.about)}
-              </p>
+              <div 
+                className="whitespace-pre-wrap text-gray-700 leading-relaxed"
+                dangerouslySetInnerHTML={renderHtml(expandedSections.about ? formData.about : truncateText(formData.about))}
+              />
               {formData.about.length > 150 && (
                 <Button
                   variant="link"
@@ -436,9 +445,10 @@ export default function ReviewForm() {
           <div>
             <h3 className="font-medium text-sm text-muted-foreground mb-2">Dịch vụ bao gồm</h3>
             <div className="relative">
-              <p className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                {expandedSections.include ? formData.include : truncateText(formData.include)}
-              </p>
+              <div 
+                className="whitespace-pre-wrap text-gray-700 leading-relaxed"
+                dangerouslySetInnerHTML={renderHtml(expandedSections.include ? formData.include : truncateText(formData.include))}
+              />
               {formData.include.length > 150 && (
                 <Button
                   variant="link"
@@ -453,9 +463,10 @@ export default function ReviewForm() {
           <div>
             <h3 className="font-medium text-sm text-muted-foreground mb-2">Thông tin đón khách</h3>
             <div className="relative">
-              <p className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                {expandedSections.pickinfor ? formData.pickinfor : truncateText(formData.pickinfor)}
-              </p>
+              <div 
+                className="whitespace-pre-wrap text-gray-700 leading-relaxed"
+                dangerouslySetInnerHTML={renderHtml(expandedSections.pickinfor ? formData.pickinfor : truncateText(formData.pickinfor))}
+              />
               {formData.pickinfor.length > 150 && (
                 <Button
                   variant="link"
@@ -472,16 +483,16 @@ export default function ReviewForm() {
 
       {/* Navigation Buttons */}
       <div className="flex justify-between pt-4">
-        <Button 
-          onClick={prevStep} 
+        <Button
+          onClick={prevStep}
           variant="outline"
           className="gap-2"
           disabled={isSubmitting}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
           Quay lại
         </Button>
-        <Button 
+        <Button
           onClick={submitForm}
           className="gap-2 min-w-[180px] relative"
           disabled={isSubmitting}
@@ -499,7 +510,7 @@ export default function ReviewForm() {
           ) : (
             <>
               <span>Xác nhận tạo tour</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
             </>
           )}
         </Button>

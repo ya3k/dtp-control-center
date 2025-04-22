@@ -39,7 +39,7 @@ export const apiEndpoint = {
     getTourCount: "/odata/tour/$count",
     odataTour: "/odata/tour",
     tourScheduleTicket: "/api/tour/scheduleticket",
-    tourByCompany: `/api/tour/get`,
+    tourByCompany: `/odata/Company/Tour()`,
     closeTour: `/api/tour/closetour`,
 
     //tour schedule

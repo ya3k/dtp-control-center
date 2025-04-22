@@ -536,6 +536,7 @@ export default function TourDestinationForm() {
                                               type="time"
                                               step="1"
                                               {...field}
+                                              
                                               onChange={(e) => handleDestinationChange('startTime', e.target.value, destinationIndex)}
                                             />
                                           </FormControl>

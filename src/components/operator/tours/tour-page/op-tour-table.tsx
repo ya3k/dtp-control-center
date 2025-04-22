@@ -1,130 +1,194 @@
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { tourOdataResType } from "@/schemaValidations/tour-operator.shema"
-import { OpTourTableSkeleton } from "./op-tour-table-skeleton"
-import { OpTourEmptyState } from "./op-tour-empty-state"
-import { OpTourStarRating } from "./op-tour-star-rating"
-import { Badge } from "@/components/ui/badge"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Pencil, ImageIcon, X } from "lucide-react"
+"use client"
+
 import { useState } from "react"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Eye, Loader2, Pencil, X } from "lucide-react"
+import { tourByCompanyResType } from "@/schemaValidations/tour-operator.shema"
+import { ColumnDef, ColumnToggleDropdown } from "@/components/common/table/column-toggle-dropdown"
 
 interface TourTableProps {
-  tours: tourOdataResType[]
+  tours: tourByCompanyResType[]
   totalCount: number
   loading: boolean
-  pageSize: number
   resetFilters: () => void
   truncateDescription: (text: string, maxLength?: number) => string
-  onEditTour?: (tour: tourOdataResType) => void,
-  onCloseTour?: (tour: tourOdataResType) => void
+  onEditTour?: (tour: tourByCompanyResType) => void
+  onCloseTour?: (tour: tourByCompanyResType) => void
+  onViewTour?: (tour: tourByCompanyResType) => void
 }
 
 export function OpTourTable({
   tours,
   totalCount,
   loading,
-  pageSize,
   resetFilters,
   truncateDescription,
   onEditTour,
-  onCloseTour
+  onCloseTour,
+  onViewTour
 }: TourTableProps) {
-  // Track images that failed to load
-  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+  // Define column configuration
+  const columns: ColumnDef<tourByCompanyResType>[] = [
+    {
+      id: "id",
+      header: "Id",
+      accessorKey: "id",
+      cell: (info) => info.id,
+      enableHiding: true,
+      defaultHidden: true
+    },
+    {
+      id: "title",
+      header: "Tên tour",
+      accessorKey: "title",
+      cell: (info) => (
+        <div className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap" title={info.title}>
+          {truncateDescription(info.title, 20)}
+        </div>
+      ),
+      enableHiding: false, // Required column
+    },
+    {
+      id: "description",
+      header: "Điểm nổi bật",
+      accessorKey: "description",
+      cell: (info) => (
+        <div className="max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap" title={info.description}>
+          {truncateDescription(info.description, 50)}
+        </div>
+      ),
+      enableHiding: true,
+    },
+    {
+      id: "status",
+      header: "Trạng thái",
+      accessorKey: "isDeleted",
+      cell: (info) => (
+        <Badge variant={info.isDeleted ? "destructive" : "active"} className="font-medium">
+          {info.isDeleted ? "Đã đóng" : "Hoạt động"}
+        </Badge>
+      ),
+      enableHiding: true,
+      align: "center",
+    },
+    {
+      id: "actions",
+      header: "Thao tác",
+      cell: (info) => (
+        <div className="flex justify-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onEditTour && onEditTour(info)}
+            title="Chỉnh sửa tour"
+            disabled={info.isDeleted}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-red-600 hover:text-red-500 hover:bg-red-50"
+            onClick={() => onCloseTour && onCloseTour(info)}
+            title={info.isDeleted ? "Mở lại tour" : "Đóng tour"}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+      enableHiding: false,
+      align: "center",
+    },
+  ]
 
-  // Handle image load error
-  const handleImageError = (tourId: string) => {
-    setFailedImages(prev => ({
-      ...prev,
-      [tourId]: true
-    }));
-  };
+  // Track visible columns
+  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(
+    columns.reduce((acc, column) => ({
+      ...acc,
+      [column.id]: column.defaultHidden === true ? false : true,
+    }), {})
+  )
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (tours.length === 0) {
+    return (
+      <div className="text-center p-8">
+        <h3 className="text-lg font-medium">Không tìm thấy tour nào</h3>
+        <p className="text-sm text-muted-foreground mt-2">
+          Thử thay đổi bộ lọc hoặc tìm kiếm để xem nhiều kết quả hơn.
+        </p>
+        <Button variant="destructive" onClick={resetFilters} className="mt-2">
+          Xóa bộ lọc
+        </Button>
+      </div>
+    )
+  }
+
+  // Get filtered columns that should be visible
+  const visibleColumnDefs = columns.filter(column => visibleColumns[column.id])
 
   return (
-    <Table>
-      <TableCaption>
-        Showing {tours.length} of {totalCount} available tours
-      </TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[100px]">Image</TableHead>
-          <TableHead className="min-w-[200px]">Tour Details</TableHead>
-          <TableHead>Rating</TableHead>
-          <TableHead className="text-right">Price</TableHead>
-          <TableHead className="w-[80px]">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {loading ? (
-          <OpTourTableSkeleton count={pageSize} />
-        ) : tours.length > 0 ? (
-          tours.map((tour) => (
-            <TableRow key={tour.id}>
-              <TableCell>
-                <div className="relative h-16 w-24 overflow-hidden rounded-md bg-muted">
-                  {!failedImages[tour.id] && tour.thumbnailUrl ? (
-                    <Image
-                      src={tour.thumbnailUrl}
-                      alt={tour.title}
-                      fill
-                      sizes="(max-width: 768px) 100px, 96px"
-                      className="object-cover"
-                      onError={() => handleImageError(tour.id)}
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center">
-                      <Image
-                        src={`/images/binhdinhtour.png`}
-                        alt="Default tour image"
-                        width={96}
-                        height={64}
-                        style={{ width: 'auto', height: 'auto' }}
-                      />
-                    </div>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell>
-                <div>
-                  <div className="font-medium">{tour.title}</div>
-                  <div className="text-sm text-muted-foreground">{truncateDescription(tour.description)}</div>
-                </div>
-              </TableCell>
-              <TableCell><OpTourStarRating rating={tour.avgStar} /></TableCell>
-              <TableCell className="text-right">
-                <Badge variant="outline" className="font-medium">
-                  ${tour.onlyFromCost}
-                </Badge>
-              </TableCell>
-              <TableCell className="flex justify-center items-center">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onEditTour && onEditTour(tour)}
-                  title="Chỉnh sửa tour"
+    <div>
+      {/* Column visibility dropdown */}
+      <div className="flex justify-between my-2 px-4">
+        <div className="text-sm text-muted-foreground">
+          Hiển thị {tours.length} trong tổng số {totalCount} tour
+        </div>
+        <ColumnToggleDropdown
+          columns={columns}
+          visibleColumns={visibleColumns}
+          setVisibleColumns={setVisibleColumns}
+        />
+      </div>
+
+      {/* Table */}
+      <div className="relative w-full overflow-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {visibleColumnDefs.map((column) => (
+                <TableHead
+                  key={column.id}
+                  className={`text-gray-800 font-bold text-sm
+                    ${column.className ||
+                    (column.align === "right" ? "text-right" :
+                      (column.align === "center" ? "text-center" : undefined))}                   
+                    `
+                  }
                 >
-
-                  <Pencil className="h-4 w-4" />
-
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onCloseTour && onCloseTour(tour)}
-                  title="Đóng tour"
-                >
-                  <X className="h-4 w-4 text-red-600" />
-
-                </Button>
-              </TableCell>
-
+                  {column.header}
+                </TableHead>
+              ))}
             </TableRow>
-          ))
-        ) : (
-          <OpTourEmptyState resetFilters={resetFilters} />
-        )}
-      </TableBody>
-    </Table>
+          </TableHeader>
+          <TableBody>
+            {tours.map((tour) => (
+              <TableRow key={tour.id}>
+                {visibleColumnDefs.map((column) => (
+                  <TableCell
+                    key={`${tour.id}-${column.id}`}
+                    className={
+                      column.align === "right" ? "text-right" :
+                        (column.align === "center" ? "text-center" : undefined)
+                    }
+                  >
+                    {column.cell(tour)}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
   )
 }

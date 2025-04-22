@@ -60,14 +60,20 @@ export function ApproveCompanyDialog({ open, onOpenChange, onApprovalComplete }:
 
     try {
       // Call API to approve company with the correct request body format
-      console.log(company)
+      console.log(JSON.stringify(
+        {
+          companyId: company.id,
+          confirmUrl: `${envConfig.NEXT_PUBLIC_BASE_URL}/company/${company.id}`,
+          accept: true,
+        }
+      ))
       const respones = await companyApiRequest.approve({
         companyId: company.id,
         confirmUrl: `${envConfig.NEXT_PUBLIC_BASE_URL}/company/${company.id}`,
         accept: true,
       })
       console.log(`Request body: `, JSON.stringify(respones))
-      console.log(respones)
+      console.log(JSON.stringify(respones))
 
       // Remove from pending list
       setPendingCompanies((prev) => prev.filter((c) => c.id !== company.id))
@@ -147,7 +153,7 @@ export function ApproveCompanyDialog({ open, onOpenChange, onApprovalComplete }:
                           onClick={() => handleApproveCompany(company)}
                           disabled={approvingIds.has(company.id!)}
                           size="sm"
-                        
+
                           className="gap-1 font-semibold"
                           variant={"approve"}
                         >
@@ -158,7 +164,7 @@ export function ApproveCompanyDialog({ open, onOpenChange, onApprovalComplete }:
                             </>
                           ) : (
                             <>
-                              <CheckCircle className="h-4 w-4 "  />
+                              <CheckCircle className="h-4 w-4 " />
                               Duyệt
                             </>
                           )}

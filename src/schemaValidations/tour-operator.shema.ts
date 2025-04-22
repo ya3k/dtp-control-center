@@ -86,15 +86,18 @@ export type TourResType = z.infer<typeof TourResSchema>;
 /// tour by company res
 
 export const tourByCompanyResSchema = z.object({
-  id: z.string(),
+  id: z.string().uuid(),
   title: z.string(),
-  companyId: z.string(),
-  category: z.string(),
+  companyId: z.string().uuid(),
+  categoryId: z.string().uuid(),
   description: z.string(),
-  about: z.string()
+  about: z.string(),     
+  include: z.string(),    
+  pickinfor: z.string(),  
+  isDeleted: z.boolean(),
 })
 
-export type tourByCompanyRestType = z.infer<typeof tourByCompanyResSchema>;
+export type tourByCompanyResType = z.infer<typeof tourByCompanyResSchema>;
 
 // Additional types for the UI
 export const DestinationUI = z.object({

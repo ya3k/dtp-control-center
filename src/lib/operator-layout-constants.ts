@@ -15,11 +15,11 @@ export const operatorItems: SidebarItem[] = [
             { title: "Tạo Tours", url: "/operator/tours/create", icon: MapPin },
         ],
     },
-    {
-        title: "Order",
-        url: "/operator/order",
-        icon: BookCheck
-    },
+    // {
+    //     title: "Order",
+    //     url: "/operator/order",
+    //     icon: BookCheck
+    // },
     {
         title: "Ví",
         url: "",

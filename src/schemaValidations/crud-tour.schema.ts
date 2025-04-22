@@ -18,8 +18,8 @@ export const BasicTourInfoSchema = z.object({
   img: z.array(z.string()),
   categoryid: z.string(),
   description: z.string()
-    .min(20, "Mô tả phải có ít nhất 20 ký tự")
-    .max(1000, "Mô tả không được vượt quá 1000 ký tự"),
+    .min(20, "Điểm nổi bật phải có ít nhất 20 ký tự")
+    .max(10000, "Điểm nổi bật không được vượt quá 1000 ký tự"),
 
 });
 
