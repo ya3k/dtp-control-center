@@ -114,12 +114,16 @@ export const config = {
     '/admin',
     '/admin/dashboard',
     '/admin/users',
+    '/admin/company',
+    '/admin/destination',
     
     // Operator routes
     '/operator',
     '/operator/dashboard',
     '/operator/employees',
     '/operator/tours',
-    '/operator/tours/create'
+    '/operator/tours/create',
+    '/operator/wallet',
+    'operator/wallet/transaction'
   ]
 };

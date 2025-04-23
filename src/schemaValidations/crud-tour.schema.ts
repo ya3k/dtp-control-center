@@ -55,13 +55,6 @@ export const destinationActivities = z.object({
   sortOrder: z.number()
     .int("Thứ tự phải là số nguyên")
     .nonnegative("Thứ tự không được âm"),
-}).refine((data) => {
-  const start = new Date(`1970-01-01T${data.startTime}`);
-  const end = new Date(`1970-01-01T${data.endTime}`);
-  return end > start;
-}, {
-  message: "Thời gian kết thúc phải sau thời gian bắt đầu",
-  path: ["endTime"],
 });
 
 // Destination schema (Step 3)

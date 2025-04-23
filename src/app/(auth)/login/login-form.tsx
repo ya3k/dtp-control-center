@@ -84,7 +84,7 @@ export function LoginForm({
         <div className="flex flex-col items-center gap-2 text-center">
           <h1 className="text-2xl font-bold text-core">Đăng nhập</h1>
           <p className="text-balance text-sm text-muted-foreground">
-            Điền tên người dùng và mật khẩu để đăng nhập
+            Điền tên người dùng hoặc email và mật khẩu để đăng nhập
           </p>
         </div>
         <div className="grid gap-6">
@@ -93,7 +93,7 @@ export function LoginForm({
             name="userName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-core">Tên người dùng</FormLabel>
+                <FormLabel className="text-core">Tên người dùng hoặc email</FormLabel>
                 <FormControl >
                   <Input {...field} placeholder="Nhập tên người dùng"/>
                 </FormControl>
