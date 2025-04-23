@@ -124,6 +124,6 @@ export const config = {
     '/operator/tours',
     '/operator/tours/create',
     '/operator/wallet',
-    'operator/wallet/transaction'
+    '/operator/wallet/transaction'
   ]
 };
