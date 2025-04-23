@@ -27,6 +27,7 @@ const companyApiRequest = {
   update: async (body: TCompanyPUTBodyType) => {
     try {
       const response = await http.put<TCompanyPUTBodyType>(`${apiEndpoint.company}`, body)
+      console.log(JSON.stringify(body))
       return response
     } catch (error) {
       console.error("Cập nhật công ty thất bại :", error)

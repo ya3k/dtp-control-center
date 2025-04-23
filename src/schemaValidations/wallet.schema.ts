@@ -36,3 +36,20 @@ export type WalletResType = z.infer<typeof WalletResSchema>
 export type WithDrawType = z.infer<typeof WithDrawSchema>
 export type TransactionType = z.infer<typeof transactionSchema>
 export type DetailedTransactionType = z.infer<typeof detailedTransactionSchema>
+
+export const AdminExternalTransactionSchema = z.object({
+    id: z.string().uuid(),
+    userId: z.string().uuid(),
+    companyName: z.string(),
+    companyId: z.string().uuid(),
+    externalTransactionCode: z.string(),
+    transactionCode: z.string(),
+    description: z.string(),
+    amount: z.number(),
+    type: z.string(), // Add more types if needed
+    status: z.string(), // Adjust based on actual possible statuses
+    createdAt: z.string(),
+});
+
+// Optional TypeScript type
+export type AdminExternalTransactionType = z.infer<typeof AdminExternalTransactionSchema>;

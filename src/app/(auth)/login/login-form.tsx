@@ -108,12 +108,7 @@ export function LoginForm({
               <FormItem>
                 <FormLabel className="flex items-center">
                   <span className="text-core"> Mật khẩu </span>
-                  <Link
-                    href="#"
-                    className="ml-auto text-sm font-light text-[#0A0A0A] underline-offset-4 hover:underline"
-                  >
-                    Quên mật khẩu ?
-                  </Link>
+                 
                 </FormLabel>
                 <FormControl>
                   <Input {...field} type={"password"} placeholder="Nhập mật khẩu" />
@@ -123,6 +118,12 @@ export function LoginForm({
             )}
           />
           <LoadingButton pending={loading}>Đăng nhập</LoadingButton>
+
+          <div  className="text-end text-sm underline">
+            <Link href={`/partner`} >
+              Đăng ký công ty
+            </Link>
+          </div>
         </div>
       </form>
     </Form>

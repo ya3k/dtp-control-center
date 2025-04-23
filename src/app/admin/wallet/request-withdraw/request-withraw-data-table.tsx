@@ -5,15 +5,14 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { RefreshCcw } from "lucide-react"
 import { TablePagination } from "@/components/admin/common-table/table-pagination"
-import { TransactionType, DetailedTransactionType } from "@/schemaValidations/wallet.schema"
+import { AdminExternalTransactionType } from "@/schemaValidations/wallet.schema"
 import { walletApiRequest } from "@/apiRequests/wallet"
 import { TransactionFilterCard } from "@/components/operator/wallet/transaction/transaction-filter-card"
-import { TransactionTable } from "@/components/operator/wallet/transaction/transaction-table"
-import { TransactionDetailsDialog } from "@/components/operator/wallet/transaction/transaction-details-dialog"
+import { RequestWithdrawTable } from "@/components/operator/wallet/transaction/request-withdraw-table"
 
-export default function TransactionDataTable() {
+export default function RequestWithdrawDataTable() {
   // Data state
-  const [transactions, setTransactions] = useState<TransactionType[]>([])
+  const [withdrawRequests, setWithdrawRequests] = useState<AdminExternalTransactionType[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [totalCount, setTotalCount] = useState<number>(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -27,7 +26,7 @@ export default function TransactionDataTable() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("")
 
   // Filter state
-  const [typeFilter, setTypeFilter] = useState<string>(`all`)
+  const [statusFilter, setStatusFilter] = useState<string>(`all`)
   const [dateFilter, setDateFilter] = useState<{
     startDate: Date | undefined;
     endDate: Date | undefined;
@@ -35,12 +34,6 @@ export default function TransactionDataTable() {
     startDate: undefined,
     endDate: undefined
   })
-
-  // Transaction details state
-  const [selectedTransaction, setSelectedTransaction] = useState<TransactionType | null>(null)
-  const [detailedTransaction, setDetailedTransaction] = useState<DetailedTransactionType | null>(null)
-  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false)
 
   // Debounce search term
   useEffect(() => {
@@ -54,10 +47,10 @@ export default function TransactionDataTable() {
   // Reset to first page when search/filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [debouncedSearchTerm, typeFilter, dateFilter])
+  }, [debouncedSearchTerm, statusFilter, dateFilter])
 
-  // Fetch transactions
-  const fetchTransactions = async () => {
+  // Fetch withdrawal requests
+  const fetchWithdrawRequests = async () => {
     setLoading(true)
 
     try {
@@ -70,7 +63,7 @@ export default function TransactionDataTable() {
       params.append("$top", pageSize.toString())
       params.append("$skip", skip.toString())
       params.append("$count", "true")
-
+      
       // Sorting
       params.append("$orderby", "createdAt desc")
 
@@ -82,20 +75,23 @@ export default function TransactionDataTable() {
         filterConditions.push(`contains(description, '${debouncedSearchTerm}')`)
       }
 
-      // Transaction type filter
-      if (typeFilter !== "all") {
-        filterConditions.push(`type eq '${typeFilter}'`)
+      // Type filter - only get withdraw requests
+      filterConditions.push(`type eq 'Withdraw'`)
+
+      // Status filter
+      if (statusFilter !== "all") {
+        filterConditions.push(`status eq '${statusFilter}'`)
       }
 
       // Date range filter
       if (dateFilter.startDate) {
         const startDateStr = dateFilter.startDate.toISOString()
-        filterConditions.push(`createdAt ge ${startDateStr}`)
+        filterConditions.push(`createAt ge ${startDateStr}`)
       }
-
+      
       if (dateFilter.endDate) {
         const endDateStr = dateFilter.endDate.toISOString()
-        filterConditions.push(`createdAt le ${endDateStr}`)
+        filterConditions.push(`createAt le ${endDateStr}`)
       }
 
       // Combine filter conditions
@@ -105,47 +101,57 @@ export default function TransactionDataTable() {
 
       // Construct the OData query string
       const queryString = `?${params.toString()}`
-      console.log(queryString)
-      // Fetch transactions
-      const response = await walletApiRequest.getTransactionWithOData(queryString)
-      console.log(JSON.stringify(response))
 
-      setTransactions(response.payload?.value)
+      // Fetch withdrawal requests
+      const response = await walletApiRequest.getAdminTransactionWithOData(queryString)
+      console.log(JSON.stringify(response))
+      setWithdrawRequests(response.payload?.value)
       setTotalCount(response.payload["@odata.count"] || 0)
     } catch (error) {
-      console.error("Error fetching transaction data:", error)
+      console.error("Error fetching withdrawal requests:", error)
     } finally {
       setLoading(false)
     }
   }
 
-  // Fetch transactions when dependencies change
+  // Fetch withdrawal requests when dependencies change
   useEffect(() => {
-    fetchTransactions()
-  }, [currentPage, pageSize, debouncedSearchTerm, typeFilter, dateFilter])
+    fetchWithdrawRequests()
+  }, [currentPage, pageSize, debouncedSearchTerm, statusFilter, dateFilter])
 
   // Handle refresh
   const handleRefresh = async () => {
     setIsRefreshing(true)
-    await fetchTransactions()
+    await fetchWithdrawRequests()
     setIsRefreshing(false)
   }
 
-  // Handle viewing transaction details
-  const handleViewDetails = async (transaction: TransactionType) => {
-    setSelectedTransaction(transaction)
-    setIsDetailsDialogOpen(true)
-    setIsLoadingDetails(true)
-
+  // Handle approving a withdrawal request
+  const handleApproveRequest = async (requestId: string) => {
     try {
-      const response = await walletApiRequest.transactionDetail(transaction.transactionId)
-      if (response.status === 200) {
-        setDetailedTransaction(response.payload)
-      }
+     
+      console.log(`Approving request ${requestId}`)
+      const res = await walletApiRequest.acceptWithdraw(requestId);
+      console.log(JSON.stringify(res))
+      
+      // Refresh the list after approval
+      fetchWithdrawRequests()
     } catch (error) {
-      console.error("Error fetching transaction details:", error)
-    } finally {
-      setIsLoadingDetails(false)
+      console.error("Error approving withdrawal request:", error)
+    }
+  }
+
+  // Handle rejecting a withdrawal request
+  const handleRejectRequest = async (requestId: string) => {
+    try {
+      // Implement rejection API call here
+      // await walletApiRequest.rejectWithdrawRequest(requestId)
+      console.log(`Rejecting request ${requestId}`)
+      
+      // Refresh the list after rejection
+      fetchWithdrawRequests()
+    } catch (error) {
+      console.error("Error rejecting withdrawal request:", error)
     }
   }
 
@@ -174,7 +180,7 @@ export default function TransactionDataTable() {
   const resetFilters = () => {
     setSearchTerm("")
     setDebouncedSearchTerm("")
-    setTypeFilter("all")
+    setStatusFilter("all")
     setDateFilter({
       startDate: undefined,
       endDate: undefined
@@ -186,7 +192,7 @@ export default function TransactionDataTable() {
       <Card>
         <CardHeader className="mx-4">
           <div className="flex justify-between items-center">
-            <CardTitle className="text-2xl font-bold">Lịch sử giao dịch</CardTitle>
+            <CardTitle className="text-2xl font-bold">Yêu cầu rút tiền</CardTitle>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -211,49 +217,39 @@ export default function TransactionDataTable() {
           </div>
         </CardHeader>
 
-        {/* Filter card - This will be created separately */}
-        <TransactionFilterCard
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          typeFilter={typeFilter}
-          setTypeFilter={setTypeFilter}
+        {/* Filter card - Using the existing TransactionFilterCard but adapting the props */}
+        <TransactionFilterCard 
+          searchTerm={searchTerm} 
+          setSearchTerm={setSearchTerm} 
+          typeFilter={statusFilter} 
+          setTypeFilter={setStatusFilter}
           dateFilter={dateFilter}
           setDateFilter={setDateFilter}
-          pageSize={pageSize}
+          pageSize={pageSize} 
           setPageSize={setPageSize}
         />
 
         {/* Table */}
         <div className="rounded-md border">
-          <TransactionTable
-            transactions={transactions}
-            loading={loading}
+          <RequestWithdrawTable 
+            withdrawRequests={withdrawRequests} 
+            loading={loading} 
             resetFilters={resetFilters}
-            onViewDetails={handleViewDetails}
+            onApprove={handleApproveRequest}
+            onReject={handleRejectRequest}
           />
         </div>
 
         {/* Pagination */}
-        <TablePagination
-          currentPage={currentPage}
-          loading={loading}
+        <TablePagination 
+          currentPage={currentPage} 
+          loading={loading} 
           onNextPage={handleNextPage}
-          onPreviousPage={handlePreviousPage}
+          onPreviousPage={handlePreviousPage} 
           totalPages={totalPages}
           onPageChange={handlePageChange}
         />
       </Card>
-
-      {/* Transaction Details Dialog */}
-      {selectedTransaction && (
-        <TransactionDetailsDialog
-          open={isDetailsDialogOpen}
-          onOpenChange={setIsDetailsDialogOpen}
-          transaction={selectedTransaction}
-          detailedTransaction={detailedTransaction}
-          isLoading={isLoadingDetails}
-        />
-      )}
     </div>
   )
 }

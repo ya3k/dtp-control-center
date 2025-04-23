@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { toast } from "sonner"
 import envConfig from "@/configs/envConfig"
+import { links } from "@/configs/routes"
 
 interface ApproveCompanyDialogProps {
   open: boolean
@@ -69,7 +70,7 @@ export function ApproveCompanyDialog({ open, onOpenChange, onApprovalComplete }:
       ))
       const respones = await companyApiRequest.approve({
         companyId: company.id,
-        confirmUrl: `${envConfig.NEXT_PUBLIC_BASE_URL}/company/${company.id}`,
+        confirmUrl: `${envConfig.NEXT_PUBLIC_BASE_URL}${links.companyConfirm.href}`,
         accept: true,
       })
       console.log(`Request body: `, JSON.stringify(respones))

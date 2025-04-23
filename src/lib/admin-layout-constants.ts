@@ -37,6 +37,7 @@ export const adminItems: SidebarItem[] = [
         subItems: [
             { title: "Số dư", url: "/admin/wallet", icon: Banknote },
             { title: "Lịch sử giao dịch", url: "/admin/wallet/transaction", icon: History },
+            { title: "Yêu cầu rút tiền", url: "/admin/wallet/request-withdraw", icon: History },
         ],
     },
 ];

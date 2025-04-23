@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Eye, Loader2, Pencil, X } from "lucide-react"
+import { Eye, History, Loader2, Pencil, X } from "lucide-react"
 import { tourByCompanyResType } from "@/schemaValidations/tour-operator.shema"
 import { ColumnDef, ColumnToggleDropdown } from "@/components/common/table/column-toggle-dropdown"
 
@@ -17,6 +17,7 @@ interface TourTableProps {
   onEditTour?: (tour: tourByCompanyResType) => void
   onCloseTour?: (tour: tourByCompanyResType) => void
   onViewTour?: (tour: tourByCompanyResType) => void
+  onViewBooking?: (tour: tourByCompanyResType) => void
 }
 
 export function OpTourTable({
@@ -27,7 +28,8 @@ export function OpTourTable({
   truncateDescription,
   onEditTour,
   onCloseTour,
-  onViewTour
+  onViewTour,
+  onViewBooking
 }: TourTableProps) {
   // Define column configuration
   const columns: ColumnDef<tourByCompanyResType>[] = [
@@ -77,7 +79,16 @@ export function OpTourTable({
       id: "actions",
       header: "Thao tác",
       cell: (info) => (
-        <div className="flex justify-center gap-2">
+        <div className="flex justify-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onViewBooking && onViewBooking(info)}
+            title="Xem lịch sử order"
+            disabled={info.isDeleted}
+          >
+            <History className="h-3 w-3 text-green-600" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -85,7 +96,7 @@ export function OpTourTable({
             title="Chỉnh sửa tour"
             disabled={info.isDeleted}
           >
-            <Pencil className="h-4 w-4" />
+            <Pencil className="h-3 w-3" />
           </Button>
           <Button
             variant="ghost"
@@ -94,7 +105,7 @@ export function OpTourTable({
             onClick={() => onCloseTour && onCloseTour(info)}
             title={info.isDeleted ? "Mở lại tour" : "Đóng tour"}
           >
-            <X className="h-4 w-4" />
+            <X className="h-3 w-3 font-bold" />
           </Button>
         </div>
       ),

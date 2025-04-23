@@ -9,6 +9,7 @@ export const CompanySchema = z.object({
     phone: z.string(),
     email: z.string(),
     taxCode: z.string(),
+    address: z.string(),
     licensed: z.boolean(),
     staff: z.number(),
     tourCount: z.number(),
@@ -58,6 +59,7 @@ export const CompanyPUTSchema = z.object({
     phone: z.string().min(10, {
         message: "Please enter a valid phone number.",
     }),
+    address: z.string(),
     taxCode: z.string().min(1, {
         message: "Tax code is required.",
     }),

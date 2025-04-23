@@ -39,9 +39,20 @@ const authApiRequest = {
       {},
       { baseUrl: "" },
     ),
-  
-    logoutFromNextClientToNextServer: (force?: boolean | undefined) =>
+
+  logoutFromNextClientToNextServer: (force?: boolean | undefined) =>
     http.post(nextServer.logout, { force }, { baseUrl: "" }),
+
+  confirmAccountFromNextClientToNextServer: (body: {
+    confirmationToken: string;
+  }) => http.post(nextServer.confirmation, body, { baseUrl: "" }),
+
+  confirmAccountFromNextServerToServer: (body: { confirmationToken: string }) =>
+    http.post(apiEndpoint.confirmation, body),
+
+  confrimAccountClientToBe: (body: { confirmationToken: string }) =>
+    http.post(apiEndpoint.confirmation, body),
+
 };
 
 export default authApiRequest;

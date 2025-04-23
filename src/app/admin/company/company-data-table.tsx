@@ -11,6 +11,7 @@ import { CompanyResType } from "@/schemaValidations/company.schema"
 import { CompanyTableFilterCard } from "@/components/admin/company/company-table-filter"
 import { ApproveCompanyDialog } from "@/components/admin/company/company-request/company-request-list"
 import { EditCompanyDialog } from "@/components/admin/company/edit-company-dialog"
+import { DeleteCompanyDialog } from "@/components/admin/company/delete-company-dialog"
 
 export default function CompanyDataTable() {
   // Data state
@@ -33,6 +34,9 @@ export default function CompanyDataTable() {
   //Edit state
   const [selectedCompany, setSelectedCompany] = useState<CompanyResType | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+
+  // Delete dialog state
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   // Approval dialog state
   const [isApprovalDialogOpen, setIsApprovalDialogOpen] = useState(false)
@@ -121,11 +125,23 @@ export default function CompanyDataTable() {
     setIsEditDialogOpen(true)
   }
 
+  // Handle delete
+  const handleDeleteCompany = (company: CompanyResType) => {
+    setSelectedCompany(company)
+    setIsDeleteDialogOpen(true)
+  }
 
   const handleEditComplete = (updatedCompany: CompanyResType) => {
     // Update the company in the local state without refetching
     setCompanies((prevCompanies) =>
       prevCompanies.map((company) => (company.id === updatedCompany.id ? updatedCompany : company)),
+    )
+  }
+
+  const handleDeleteComplete = (deletedId: string) => {
+    // Remove the company from the local state without refetching
+    setCompanies((prevCompanies) =>
+      prevCompanies.filter((company) => company.id !== deletedId)
     )
   }
 
@@ -208,7 +224,13 @@ export default function CompanyDataTable() {
         <CompanyTableFilterCard searchTerm={searchTerm} setSearchTerm={setSearchTerm} licenseFilter={licenseFilter} setLicenseFilter={setLicenseFilter} pageSize={pageSize} setPageSize={setPageSize} />
         {/* Table */}
         <div className="rounded-md border">
-          <CompanyTable companies={companies} loading={loading} onEditCompany={handleEditCompany} resetFilters={resetFilters} />
+          <CompanyTable 
+            companies={companies} 
+            loading={loading} 
+            onEditCompany={handleEditCompany} 
+            onDeleteCompany={handleDeleteCompany}
+            resetFilters={resetFilters} 
+          />
         </div>
         {/* Pagination */}
         <TablePagination currentPage={currentPage} loading={loading} onNextPage={handleNextPage}
@@ -232,9 +254,12 @@ export default function CompanyDataTable() {
       />
 
       {/* Delete Dialog */}
-      
-
-
+      <DeleteCompanyDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        company={selectedCompany}
+        onDeleteComplete={handleDeleteComplete}
+      />
     </div>
   )
 }
