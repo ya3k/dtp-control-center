@@ -180,6 +180,7 @@ const useTourStore = create<POSTTourState>((set, get) => ({
                 destinations: updatedDestinations
             };
 
+            console.log(JSON.stringify(tourData, null, 2));
             // Submit the tour data
             await tourApiService.postTour(tourData);
             console.log("Tour created successfully:", JSON.stringify(tourData, null, 2));

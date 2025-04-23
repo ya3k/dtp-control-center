@@ -18,8 +18,8 @@ export const BasicTourInfoSchema = z.object({
   img: z.array(z.string()),
   categoryid: z.string(),
   description: z.string()
-    .min(20, "Mô tả phải có ít nhất 20 ký tự")
-    .max(1000, "Mô tả không được vượt quá 1000 ký tự"),
+    .min(20, "Điểm nổi bật phải có ít nhất 20 ký tự")
+    .max(10000, "Điểm nổi bật không được vượt quá 1000 ký tự"),
 
 });
 
@@ -55,13 +55,6 @@ export const destinationActivities = z.object({
   sortOrder: z.number()
     .int("Thứ tự phải là số nguyên")
     .nonnegative("Thứ tự không được âm"),
-}).refine((data) => {
-  const start = new Date(`1970-01-01T${data.startTime}`);
-  const end = new Date(`1970-01-01T${data.endTime}`);
-  return end > start;
-}, {
-  message: "Thời gian kết thúc phải sau thời gian bắt đầu",
-  path: ["endTime"],
 });
 
 // Destination schema (Step 3)

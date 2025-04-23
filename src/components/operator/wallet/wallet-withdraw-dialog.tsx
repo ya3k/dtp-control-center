@@ -41,6 +41,7 @@ export function WalletWithdrawDialog({
     resolver: zodResolver(WithDrawSchema),
     defaultValues: {
       amount: 100000,
+      otp: "",
     }
   })
 
@@ -56,8 +57,8 @@ export function WalletWithdrawDialog({
 
     setIsSubmitting(true)
     try {
-      const response = await walletApiRequest.withdraw(data.amount)
-      
+      // Using the withdrawWithOTP function that accepts OTP
+      const response = await walletApiRequest.withdrawWithOTP(data.amount, data.otp)
       if (response.status === 200) {
         toast.success("Yêu cầu rút tiền thành công")
         onOpenChange(false)
@@ -114,6 +115,24 @@ export function WalletWithdrawDialog({
                     <FormDescription>
                       Số tiền tối thiểu là 100,000 VNĐ
                     </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="otp"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mã OTP</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="text" 
+                        placeholder="Nhập mã OTP" 
+                        {...field} 
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

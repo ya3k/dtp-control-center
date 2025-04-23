@@ -1,7 +1,7 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, useFieldArray } from "react-hook-form"
-import { format } from "date-fns"
+import { format, isSameDay } from "date-fns"
 import { z } from "zod"
 import { CalendarIcon, Plus, Trash2 } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -60,6 +60,8 @@ export function EditTourTicketDialog({
     onUpdateSuccess,
 }: EditTourTicketDialogProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [availableDates, setAvailableDates] = useState<Date[]>([]);
+    const [isLoadingDates, setIsLoadingDates] = useState(false);
 
     const form = useForm<TicketUpdateFormValues>({
         resolver: zodResolver(ticketUpdateSchema),
@@ -73,6 +75,58 @@ export function EditTourTicketDialog({
             ],
         },
     });
+
+    // Fetch available schedule dates when dialog opens
+    useEffect(() => {
+        if (open) {
+            fetchAvailableDates();
+        }
+    }, [open, tourId]);
+
+    const fetchAvailableDates = async () => {
+        setIsLoadingDates(true);
+        try {
+            const response = await tourApiService.getTourSchedule(tourId);
+            
+            if (response.payload && Array.isArray(response.payload.data)) {
+                // Parse dates for calendar
+                const dates = response.payload.data.map((dateStr: string) => {
+                    try {
+                        // Handle different date formats
+                        if (dateStr.includes('.') || dateStr.includes(' ')) {
+                            return new Date(dateStr.split(' ')[0]);
+                        } else if (dateStr.includes('T')) {
+                            return new Date(dateStr);
+                        } else if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                            return new Date(dateStr);
+                        }
+                        return new Date(dateStr);
+                    } catch (error) {
+                        console.error("Error parsing date:", dateStr, error);
+                        return null;
+                    }
+                }).filter((date: Date | null): date is Date => date !== null);
+                
+                setAvailableDates(dates);
+                
+                // Set default dates if available
+                if (dates.length > 0) {
+                    form.setValue('startDate', dates[0]);
+                    form.setValue('endDate', dates[0]);
+                }
+            }
+        } catch (error) {
+            console.error("Không thể lấy lịch trình tour:", error);
+            toast.error("Không thể tải lịch trình tour");
+        } finally {
+            setIsLoadingDates(false);
+        }
+    };
+
+    // Function to disable dates without schedules
+    const disableDate = (date: Date) => {
+        return !availableDates.some(availableDate => isSameDay(availableDate, date));
+    };
 
     const { fields, append, remove } = useFieldArray({
         control: form.control,
@@ -141,7 +195,7 @@ export function EditTourTicketDialog({
             console.log('Raw formatted data:', JSON.stringify(formattedData, null, 2));
 
             await tourApiService.updateTourTickets(tourId, formattedData);
-            form.reset()
+            form.reset();
 
             toast.success("Cập nhật vé thành công");
             onUpdateSuccess();
@@ -192,8 +246,11 @@ export function EditTourTicketDialog({
                                                                                 "w-full pl-3 text-left font-normal",
                                                                                 !field.value && "text-muted-foreground"
                                                                             )}
+                                                                            disabled={isLoadingDates}
                                                                         >
-                                                                            {field.value ? (
+                                                                            {isLoadingDates ? (
+                                                                                <span>Đang tải lịch trình...</span>
+                                                                            ) : field.value ? (
                                                                                 format(field.value, "dd/MM/yyyy")
                                                                             ) : (
                                                                                 <span>Chọn ngày</span>
@@ -207,7 +264,7 @@ export function EditTourTicketDialog({
                                                                         mode="single"
                                                                         selected={field.value}
                                                                         onSelect={field.onChange}
-                                                                        disabled={(date) => date < new Date()}
+                                                                        disabled={disableDate}
                                                                         initialFocus
                                                                     />
                                                                 </PopoverContent>
@@ -232,8 +289,11 @@ export function EditTourTicketDialog({
                                                                                 "w-full pl-3 text-left font-normal",
                                                                                 !field.value && "text-muted-foreground"
                                                                             )}
+                                                                            disabled={isLoadingDates}
                                                                         >
-                                                                            {field.value ? (
+                                                                            {isLoadingDates ? (
+                                                                                <span>Đang tải lịch trình...</span>
+                                                                            ) : field.value ? (
                                                                                 format(field.value, "dd/MM/yyyy")
                                                                             ) : (
                                                                                 <span>Chọn ngày</span>
@@ -247,9 +307,7 @@ export function EditTourTicketDialog({
                                                                         mode="single"
                                                                         selected={field.value}
                                                                         onSelect={field.onChange}
-                                                                        disabled={(date) =>
-                                                                            date < new Date() || (form.getValues("startDate") && date < form.getValues("startDate"))
-                                                                        }
+                                                                        disabled={disableDate}
                                                                         initialFocus
                                                                     />
                                                                 </PopoverContent>
@@ -408,4 +466,4 @@ export function EditTourTicketDialog({
             </DialogContent>
         </Dialog>
     );
-} 
+}

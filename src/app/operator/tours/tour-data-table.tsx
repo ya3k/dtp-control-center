@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react"
 import tourApiService from "@/apiRequests/tour"
-import { tourOdataResType, TourResType } from "@/schemaValidations/tour-operator.shema"
 import { OpTourFilterCard } from "@/components/operator/tours/tour-page/op-tour-filter-card"
-import { OpTourPagination } from "@/components/operator/tours/tour-page/op-tour-pagination"
 import { OpTourTable } from "@/components/operator/tours/tour-page/op-tour-table"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -13,11 +11,11 @@ import Link from "next/link"
 import { UpdateTourDialog } from "@/components/operator/tours/edit-tour/edit-tour-dialog"
 import { TablePagination } from "@/components/admin/common-table/table-pagination"
 import { CloseToursDialog } from "@/components/operator/tours/delete-tour/close-tour-dialog"
-import { is } from "date-fns/locale"
+import { tourByCompanyResType } from "@/schemaValidations/tour-operator.shema"
 
 export default function OpTourDataTable() {
   // Data state
-  const [tours, setTours] = useState<tourOdataResType[]>([])
+  const [tours, setTours] = useState<tourByCompanyResType[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [totalCount, setTotalCount] = useState<number>(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -31,11 +29,10 @@ export default function OpTourDataTable() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("")
 
   // Filter state
-  const [minRating, setMinRating] = useState<number>(0)
+  const [isDeleted, setIsDeleted] = useState<boolean | null>(null)
 
   //Edit state
-  const [selectedTour, setSelectedTour] = useState<tourOdataResType | null>(null)
-  const [editTourId, setEditTourId] = useState<string | null>(null)
+  const [selectedTour, setSelectedTour] = useState<tourByCompanyResType | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false)
 
@@ -51,7 +48,7 @@ export default function OpTourDataTable() {
   // Reset to first page when search/filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [debouncedSearchTerm, minRating])
+  }, [debouncedSearchTerm, isDeleted])
 
   //fetching tour
   const fetchTours = async () => {
@@ -77,9 +74,9 @@ export default function OpTourDataTable() {
         filterConditions.push(`contains(title, '${debouncedSearchTerm}')`)
       }
 
-      // Rating
-      if (minRating > 0) {
-        filterConditions.push(`avgStar ge ${minRating}`)
+      // Status filter
+      if (isDeleted !== null) {
+        filterConditions.push(`isDeleted eq ${isDeleted}`)
       }
 
       // Combine filter conditions
@@ -91,9 +88,10 @@ export default function OpTourDataTable() {
       const queryString = `?${params.toString()}`
 
       // Use tourApiService instead of direct fetch
-      const response = await tourApiService.getWithOData(queryString)
+      const response = await tourApiService.getWithODataByCompany(queryString)
       console.log(queryString)
-      setTours(response.payload?.value)
+      console.log(JSON.stringify(response.payload?.value))
+      setTours(response.payload?.value || [])
       setTotalCount(response.payload["@odata.count"] || 0)
     } catch (error) {
       console.error("Error fetching tour data:", error)
@@ -105,7 +103,7 @@ export default function OpTourDataTable() {
   // Fetch data with OData parameters
   useEffect(() => {
     fetchTours()
-  }, [currentPage, pageSize, debouncedSearchTerm, minRating])
+  }, [currentPage, pageSize, debouncedSearchTerm, isDeleted])
 
 
   //handle refresh
@@ -116,23 +114,21 @@ export default function OpTourDataTable() {
   }
 
   //handle update success
-  const handleEditTour = (tour: tourOdataResType) => {
+  const handleEditTour = (tour: tourByCompanyResType) => {
     setSelectedTour(tour)
     setIsEditDialogOpen(true)
   }
   const handleUpdateSuccess = () => {
-    // setIsEditDialogOpen(false)
     setSelectedTour(null)
     fetchTours(); // Refresh the data
   }
 
   //handle close tour
-  const handleCloseTour = (tour: tourOdataResType) => {
+  const handleCloseTour = (tour: tourByCompanyResType) => {
     setSelectedTour(tour)
     setIsCloseDialogOpen(true)
   }
   const handleCloseSuccess = () => {
-    // setIsEditDialogOpen(false)
     setSelectedTour(null)
     fetchTours(); // Refresh the data
   }
@@ -165,14 +161,14 @@ export default function OpTourDataTable() {
   const resetFilters = () => {
     setSearchTerm("")
     setDebouncedSearchTerm("")
-    setMinRating(0)
+    setIsDeleted(null)
   }
   return (
     <div className="space-y-6 w-full">
       <Card>
         <CardHeader className="mx-4">
           <div className="flex justify-between items-center">
-            <CardTitle className="text-2xl font-bold">Tour Management</CardTitle>
+            <CardTitle className="text-2xl font-bold">Quản lý tour</CardTitle>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -204,14 +200,29 @@ export default function OpTourDataTable() {
           </div>
         </CardHeader>
 
-
-
-        {/* Search and Rating Filter */}
-        <OpTourFilterCard searchTerm={searchTerm} setSearchTerm={setSearchTerm} minRating={minRating} setMinRating={setMinRating} pageSize={pageSize} setPageSize={setPageSize} />
+        {/* Search and Filters */}
+        <OpTourFilterCard 
+          searchTerm={searchTerm} 
+          setSearchTerm={setSearchTerm} 
+          isDeleted={isDeleted}
+          setIsDeleted={setIsDeleted}
+          pageSize={pageSize} 
+          setPageSize={setPageSize} 
+        />
+        
         {/* Table */}
         <div className="rounded-md border">
-          <OpTourTable tours={tours} totalCount={totalCount} loading={loading} pageSize={pageSize} resetFilters={resetFilters} truncateDescription={truncateDescription} onEditTour={handleEditTour} onCloseTour={handleCloseTour} />
+          <OpTourTable 
+            tours={tours} 
+            totalCount={totalCount} 
+            loading={loading} 
+            resetFilters={resetFilters} 
+            truncateDescription={truncateDescription} 
+            onEditTour={handleEditTour}
+            onCloseTour={handleCloseTour}
+          />
         </div>
+        
         {/* Pagination */}
         <TablePagination
           currentPage={currentPage}
@@ -220,8 +231,6 @@ export default function OpTourDataTable() {
           onPreviousPage={handlePreviousPage}
           onPageChange={handlePageChange}
           totalPages={totalPages}
-
-
         />
       </Card>
 
@@ -241,7 +250,7 @@ export default function OpTourDataTable() {
         />
       )}
 
-      {/* Edit Dialog */}
+      {/* Close Dialog */}
       {selectedTour && (
         <CloseToursDialog
           tour={selectedTour}

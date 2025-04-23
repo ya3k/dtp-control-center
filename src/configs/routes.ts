@@ -39,7 +39,7 @@ export const apiEndpoint = {
     getTourCount: "/odata/tour/$count",
     odataTour: "/odata/tour",
     tourScheduleTicket: "/api/tour/scheduleticket",
-    tourByCompany: `/api/tour/get`,
+    tourByCompany: `/odata/Company/Tour()`,
     closeTour: `/api/tour/closetour`,
 
     //tour schedule
@@ -71,6 +71,13 @@ export const apiEndpoint = {
     upload: `/api/media`,
 
     wallet: `/api/wallet`,
+    otp: `/api/wallet/otp`,
+    transaction: `/api/wallet/transaction`,
+    transactionOdata: `/odata/wallet`,
+
+    // analys
+    opAnalys: `/api/tour/operator/analys`,
+    adAnalys: `/api/tour/admin/analys`,
 }
 
 

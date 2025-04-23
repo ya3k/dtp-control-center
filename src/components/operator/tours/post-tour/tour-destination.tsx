@@ -45,6 +45,7 @@ export default function TourDestinationForm() {
   const [days, setDays] = useState<number[]>([1]); // Default to at least one day
   const [expandedDays, setExpandedDays] = useState<string[]>(["day-1"]);
   const [expandedDestinations, setExpandedDestinations] = useState<string[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<Record<number, string[]>>({});
 
   const form = useForm<{ destinations: POSTTourDestinationType[] }>({
     resolver: zodResolver(
@@ -185,8 +186,8 @@ export default function TourDestinationForm() {
     
     const newActivity = {
       name: "",
-      startTime: "09:00:00",
-      endTime: "10:00:00",
+      startTime: "",
+      endTime: "",
       sortOrder: currentActivities.length,
     };
 
@@ -337,6 +338,44 @@ export default function TourDestinationForm() {
       form.setValue('destinations', [...form.getValues().destinations]);
     }
   }, [pendingImages.destinationImages, form]);
+
+  // Add cleanup for preview URLs
+  useEffect(() => {
+    return () => {
+      // Cleanup object URLs when component unmounts
+      Object.values(previewUrls).forEach(urls => {
+        urls.forEach(url => URL.revokeObjectURL(url));
+      });
+    };
+  }, [previewUrls]);
+
+  // Update preview URLs when pending images change
+  useEffect(() => {
+    const newPreviewUrls: Record<number, string[]> = {};
+    
+    Object.entries(pendingImages.destinationImages).forEach(([index, files]) => {
+      if (files && files.length > 0) {
+        const destIndex = parseInt(index);
+        // Cleanup old preview URLs for this destination
+        if (previewUrls[destIndex]) {
+          previewUrls[destIndex].forEach(url => URL.revokeObjectURL(url));
+        }
+        // Create new preview URLs
+        newPreviewUrls[destIndex] = files.map(file => URL.createObjectURL(file));
+      }
+    });
+
+    setPreviewUrls(prev => {
+      // Cleanup any old URLs that are no longer needed
+      Object.entries(prev).forEach(([index, urls]) => {
+        const destIndex = parseInt(index);
+        if (!newPreviewUrls[destIndex]) {
+          urls.forEach(url => URL.revokeObjectURL(url));
+        }
+      });
+      return newPreviewUrls;
+    });
+  }, [pendingImages.destinationImages]);
 
   return (
     <Form {...form}>
@@ -497,6 +536,7 @@ export default function TourDestinationForm() {
                                               type="time"
                                               step="1"
                                               {...field}
+                                              
                                               onChange={(e) => handleDestinationChange('startTime', e.target.value, destinationIndex)}
                                             />
                                           </FormControl>
@@ -557,16 +597,33 @@ export default function TourDestinationForm() {
                                           ))}
                                           
                                           {pendingImages.destinationImages[destinationIndex]?.map((file, fileIdx) => (
-                                            <div key={`pending-${fileIdx}`} className="relative w-24 h-24 rounded overflow-hidden bg-muted flex items-center justify-center">
-                                              <div className="text-xs text-center p-1 truncate w-full">
-                                                {file.name}
-                                              </div>
+                                            <div key={`pending-${fileIdx}`} className="relative w-24 h-24 rounded overflow-hidden">
+                                              {previewUrls[destinationIndex]?.[fileIdx] ? (
+                                                <Image
+                                                  src={previewUrls[destinationIndex][fileIdx]}
+                                                  alt={`Preview ${fileIdx + 1}`}
+                                                  width={96}
+                                                  height={96}
+                                                  className="object-cover"
+                                                />
+                                              ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-muted">
+                                                  <div className="text-xs text-center p-1 truncate w-full">
+                                                    {file.name}
+                                                  </div>
+                                                </div>
+                                              )}
                                               <Button
                                                 type="button"
                                                 variant="destructive"
                                                 size="sm"
                                                 className="absolute top-0 right-0 w-6 h-6 p-0"
-                                                onClick={() => removePendingDestinationImage(destinationIndex, fileIdx)}
+                                                onClick={() => {
+                                                  if (previewUrls[destinationIndex]?.[fileIdx]) {
+                                                    URL.revokeObjectURL(previewUrls[destinationIndex][fileIdx]);
+                                                  }
+                                                  removePendingDestinationImage(destinationIndex, fileIdx);
+                                                }}
                                               >
                                                 ×
                                               </Button>

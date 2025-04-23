@@ -9,8 +9,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from "sonner"
 import { CompanyRequestSchema, TCompanyQuestBodyType } from "@/schemaValidations/company.schema"
 import companyApiRequest from "@/apiRequests/company"
+import { useState } from "react"
+import { Loader2 } from "lucide-react"
 
 export default function CompanyRequestForm() {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  
   // Khởi tạo biểu mẫu với hook useForm
   const form = useForm<TCompanyQuestBodyType>({
     resolver: zodResolver(CompanyRequestSchema),
@@ -26,16 +30,19 @@ export default function CompanyRequestForm() {
 
   // Xử lý khi người dùng gửi biểu mẫu
   async function onSubmit(data: TCompanyQuestBodyType) {
-
+    setIsSubmitting(true)
+    
     try {
       console.log(`Request body: `, JSON.stringify(data));
       const response = await companyApiRequest.create(data);
       if (response.payload.success == true) {
-        toast.success(`tao thanh cong`)
-
+        toast.success(`Đơn đăng ký đã được gửi!`)
+        form.reset()
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Không thể tạo cong ty")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -126,7 +133,7 @@ export default function CompanyRequestForm() {
               name="commissionRate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phần trăm hoa hồng mong muốn</FormLabel>
+                  <FormLabel>Phần trăm hoa hồng mong muốn chia cho nền tảng</FormLabel>
                   <FormControl>
                     <Input 
                       type="number" 
@@ -141,14 +148,25 @@ export default function CompanyRequestForm() {
                       step={0.1}
                     />
                   </FormControl>
-                  <FormDescription>Phần trăm hoa hồng mong muốn (0-100%).</FormDescription>
+                  <FormDescription>Phần trăm hoa hồng mong muốn chia cho nền tảng(0-100%).</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button type="submit" className="w-full">
-              Gửi đơn đăng ký
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Đang xử lý...
+                </>
+              ) : (
+                "Gửi đơn đăng ký"
+              )}
             </Button>
           </form>
         </Form>

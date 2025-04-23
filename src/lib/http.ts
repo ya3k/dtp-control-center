@@ -119,6 +119,7 @@ export type CustomOptionsType = Omit<RequestInit, "method"> & {
   baseUrl?: string | undefined;
   showErrorToast?: boolean; // Option to show error toast
   errorMessage?: string; // Custom error message
+  otp?: string; // Optional OTP (One-Time Password) for operations that require it
 };
 
 let clientLogoutRequest: null | Promise<any> = null;
@@ -141,6 +142,7 @@ const request = async <Response>(
   const baseHeaders = {
     "Content-Type": "application/json",
     Authorization: sessionToken.value ? `Bearer ${sessionToken.value}` : "",
+    ...(options?.otp ? { "X-OTP": options.otp } : {}),
   };
 
   // Build URL
@@ -337,7 +339,7 @@ const http = {
    * Makes a PUT request to the specified URL with the provided body.
    *
    * @param url - The URL to request
-   * @param body - The request body
+   * @param body: any,
    * @param options - Additional options for the request
    * @returns A promise that resolves to the response data
    */

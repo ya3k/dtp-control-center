@@ -51,7 +51,11 @@ const addScheduleSchema = z.object({
     closeDay: z.date({
         required_error: "Ngày kết thúc là bắt buộc",
     })
-        .refine(date => date > new Date(), {
+        .refine(date => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return date >= today;
+        }, {
             message: "Ngày kết thúc phải ở trong tương lai",
         }),
     scheduleFrequency: z.string({
@@ -213,12 +217,27 @@ export default function AddScheduleDialog({
 
             setIsSubmitting(true);
 
+            // Fix timezone issue by ensuring dates are sent with time set to noon
+            // This prevents date shifts due to timezone differences
+            const openDayFixed = new Date(values.openDay);
+            openDayFixed.setHours(12, 0, 0, 0);
+            
+            const closeDayFixed = new Date(values.closeDay);
+            closeDayFixed.setHours(12, 0, 0, 0);
+
             const scheduleData = {
                 tourId: tourId,
-                openDay: values.openDay.toISOString(),
-                closeDay: values.closeDay.toISOString(),
+                openDay: openDayFixed.toISOString(),
+                closeDay: closeDayFixed.toISOString(),
                 scheduleFrequency: values.scheduleFrequency,
             };
+
+            console.log("Sending schedule data:", {
+                openDay: format(openDayFixed, 'yyyy-MM-dd HH:mm:ss'),
+                closeDay: format(closeDayFixed, 'yyyy-MM-dd HH:mm:ss'),
+                originalOpenDay: format(values.openDay, 'yyyy-MM-dd HH:mm:ss'),
+                originalCloseDay: format(values.closeDay, 'yyyy-MM-dd HH:mm:ss'),
+            });
 
             const response = await tourApiService.postTourSchedule(tourId, scheduleData);
 

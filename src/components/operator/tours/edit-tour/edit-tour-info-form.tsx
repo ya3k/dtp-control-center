@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { ChevronDown, Loader2 } from "lucide-react"
+import { ChevronDown, Loader2, X } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -38,8 +38,10 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
     const [categories, setCategories] = useState<{ id: string; name: string }[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [tourData, setTourData] = useState<TourInfoResType | null>(null)
-    const [previewImage, setPreviewImage] = useState<string | null>(null)
-    const [tourImageFile, setTourImageFile] = useState<File | null>(null)
+    const [previewImages, setPreviewImages] = useState<string[]>([])
+    const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0)
+    const [tourImageFiles, setTourImageFiles] = useState<File[]>([])
+    const [uploadProgress, setUploadProgress] = useState(0)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const form = useForm<PUTTourInfoBodyType>({
@@ -52,7 +54,7 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
             about: "",
             include: "",
             pickinfor: "",
-            img: ""
+            img: []
         },
     });
 
@@ -65,7 +67,11 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                 const resTourInfo = await tourApiService.getTourInfo(tourId);
                 const editableInfo = resTourInfo.payload.data;
                 setTourData(editableInfo);
-                setPreviewImage(editableInfo.img || null);
+                
+                // Initialize with the current image(s) if they exist
+                if (editableInfo.img && Array.isArray(editableInfo.img) && editableInfo.img.length > 0) {
+                    setPreviewImages(editableInfo.img);
+                }
 
                 form.reset({
                     tourId: tourId,
@@ -75,7 +81,7 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                     about: editableInfo.about || '',
                     include: editableInfo.include || '',
                     pickinfor: editableInfo.pickinfor || '',
-                    img: editableInfo.img || '',
+                    img: Array.isArray(editableInfo.img) ? editableInfo.img : []
                 });
             } catch (error) {
                 console.error("Failed to fetch tour info:", error);
@@ -106,6 +112,56 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
         fetchCategories();
     }, []);
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files?.length) {
+            const files = Array.from(e.target.files);
+            const newPreviewImages = files.map(file => URL.createObjectURL(file));
+            
+            setTourImageFiles(files);
+            setPreviewImages(newPreviewImages);
+            setSelectedImageIndex(0); // Select the first image by default
+        }
+    };
+
+    const removeSelectedImage = () => {
+        if (tourImageFiles.length === 0) {
+            // Remove only the selected image from existing images
+            const newPreviews = [...previewImages];
+            newPreviews.splice(selectedImageIndex, 1);
+            setPreviewImages(newPreviews);
+            
+            // Update form value to match the new previews
+            form.setValue("img", newPreviews);
+            
+            // Adjust selected index as needed
+            if (selectedImageIndex >= newPreviews.length && newPreviews.length > 0) {
+                setSelectedImageIndex(newPreviews.length - 1);
+            } else if (newPreviews.length === 0) {
+                setSelectedImageIndex(-1);
+            }
+            return;
+        }
+        
+        // ...existing code for handling newly uploaded files...
+        const newFiles = tourImageFiles.filter((_, i) => i !== selectedImageIndex);
+        const newPreviews = previewImages.filter((_, i) => i !== selectedImageIndex);
+        
+        setTourImageFiles(newFiles);
+        setPreviewImages(newPreviews);
+        
+        // Adjust selected index to avoid out of bounds
+        if (selectedImageIndex >= newPreviews.length && newPreviews.length > 0) {
+            setSelectedImageIndex(newPreviews.length - 1);
+        } else if (newPreviews.length === 0) {
+            setSelectedImageIndex(-1);
+        }
+
+        // Clear file input to allow selecting the same files again
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
     const onSubmit = async (values: PUTTourInfoBodyType) => {
         try {
             setIsSubmitting(true);
@@ -116,18 +172,32 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                 tourId: tourId
             };
 
-            // Handle image upload if a file is selected
-            if (tourImageFile) {
+            // Handle image upload if files are selected
+            if (tourImageFiles.length > 0) {
                 try {
-                    const response = await uploadApiRequest.uploadTourImage(tourImageFile);
+                    setUploadProgress(0);
+                    // Upload all selected images
+                    const response = await uploadApiRequest.uploadTourImages(tourImageFiles);
+                    
                     if (response.urls && response.urls.length > 0) {
-                        updatedFormData.img = response.urls[0];
+                        // Use all uploaded images with the selected one first as the thumbnail
+                        const allUrls = [...response.urls];
+                        
+                        if (selectedImageIndex > 0) {
+                            // Move the selected image to the front of the array
+                            const selectedUrl = allUrls.splice(selectedImageIndex, 1)[0];
+                            allUrls.unshift(selectedUrl);
+                        }
+                        
+                        updatedFormData.img = allUrls;
+                        toast.success(`${response.urls.length} images uploaded successfully`);
                     } else {
-                        throw new Error("No URL returned from tour image upload");
+                        throw new Error("No URLs returned from tour image upload");
                     }
+                    setUploadProgress(100);
                 } catch (error) {
-                    console.error("Error uploading tour image:", error);
-                    toast.error("Failed to upload tour image");
+                    console.error("Error uploading tour images:", error);
+                    toast.error("Failed to upload tour images");
                     setIsSubmitting(false);
                     return;
                 }
@@ -143,6 +213,7 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
             toast.error("Failed to update tour information");
         } finally {
             setIsSubmitting(false);
+            setUploadProgress(0);
         }
     };
 
@@ -331,47 +402,86 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                             <FormItem className="mx-2">
                                 <FormLabel>Ảnh thumbnail</FormLabel>
                                 <div className="space-y-4">
-                                    {/* Image Preview */}
-                                    {(previewImage || field.value) && (
-                                        <div className="relative w-full max-w-[300px] h-[180px] overflow-hidden rounded-md border border-gray-200 mb-4 mx-auto">
-                                            <Image
-                                                src={previewImage || field.value}
-                                                alt="Tour Image Preview"
-                                                fill
-                                                className="object-cover"
-                                                onError={(e) => {
-                                                    (e.target as HTMLImageElement).src = "https://placehold.co/300x180?text=Invalid+Image";
-                                                }}
-                                            />
-                                        </div>
+                                    {/* Image Preview Section */}
+                                    {previewImages.length > 0 && (
+                                        <>
+                                            <div className="relative w-full max-w-[300px] h-[180px] overflow-hidden rounded-md border border-gray-200 mb-2 mx-auto">
+                                                <Image
+                                                    src={previewImages[selectedImageIndex] || "https://placehold.co/300x180?text=Select+Image"}
+                                                    alt="Tour Image Preview"
+                                                    fill
+                                                    className="object-cover"
+                                                    onError={(e) => {
+                                                        (e.target as HTMLImageElement).src = "https://placehold.co/300x180?text=Invalid+Image";
+                                                    }}
+                                                />
+                                                <Button 
+                                                    type="button"
+                                                    variant="destructive" 
+                                                    size="icon" 
+                                                    className="absolute top-1 right-1 h-6 w-6 rounded-full opacity-70 hover:opacity-100"
+                                                    onClick={removeSelectedImage}
+                                                >
+                                                    <X className="h-3 w-3" />
+                                                </Button>
+                                            </div>
+                                            
+                                            {/* Image selection thumbnails */}
+                                            {previewImages.length > 1 && (
+                                                <div className="flex flex-wrap gap-2 justify-center">
+                                                    {previewImages.map((img, i) => (
+                                                        <div 
+                                                            key={i}
+                                                            className={`relative w-16 h-16 cursor-pointer ${selectedImageIndex === i ? 'ring-2 ring-primary' : 'ring-1 ring-gray-200'}`}
+                                                            onClick={() => setSelectedImageIndex(i)}
+                                                        >
+                                                            <Image
+                                                                src={img}
+                                                                alt={`Thumbnail ${i+1}`}
+                                                                fill
+                                                                className="object-cover rounded-sm"
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            
+                                            {previewImages.length > 1 && (
+                                                <p className="text-center text-sm text-muted-foreground">
+                                                    {`Image ${selectedImageIndex + 1} of ${previewImages.length} selected as thumbnail`}
+                                                </p>
+                                            )}
+                                        </>
                                     )}
 
-                                    {/* File Input for New Image */}
+                                    {/* File Input for New Images */}
                                     <div className="flex flex-col space-y-2">
                                         <FormLabel className="text-sm font-normal">Chọn ảnh mới: </FormLabel>
                                         <div className="flex items-center gap-2">
                                             <Input
                                                 type="file"
                                                 accept="image/*"
+                                                multiple
                                                 ref={fileInputRef}
-                                                onChange={(e) => {
-                                                    const file = e.target.files?.[0];
-                                                    if (file) {
-                                                        setTourImageFile(file);
-                                                        setPreviewImage(URL.createObjectURL(file));
-                                                    }
-                                                }}
+                                                onChange={handleImageChange}
                                                 className="flex-1"
                                                 disabled={isLoading || isSubmitting}
                                             />
-                                            {tourImageFile && (
+                                            {tourImageFiles.length > 0 && (
                                                 <Button
                                                     type="button"
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => {
-                                                        setTourImageFile(null);
-                                                        setPreviewImage(field.value);
+                                                        setTourImageFiles([]);
+                                                        // If there were original images, restore them
+                                                        if (field.value && Array.isArray(field.value) && field.value.length > 0 && tourData?.img) {
+                                                            setPreviewImages(tourData.img);
+                                                            setSelectedImageIndex(0);
+                                                        } else {
+                                                            setPreviewImages([]);
+                                                            setSelectedImageIndex(-1);
+                                                        }
                                                         if (fileInputRef.current) {
                                                             fileInputRef.current.value = '';
                                                         }
@@ -387,16 +497,15 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                                         <FormControl>
                                             <Input
                                                 type="hidden"
-                                                {...field}
                                                 disabled={isLoading || isSubmitting}
                                             />
                                         </FormControl>
 
                                         {/* Info text */}
                                         <p className="text-xs text-muted-foreground">
-                                            {tourImageFile
-                                                ? "Ảnh mới sẽ được lưu khi bạn nhấn nút cập nhật."
-                                                : "Giữ ảnh cũ hoặc chọn một ảnh mới."}
+                                            {tourImageFiles.length > 0
+                                                ? `${tourImageFiles.length} ảnh mới sẽ được lưu khi bạn nhấn nút cập nhật. Ảnh được chọn làm thumbnail.`
+                                                : "Giữ ảnh cũ hoặc chọn một hoặc nhiều ảnh mới."}
                                         </p>
                                     </div>
                                 </div>
@@ -415,7 +524,9 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                             {isSubmitting ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Cập nhật...
+                                    {uploadProgress > 0 && uploadProgress < 100 
+                                        ? `Đang tải ảnh lên... ${uploadProgress}%` 
+                                        : "Đang cập nhật..."}
                                 </>
                             ) : (
                                 "Cập nhật thông tin tour."

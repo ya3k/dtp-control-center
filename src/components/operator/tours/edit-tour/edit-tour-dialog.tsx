@@ -5,14 +5,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { Loader2 } from "lucide-react"
-import { tourOdataResType, TourResType } from "@/schemaValidations/tour-operator.shema"
+import { tourByCompanyResType, TourResType } from "@/schemaValidations/tour-operator.shema"
 import { TourEditInfoForm } from "./edit-tour-info-form"
 import TourEditScheduleForm from "./edit-tour-schedule"
-import TourEditDetinationForm from "./edit-tour-destination-form"
 import TourEditScheduleTicketForm from "./edit-tour-ticket-form"
+import EditTourDestinationForm from "./edit-tour-destination-form"
 
 interface UpdateTourDialogProps {
-    tour: tourOdataResType
+    tour: tourByCompanyResType
     open: boolean
     onOpenChange: (open: boolean) => void
     onUpdateSuccess: (updatedTour: TourResType) => void
@@ -20,7 +20,7 @@ interface UpdateTourDialogProps {
 
 export function UpdateTourDialog({ tour: initialTour, open, onOpenChange, onUpdateSuccess }: UpdateTourDialogProps) {
     const [activeTab, setActiveTab] = useState("info")
-    const [tour, setTour] = useState<tourOdataResType>(initialTour)
+    const [tour, setTour] = useState<tourByCompanyResType>(initialTour)
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -74,9 +74,8 @@ export function UpdateTourDialog({ tour: initialTour, open, onOpenChange, onUpda
 
                         <TabsContent value="destinations" className="space-y-4">
                             {/* Destinations edit form will go here */}
-                            <TourEditDetinationForm
+                            <EditTourDestinationForm
                                 tourId={tour.id}
-                                onUpdateSuccess={handleUpdateSuccess}
                             />
                         </TabsContent>
 

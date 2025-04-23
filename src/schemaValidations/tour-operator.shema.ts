@@ -86,15 +86,18 @@ export type TourResType = z.infer<typeof TourResSchema>;
 /// tour by company res
 
 export const tourByCompanyResSchema = z.object({
-  id: z.string(),
+  id: z.string().uuid(),
   title: z.string(),
-  companyId: z.string(),
-  category: z.string(),
+  companyId: z.string().uuid(),
+  categoryId: z.string().uuid(),
   description: z.string(),
-  about: z.string()
+  about: z.string(),     
+  include: z.string(),    
+  pickinfor: z.string(),  
+  isDeleted: z.boolean(),
 })
 
-export type tourByCompanyRestType = z.infer<typeof tourByCompanyResSchema>;
+export type tourByCompanyResType = z.infer<typeof tourByCompanyResSchema>;
 
 // Additional types for the UI
 export const DestinationUI = z.object({
@@ -113,7 +116,7 @@ export const tourInfoSchema = z.object({
   about: z.string().min(1, "Về dịch vụ này là bắt buộc."),
   include: z.string().min(1, "Bao gồm là bắt buộc."),
   pickinfor: z.string().min(1, "Đón và gặp khách là bắt buộc."),
-  img: z.string()
+  img: z.array(z.string())
 })
 
 export type PUTTourInfoBodyType = z.infer<typeof tourInfoSchema>;
@@ -127,12 +130,12 @@ export type TicketScheduleFormData = z.infer<typeof TicketScheduleFormSchema>;
 export const tourInfoResSchema = z.object({
   tourId: z.string(),
   title: z.string().min(1, "Title is required"),
-  category: z.string().min(1, "Category is required"),
   description: z.string().min(1, "Description is required"),
+  category: z.string().min(1, "Category is required"),
   about: z.string().min(1, "about is required"),
   include: z.string().min(1, "include is required"),
   pickinfor: z.string().min(1, "pickifor is required"),
-  img: z.string()
+  img: z.array(z.string())
 })
 export type TourInfoResType = z.infer<typeof tourInfoResSchema>;
 
@@ -153,31 +156,29 @@ export const tourDestinationResSchema = z.object({
   endTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/), // Định dạng HH:MM:SS
   sortOrder: z.number(),
   sortOrderByDate: z.number(),
-  img: z.string().url(), // Kiểm tra URL hợp lệ
-  destinationActivities: z.array(destinationActivitySchema), // Dùng schema đã tách
+  img: z.string().url(),
+  destinationActivities: z.array(destinationActivitySchema),
 });
 
 export type TourDestinationResType = z.infer<typeof tourDestinationResSchema>;
 
-export const PUTtourDestinationSchema = z.object({
+export const PUTDestinationSchema = z.object({
   destinationId: z.string().uuid(),
-  destinationActivities: z.array(destinationActivitySchema),
+  destinationActivities: z.array(destinationActivities),
   startTime: z.string(),
   endTime: z.string(),
   sortOrder: z.number(),
   sortOrderByDate: z.number(),
-  img: z.string(),
+  img: z.array(z.string()),
 });
+export type PUTDestinationType = z.infer<typeof PUTDestinationSchema>;
 
-export type PUTTDestinationBodyType = z.infer<typeof PUTtourDestinationSchema>;
-
-export const PUTFULLtourDestinationSchema = z.object({
+export const PUTTourDestinationSchema = z.object({
   tourId: z.string().uuid(),
-  destinations: z.array(PUTtourDestinationSchema),
+  destinations: z.array(DestinationSchema),
 });
 
-export type PUTFULLTourDestinationBodyType = z.infer<typeof PUTFULLtourDestinationSchema>;
-
+export type PUTTourDestinationType = z.infer<typeof PUTTourDestinationSchema>;
 
 
 export const tourOdataResSchema = z.object({

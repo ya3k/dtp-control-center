@@ -1,14 +1,14 @@
 import { apiEndpoint } from "@/configs/routes";
 import http from "@/lib/http";
-import { POSTTourTicketType, POSTTourType } from "@/schemaValidations/crud-tour.schema";
+import {  POSTTourType } from "@/schemaValidations/crud-tour.schema";
 import type {
   CreateTourBodyType,
   DELETETourScheduleBodyType,
   POSTTourScheduleBodyType,
-  PUTFULLTourDestinationBodyType,
+  PUTTourDestinationType,
   PUTTourInfoBodyType,
   TicketScheduleResType,
-  tourByCompanyRestType,
+  tourByCompanyResType,
   TourDestinationResType,
   TourInfoResType,
   tourOdataResType,
@@ -28,26 +28,16 @@ const tourApiService = {
     }
   },
 
-  getWithOData: async (queryParams?: string) => {
+  getWithODataByCompany: async (queryParams?: string) => {
     try {
-      const endpoint = `${apiEndpoint.odataTour}${queryParams ? queryParams + `` : "?$count=true"}`;
-      const response = await http.get<tourOdataResType>(endpoint);
+      const endpoint = `${apiEndpoint.tourByCompany}${queryParams ? queryParams + `` : "?$count=true"}`;
+      const response = await http.get<tourByCompanyResType>(endpoint);
       return response;
     } catch (error) {
       console.error("Failed to fetch tours with OData:", error);
       throw error;
     }
   },
-  getTourByCompany: async () => {
-    try {
-      const response = await http.get<tourByCompanyRestType>(apiEndpoint.tourByCompany);
-      return response;
-    } catch (error) {
-      console.error("Failed to fetch tours bycompany:", error);
-      throw error;
-    }
-  }
-  ,
 
   getTourInfo: async (tourId: string) => {
     try {
@@ -65,7 +55,7 @@ const tourApiService = {
     const response = await http.get<TourDestinationResType>(`${apiEndpoint.tourDestination}/${tourId}`)
     return response
   },
-  putTourDesitnation: async (tourId: string, body: PUTFULLTourDestinationBodyType) => {
+  putTourDesitnation: async (tourId: string, body: PUTTourDestinationType) => {
     const response = await http.put(`${apiEndpoint.tourDestination}/${tourId}`, body)
     return response
   }
@@ -156,15 +146,17 @@ const tourApiService = {
     }
   },
 
-  closeTour: async (id: string) => {
+  closeTour: async (id: string, body: string) => {
     try {
-      const response = await http.put(`${apiEndpoint.closeTour}/${id}`, {});
+      const response = await http.put(`${apiEndpoint.closeTour}/${id}`, body);
       return response;
     } catch (error) {
       console.error("Đóng tour thất bại:", error);
       throw error;
     }
   },
+
+
 
 };
 

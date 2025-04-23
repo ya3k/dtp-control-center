@@ -140,3 +140,16 @@ export function getMaxAgeFromToken(token: string): number {
   const nowInSeconds = Math.floor(Date.now() / 1000);
   return Math.max(0, decodedToken.exp - nowInSeconds);
 }
+
+export function setToStartOfDayVN(date: Date) {
+  const d = new Date(date);
+  d.setUTCHours(17, 0, 0, 0);  // 00:00:00 next day in VN (UTC+7)
+  d.setUTCDate(d.getUTCDate() - 1);  // Move back one day since we set it to next day
+  return d;
+}
+
+export function setToEndOfDayVN(date: Date) {
+  const d = new Date(date);
+  d.setUTCHours(16, 59, 59, 999);  // 23:59:59.999 in VN (UTC+7)
+  return d;
+}

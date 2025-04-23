@@ -15,30 +15,36 @@ import {
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import tourApiService from "@/apiRequests/tour"
-import { tourOdataResType, TourResType } from "@/schemaValidations/tour-operator.shema"
+import { tourByCompanyResType, TourResType } from "@/schemaValidations/tour-operator.shema"
 
 interface CloseToursDialogProps {
-    tour: tourOdataResType
+    tour: tourByCompanyResType
     open: boolean
     onOpenChange: (open: boolean) => void
     onCloseSuccess: (updatedTour: TourResType) => void
 }
 
-export function CloseToursDialog({ tour, open, onOpenChange }: CloseToursDialogProps) {
-    const [isDeleting, setIsDeleting] = useState(false)
+export function CloseToursDialog({ tour, open, onOpenChange, onCloseSuccess }: CloseToursDialogProps) {
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [remarkBody, setRemarkBody] = useState("")
 
     const handleDelete = async () => {
         console.log(tour.id)
         setIsDeleting(true)
         try {
-            //fetch api
-            const response = await tourApiService.closeTour(tour.id);
+
+            // Call API with both ID and body
+            const response = await tourApiService.closeTour(tour.id, remarkBody);
+
             if (response.payload.success === true) {
                 toast.success("Đóng tour thành công~!")
+                if (onCloseSuccess) {
+                    onCloseSuccess(response.payload)
+                }
             }
             onOpenChange(false)
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Failed to delete employee")
+            toast.error(error instanceof Error ? error.message : "Đóng tour thất bại")
         } finally {
             setIsDeleting(false)
         }
@@ -50,9 +56,15 @@ export function CloseToursDialog({ tour, open, onOpenChange }: CloseToursDialogP
                 <AlertDialogHeader>
                     <AlertDialogTitle>Bạn có chắc?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Bạn có chắc chắn muốn đóng tour <span>{tour.title}</span> này không?
+                        Bạn có chắc chắn muốn đóng tour <span className="font-semibold">{tour.title}</span>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
+                <textarea
+                    className="w-full h-24 p-2 border rounded"
+                    placeholder="Nhập lý do đóng tour"
+                    value={remarkBody}
+                    onChange={(e) => setRemarkBody(e.target.value)}
+                />
                 <AlertDialogFooter>
                     <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
                     <Button
