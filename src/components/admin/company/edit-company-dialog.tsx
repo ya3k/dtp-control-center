@@ -19,12 +19,9 @@ interface EditCompanyDialogProps {
     onEditComplete: (updatedCompany: CompanyResType) => void
 }
 
-// Infer the type from the schema
-
 export function EditCompanyDialog({ open, onOpenChange, company, onEditComplete }: EditCompanyDialogProps) {
     const [isSubmitting, setIsSubmitting] = useState(false)
 
-    // Initialize the form with useForm hook
     const form = useForm<TCompanyPUTBodyType>({
         resolver: zodResolver(CompanyPUTSchema),
         defaultValues: {
@@ -32,12 +29,12 @@ export function EditCompanyDialog({ open, onOpenChange, company, onEditComplete 
             name: company?.name || "",
             email: company?.email || "",
             phone: company?.phone || "",
+            address: company?.address || "",
             taxCode: company?.taxCode || "",
             commissionRate: company?.commissionRate || 0,
         },
     })
 
-    // Update form values when company changes
     useEffect(() => {
         if (company) {
             form.reset({
@@ -45,27 +42,26 @@ export function EditCompanyDialog({ open, onOpenChange, company, onEditComplete 
                 name: company.name || "",
                 email: company.email || "",
                 phone: company.phone || "",
+                address: company.address || "",
                 taxCode: company.taxCode || "",
                 commissionRate: company.commissionRate || 0,
             })
         }
     }, [company, form])
 
-    // Define the submit handler
     async function onSubmit(data: TCompanyPUTBodyType) {
         setIsSubmitting(true)
         try {
-            // Call API to update company
-            await companyApiRequest.update(data)
+            console.log(JSON.stringify(data))
 
+            await companyApiRequest.update(data)
+            console.log(JSON.stringify(data))
             const updatedCompany: CompanyResType = {
-                ...company!, // Keep all original properties
-                ...data, // Override with updated fields
+                ...company!,
+                ...data,
             }
-            // Show success toast
             toast.success(`Đã cập nhật thông tin công ty ${data.name}`)
 
-            // Close dialog and refresh list
             onOpenChange(false)
             onEditComplete(updatedCompany)
         } catch (error) {
@@ -129,6 +125,20 @@ export function EditCompanyDialog({ open, onOpenChange, company, onEditComplete 
 
                         <FormField
                             control={form.control}
+                            name="address"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Địa chỉ</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Địa chỉ" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
                             name="taxCode"
                             render={({ field }) => (
                                 <FormItem>
@@ -140,6 +150,7 @@ export function EditCompanyDialog({ open, onOpenChange, company, onEditComplete 
                                 </FormItem>
                             )}
                         />
+
                         <FormField
                             control={form.control}
                             name="commissionRate"
@@ -147,9 +158,9 @@ export function EditCompanyDialog({ open, onOpenChange, company, onEditComplete 
                                 <FormItem>
                                     <FormLabel>Phần trăm hoa hồng</FormLabel>
                                     <FormControl>
-                                        <Input 
-                                            type="number" 
-                                            placeholder="Phần trăm hoa hồng" 
+                                        <Input
+                                            type="number"
+                                            placeholder="Phần trăm hoa hồng"
                                             {...field}
                                             onChange={(e) => field.onChange(Number(e.target.value))}
                                             value={field.value || ''}
@@ -159,6 +170,7 @@ export function EditCompanyDialog({ open, onOpenChange, company, onEditComplete 
                                 </FormItem>
                             )}
                         />
+
                         <DialogFooter className="mt-6">
                             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                                 Hủy
@@ -180,4 +192,3 @@ export function EditCompanyDialog({ open, onOpenChange, company, onEditComplete 
         </Dialog>
     )
 }
-

@@ -4,25 +4,27 @@ import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Eye, Loader2, Copy, Check } from "lucide-react"
-import { TransactionType } from "@/schemaValidations/wallet.schema"
+import { Loader2, Copy, Check, CheckCircle, XCircle } from "lucide-react"
+import { AdminExternalTransactionType } from "@/schemaValidations/wallet.schema"
 import { ColumnDef, ColumnToggleDropdown } from "@/components/common/table/column-toggle-dropdown"
 import { formatPrice } from "@/lib/utils"
 import { toast } from "sonner"
 
-interface TransactionTableProps {
-  transactions: TransactionType[]
+interface RequestWithdrawTableProps {
+  withdrawRequests: AdminExternalTransactionType[]
   loading: boolean
   resetFilters: () => void
-  onViewDetails?: (transaction: TransactionType) => void
+  onApprove?: (requestId: string) => void
+  onReject?: (requestId: string) => void
 }
 
-export function TransactionTable({
-  transactions,
+export function RequestWithdrawTable({
+  withdrawRequests,
   loading,
   resetFilters,
-  onViewDetails
-}: TransactionTableProps) {
+  onApprove,
+  onReject
+}: RequestWithdrawTableProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
   const handleCopy = async (text: string, label: string) => {
@@ -37,21 +39,21 @@ export function TransactionTable({
   }
 
   // Define column configuration
-  const columns: ColumnDef<TransactionType>[] = [
+  const columns: ColumnDef<AdminExternalTransactionType>[] = [
     {
       id: "id",
       header: "ID",
       accessorKey: "id",
-      cell: (transaction) => (
+      cell: (request) => (
         <div className="flex items-center gap-2">
-          <span className="font-mono text-xs">{transaction.id.substring(0, 8)}...</span>
+          <span className="font-mono text-xs">{request.id.substring(0, 8)}...</span>
           <Button
             variant="ghost"
             size="icon"
             className="h-6 w-6"
-            onClick={() => handleCopy(transaction.id, "ID")}
+            onClick={() => handleCopy(request.id, "ID")}
           >
-            {copiedId === transaction.id ? (
+            {copiedId === request.id ? (
               <Check className="h-3 w-3" />
             ) : (
               <Copy className="h-3 w-3" />
@@ -64,9 +66,9 @@ export function TransactionTable({
     },
     {
       id: "createdAt",
-      header: "Ngày giao dịch",
-      accessorKey: "createdAt",
-      cell: (transaction) => new Date(transaction.createdAt).toLocaleDateString('vi-VN', {
+      header: "Ngày yêu cầu",
+      accessorKey: "createAt",
+      cell: (request) => new Date(request.createdAt).toLocaleDateString('vi-VN', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -76,47 +78,58 @@ export function TransactionTable({
       enableHiding: false, // Required column
     },
     {
-      id: "type",
-      header: "Loại giao dịch",
-      accessorKey: "type",
-      cell: (transaction) => {
-        const type = transaction.type;
-        type BadgeVariant = "default" | "destructive" | "outline" | "secondary" | "refund" | "active" | "transfer";
+      id: "companyName",
+      header: "Công ty",
+      accessorKey: "companyName",
+      cell: (request) => request.companyName || "—",
+      enableHiding: true,
+    },
+    {
+      id: "externalTransactionCode",
+      header: "Mã yêu cầu",
+      accessorKey: "externalTransactionCode",
+      cell: (request) => (
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-xs">{request.externalTransactionCode}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => handleCopy(request.externalTransactionCode, "Mã giao dịch")}
+          >
+            {copiedId === request.externalTransactionCode ? (
+              <Check className="h-3 w-3" />
+            ) : (
+              <Copy className="h-3 w-3" />
+            )}
+          </Button>
+        </div>
+      ),
+      enableHiding: true,
+    },
+    {
+      id: "status",
+      header: "Trạng thái",
+      accessorKey: "status",
+      cell: (request) => {
+        const status = request.status;
+        type BadgeVariant = "default" | "destructive" | "outline" | "secondary" | "pending" | "success";
         let badgeVariant: BadgeVariant = "default";
         let label = "Không xác định";
 
-        switch (type) {
-          case "Withdraw":
+        switch (status) {
+          case "Pending":
+            badgeVariant = "pending";
+            label = "Chờ xử lý";
+            break;
+          case "Rejected":
             badgeVariant = "destructive";
-            label = "Rút tiền";
+            label = "Từ chối";
             break;
-          case "Deposit":
-            badgeVariant = "secondary";
-            label = "Nạp tiền";
-            break;
-          case "Transfer":
-            badgeVariant = "transfer";
-            label = "Chuyển tiền";
-            break;
-          case "ThirdPartyPayment":
-            badgeVariant = "outline";
-            label = "Thanh toán bên thứ ba";
-            break;
-          case "Payment":
-            badgeVariant = "secondary";
-            label = "Thanh toán";
-            break;
-          case "Receive":
-            badgeVariant = "active";
-            label = "Nhận tiền";
-            break;
-          case "Refund":
-            badgeVariant = "refund";
-            label = "Hoàn tiền";
-            break;
+
           default:
             badgeVariant = "default";
-            label = "Không xác định";
+            label = "Hoàn thành";
         }
 
         return (
@@ -132,15 +145,11 @@ export function TransactionTable({
       id: "amount",
       header: "Số tiền",
       accessorKey: "amount",
-      cell: (transaction) => {
-        const amount = transaction.amount;
-        const isNegative = transaction.type === "Withdraw";
-        const isRefund = transaction.type === "Refund";
-        const isTransfer = transaction.type === "Transfer";
-
+      cell: (request) => {
+        const amount = request.amount;
         return (
-          <span className={`font-semibold text-lg ${isNegative ? "text-destructive" : isRefund ? "text-yellow-600" : isTransfer ? "text-blue-600" : "text-green-600"}`}>
-            {isNegative ? "- " : isRefund ? "" : isTransfer ? "" : "+ "}{formatPrice(Math.abs(amount))}
+          <span className="font-semibold text-lg text-destructive">
+            - {formatPrice(Math.abs(amount))}
           </span>
         );
       },
@@ -151,25 +160,48 @@ export function TransactionTable({
       id: "description",
       header: "Mô tả",
       accessorKey: "description",
-      cell: (transaction) => transaction.description || "—",
+      cell: (request) => request.description || "—",
       enableHiding: true,
     },
     {
       id: "actions",
       header: "Thao tác",
-      cell: (transaction) => (
+      cell: (request) => (
         <div className="flex justify-end gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onViewDetails && onViewDetails(transaction)}
-            title="Xem chi tiết"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
+          {request.status === "Pending" && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onApprove && onApprove(request.id)}
+                className="flex items-center gap-1"
+              >
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span>Duyệt</span>
+              </Button>
+              {/* <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onReject && onReject(request.id)}
+                className="flex items-center gap-1"
+              >
+                <XCircle className="h-4 w-4 text-red-500" />
+                <span>Từ chối</span>
+              </Button> */}
+            </>
+          )}
+          {(request.status === "Approved" || request.status === "Processing") && (
+            <Badge variant="secondary">Đang xử lý</Badge>
+          )}
+          {request.status === "Completed" && (
+            <Badge variant="success">Đã hoàn thành</Badge>
+          )}
+          {request.status === "Rejected" && (
+            <Badge variant="destructive">Đã từ chối</Badge>
+          )}
         </div>
       ),
-      enableHiding: true,
+      enableHiding: false,
       align: "center",
     },
   ]
@@ -190,10 +222,10 @@ export function TransactionTable({
     )
   }
 
-  if (transactions.length === 0) {
+  if (withdrawRequests.length === 0) {
     return (
       <div className="text-center p-8">
-        <h3 className="text-lg font-medium">Không tìm thấy giao dịch nào</h3>
+        <h3 className="text-lg font-medium">Không tìm thấy yêu cầu rút tiền nào</h3>
         <p className="text-sm text-muted-foreground mt-2">
           Thử thay đổi bộ lọc hoặc tìm kiếm để xem nhiều kết quả hơn.
         </p>
@@ -239,17 +271,17 @@ export function TransactionTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {transactions.map((transaction) => (
-              <TableRow key={transaction.id}>
+            {withdrawRequests.map((request) => (
+              <TableRow key={request.id}>
                 {visibleColumnDefs.map((column) => (
                   <TableCell
-                    key={`${transaction.id}-${column.id}`}
+                    key={`${request.id}-${column.id}`}
                     className={
                       column.align === "right" ? "text-right" :
                         (column.align === "center" ? "text-center" : undefined)
                     }
                   >
-                    {column.cell(transaction)}
+                    {column.cell(request)}
                   </TableCell>
                 ))}
               </TableRow>

@@ -1,6 +1,9 @@
 
 export const links = {
     login: { href: "/login", label: "Đăng nhập" },
+    home: { href: "/", label: "Trang chủ" },
+    companyConfirm: { href: "/confirm-account", label: "Xác thực tài khoản công ty" },
+
 }
 
 export const adminLinks = {
@@ -22,6 +25,7 @@ export const nextServer = {
     setToken: "/api/auth/set-token",
     logout: "/api/auth/logout",
     refreshToken: "/api/auth/refresh-token",
+    confirmation: "/api/auth/confirmation",
 }
 
 export const apiEndpoint = {
@@ -30,6 +34,7 @@ export const apiEndpoint = {
     register: "/api/authentication/register",
     logout: "api/authentication/logout",
     refresh: "/api/authentication/refresh",
+    confirmation: "/api/authentication/confirmation",
     //user
     user: `/api/user`,
     profile: "/api/user/me",
@@ -74,6 +79,9 @@ export const apiEndpoint = {
     otp: `/api/wallet/otp`,
     transaction: `/api/wallet/transaction`,
     transactionOdata: `/odata/wallet`,
+
+    //order
+    orderOdata: `/odata/order`,
 
     // analys
     opAnalys: `/api/tour/operator/analys`,

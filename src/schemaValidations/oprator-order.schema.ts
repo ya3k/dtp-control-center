@@ -48,4 +48,4 @@ export const TourOrderSchema = z.object({
 });
 
 // Optional: TypeScript type from schema
-export type TourOrder = z.infer<typeof TourOrderSchema>;
+export type TourOrderType = z.infer<typeof TourOrderSchema>;

@@ -12,6 +12,7 @@ import { UpdateTourDialog } from "@/components/operator/tours/edit-tour/edit-tou
 import { TablePagination } from "@/components/admin/common-table/table-pagination"
 import { CloseToursDialog } from "@/components/operator/tours/delete-tour/close-tour-dialog"
 import { tourByCompanyResType } from "@/schemaValidations/tour-operator.shema"
+import { OrderToursHistoryDialog } from "@/components/operator/order/order-dialog"
 
 export default function OpTourDataTable() {
   // Data state
@@ -34,7 +35,12 @@ export default function OpTourDataTable() {
   //Edit state
   const [selectedTour, setSelectedTour] = useState<tourByCompanyResType | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+
+  //close tour state
   const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false)
+
+  //view order state
+  const [isViewOrderDialogOpen, setIsViewOrderDialogOpen] = useState(false)
 
   // Debounce search term
   useEffect(() => {
@@ -132,6 +138,17 @@ export default function OpTourDataTable() {
     setSelectedTour(null)
     fetchTours(); // Refresh the data
   }
+
+  //handle view order
+  const handleViewOrder = (tour: tourByCompanyResType) => {
+    setSelectedTour(tour)
+    setIsViewOrderDialogOpen(true)
+  }
+  const handleViewOrderSuccess = () => {
+    setSelectedTour(null)
+    fetchTours(); // Refresh the data
+  }
+
   // Function to truncate description text
   const truncateDescription = (text: string, maxLength = 50): string => {
     if (!text) return ""
@@ -201,28 +218,30 @@ export default function OpTourDataTable() {
         </CardHeader>
 
         {/* Search and Filters */}
-        <OpTourFilterCard 
-          searchTerm={searchTerm} 
-          setSearchTerm={setSearchTerm} 
+        <OpTourFilterCard
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
           isDeleted={isDeleted}
           setIsDeleted={setIsDeleted}
-          pageSize={pageSize} 
-          setPageSize={setPageSize} 
+          pageSize={pageSize}
+          setPageSize={setPageSize}
         />
-        
+
         {/* Table */}
         <div className="rounded-md border">
-          <OpTourTable 
-            tours={tours} 
-            totalCount={totalCount} 
-            loading={loading} 
-            resetFilters={resetFilters} 
-            truncateDescription={truncateDescription} 
+          <OpTourTable
+            tours={tours}
+            totalCount={totalCount}
+            loading={loading}
+            resetFilters={resetFilters}
+            truncateDescription={truncateDescription}
             onEditTour={handleEditTour}
             onCloseTour={handleCloseTour}
+            onViewBooking={handleViewOrder}
+
           />
         </div>
-        
+
         {/* Pagination */}
         <TablePagination
           currentPage={currentPage}
@@ -265,6 +284,23 @@ export default function OpTourDataTable() {
           onCloseSuccess={handleCloseSuccess}
         />
       )}
+
+      {/* view order dialog */}
+      {selectedTour && (
+        <OrderToursHistoryDialog
+          tour={selectedTour}
+          open={isViewOrderDialogOpen}
+          onOpenChange={(isOpen) => {
+            setIsViewOrderDialogOpen(isOpen)
+            if (!isOpen) {
+              setSelectedTour(null)
+              fetchTours()
+            }
+          }}
+        />
+      )}
+
+
     </div>
   )
 }

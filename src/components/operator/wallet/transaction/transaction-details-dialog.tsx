@@ -112,7 +112,7 @@ export function TransactionDetailsDialog({
     switch (type) {
       case 0: return { label: "Nạp tiền", variant: "success" as const } // Deposit
       case 1: return { label: "Rút tiền", variant: "destructive" as const } // Withdraw
-      case 2: return { label: "Chuyển tiền", variant: "warning" as const } // Transfer
+      case 2: return { label: "Chuyển tiền", variant: "transfer" as const } // Transfer
       case 3: return { label: "Thanh toán bên thứ ba", variant: "outline" as const } // ThirdPartyPayment
       case 4: return { label: "Thanh toán", variant: "secondary" as const } // Payment
       case 5: return { label: "Nhận tiền", variant: "success" as const } // Receive
@@ -126,7 +126,7 @@ export function TransactionDetailsDialog({
     switch (typeString) {
       case "Deposit": return { label: "Nạp tiền", variant: "success" as const }
       case "Withdraw": return { label: "Rút tiền", variant: "destructive" as const } 
-      case "Transfer": return { label: "Chuyển tiền", variant: "warning" as const }
+      case "Transfer": return { label: "Chuyển tiền", variant: "transfer" as const }
       case "ThirdPartyPayment": return { label: "Thanh toán bên thứ ba", variant: "outline" as const }
       case "Payment": return { label: "Thanh toán", variant: "secondary" as const } 
       case "Receive": return { label: "Nhận tiền", variant: "success" as const }
@@ -220,8 +220,18 @@ export function TransactionDetailsDialog({
 
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">Số tiền</p>
-                <p className={`font-bold ${transaction.type === "Withdraw" ? "text-destructive" : "text-green-600"}`}>
-                  {transaction.type === "Withdraw" ? "-" : "+"}{formatPrice(Math.abs(transaction.amount || 0))}
+                <p className={`font-bold ${
+                  transaction.type === "Withdraw" 
+                    ? "text-destructive" 
+                    : transaction.type === "Transfer"
+                    ? "text-blue-600"
+                    : "text-green-600"
+                }`}>
+                  {transaction.type === "Transfer" 
+                    ? "" 
+                    : transaction.type === "Withdraw"
+                    ? "-"
+                    : "+"}{formatPrice(Math.abs(transaction.amount || 0))}
                 </p>
               </div>
               
