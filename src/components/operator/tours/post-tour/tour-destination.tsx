@@ -468,7 +468,7 @@ export default function TourDestinationForm() {
                                     }
                                   </div>
                                   <div className="flex gap-2">
-                                    <Button
+                                    {/* <Button
                                       type="button"
                                       variant="outline"
                                       size="sm"
@@ -479,8 +479,8 @@ export default function TourDestinationForm() {
                                       disabled={idx === 0}
                                     >
                                       <ChevronUp className="h-4 w-4" />
-                                    </Button>
-                                    <Button
+                                    </Button> */}
+                                    {/* <Button
                                       type="button"
                                       variant="outline"
                                       size="sm"
@@ -491,7 +491,7 @@ export default function TourDestinationForm() {
                                       disabled={idx === dayDestinations.length - 1}
                                     >
                                       <ChevronDown className="h-4 w-4" />
-                                    </Button>
+                                    </Button> */}
                                     <Button
                                       type="button"
                                       variant="ghost"
