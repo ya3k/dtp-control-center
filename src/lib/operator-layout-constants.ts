@@ -11,8 +11,8 @@ export const operatorItems: SidebarItem[] = [
         url: "",
         icon: Torus,
         subItems: [
-            { title: "Danh Sách Tours", url: "/operator/tours", icon: Calendar },
-            { title: "Tạo Tours", url: "/operator/tours/create", icon: MapPin },
+            { title: "Danh Sách Tour", url: "/operator/tours", icon: Calendar },
+            { title: "Tạo Tour", url: "/operator/tours/create", icon: MapPin },
         ],
     },
     // {

@@ -9,10 +9,11 @@ import { UserResType } from "@/schemaValidations/admin-user.schema"
 import { UserTable } from "@/components/admin/users/user-table"
 import { UserTableFilterCard } from "@/components/admin/users/user-table-filter"
 import userApiRequest from "@/apiRequests/user"
+import companyApiRequest from "@/apiRequests/company"
 import { CreateUserDialog } from "@/components/admin/users/create-user-dialog"
 import { DeleteUsersDialog } from "@/components/admin/users/delete-user-dialog"
 import { EditUserDialog } from "@/components/admin/users/edit-user-dialog"
-import { toast } from "sonner"
+import { CompanyResType } from "@/schemaValidations/company.schema"
 
 export default function UserDataTable() {
   // Data state
@@ -20,6 +21,10 @@ export default function UserDataTable() {
   const [loading, setLoading] = useState<boolean>(true)
   const [totalCount, setTotalCount] = useState<number>(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  
+  // Companies state
+  const [companies, setCompanies] = useState<CompanyResType[]>([])
+  const [loadingCompanies, setLoadingCompanies] = useState(false)
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1)
@@ -40,6 +45,29 @@ export default function UserDataTable() {
 
   // Delete dialog state
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+
+  // Fetch companies
+  const fetchCompanies = async () => {
+    setLoadingCompanies(true)
+    try {
+      // Fetch companies for dropdown, with error handling
+      const companiesResponse = await companyApiRequest.getWithOData()
+      console.log(JSON.stringify(companiesResponse))
+      
+      setCompanies(companiesResponse.payload.value || [])
+    } catch (error) {
+      // This will catch any errors not already handled in the Promise
+      console.error("Error in fetchCompanies:", error)
+      // Don't throw, just keep empty companies array
+    } finally {
+      setLoadingCompanies(false)
+    }
+  }
+
+  // Fetch companies on component mount
+  useEffect(() => {
+    fetchCompanies()
+  }, [])
 
   // Debounce search term
   useEffect(() => {
@@ -94,19 +122,22 @@ export default function UserDataTable() {
       }
 
       // Ordering
-      params.append("$orderby", "userName asc")
+      // params.append("$orderby", "createdAt desc")
 
       // Construct the OData query string
       const queryString = `?${params.toString()}`
       console.log(queryString)
 
-      // Use userApiRequest instead of userApi
+      // Use userApiRequest with error handling
       const response = await userApiRequest.getWithOdata(queryString)
-      console.log(JSON.stringify(response))
-      setUsers(response.payload?.value)
+      console.log(JSON.stringify(response.payload))
+
+      
+      setUsers(response.payload.value || [])
       setTotalCount(response.payload["@odata.count"] || 0)
     } catch (error) {
-      console.error("Error fetching user data:", error)
+      console.error("Error in fetchUsers:", error)
+      // Don't throw, keep the existing state
     } finally {
       setLoading(false)
     }
@@ -120,7 +151,7 @@ export default function UserDataTable() {
   // Handle refresh
   const handleRefresh = async () => {
     setIsRefreshing(true)
-    await fetchUsers()
+    await Promise.all([fetchUsers(), fetchCompanies()])
     setIsRefreshing(false)
   }
 
@@ -239,6 +270,8 @@ export default function UserDataTable() {
           companyFilter={companyFilter}
           setCompanyFilter={setCompanyFilter}
           onClearFilters={resetFilters}
+          companies={companies}
+          loadingCompanies={loadingCompanies}
         />
 
         {/* Table */}

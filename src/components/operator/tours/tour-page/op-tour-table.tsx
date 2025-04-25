@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Eye, History, Loader2, Pencil, X } from "lucide-react"
+import { History, Loader2, Pencil, X } from "lucide-react"
 import { tourByCompanyResType } from "@/schemaValidations/tour-operator.shema"
 import { ColumnDef, ColumnToggleDropdown } from "@/components/common/table/column-toggle-dropdown"
 
@@ -85,7 +85,6 @@ export function OpTourTable({
             size="icon"
             onClick={() => onViewBooking && onViewBooking(info)}
             title="Xem lịch sử order"
-            disabled={info.isDeleted}
           >
             <History className="h-3 w-3 text-green-600" />
           </Button>

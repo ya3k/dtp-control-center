@@ -7,7 +7,7 @@ import { RefreshCcw } from "lucide-react"
 import { TablePagination } from "@/components/admin/common-table/table-pagination"
 import { AdminExternalTransactionType } from "@/schemaValidations/wallet.schema"
 import { walletApiRequest } from "@/apiRequests/wallet"
-import { TransactionFilterCard } from "@/components/operator/wallet/transaction/transaction-filter-card"
+import { WithdrawFilterCard } from "@/components/operator/wallet/transaction/withdraw-filter-card"
 import { RequestWithdrawTable } from "@/components/operator/wallet/transaction/request-withdraw-table"
 
 export default function RequestWithdrawDataTable() {
@@ -83,10 +83,10 @@ export default function RequestWithdrawDataTable() {
         filterConditions.push(`status eq '${statusFilter}'`)
       }
 
-      // Date range filter
+      // Date range filter  
       if (dateFilter.startDate) {
         const startDateStr = dateFilter.startDate.toISOString()
-        filterConditions.push(`createAt ge ${startDateStr}`)
+        filterConditions.push(`createdAt ge ${startDateStr}`)
       }
       
       if (dateFilter.endDate) {
@@ -217,12 +217,12 @@ export default function RequestWithdrawDataTable() {
           </div>
         </CardHeader>
 
-        {/* Filter card - Using the existing TransactionFilterCard but adapting the props */}
-        <TransactionFilterCard 
+        {/* Filter card - Using the specialized WithdrawFilterCard */}
+        <WithdrawFilterCard 
           searchTerm={searchTerm} 
           setSearchTerm={setSearchTerm} 
-          typeFilter={statusFilter} 
-          setTypeFilter={setStatusFilter}
+          statusFilter={statusFilter} 
+          setStatusFilter={setStatusFilter}
           dateFilter={dateFilter}
           setDateFilter={setDateFilter}
           pageSize={pageSize} 

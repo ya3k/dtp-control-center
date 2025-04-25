@@ -400,7 +400,7 @@ export default function TourDestinationForm() {
               </div>
             )}
 
-            <ScrollArea className="h-[600px] pr-4">
+            <ScrollArea className="h-[700px] pr-4">
               <Accordion 
                 type="multiple" 
                 value={expandedDays} 
@@ -512,7 +512,7 @@ export default function TourDestinationForm() {
                                     name={`destinations.${destinationIndex}.destinationId`}
                                     render={({ field }) => (
                                       <FormItem>
-                                        <FormLabel>Điểm đến</FormLabel>
+                                        <FormLabel>Điểm đến <span className='text-red-600'>*</span></FormLabel>
                                         <DestinationSearch
                                           destinations={destinations}
                                           value={field.value}
@@ -530,7 +530,7 @@ export default function TourDestinationForm() {
                                       name={`destinations.${destinationIndex}.startTime`}
                                       render={({ field }) => (
                                         <FormItem>
-                                          <FormLabel>Thời gian bắt đầu</FormLabel>
+                                          <FormLabel>Thời gian bắt đầu <span className='text-red-600'>*</span></FormLabel>
                                           <FormControl>
                                             <Input
                                               type="time"
@@ -550,7 +550,7 @@ export default function TourDestinationForm() {
                                       name={`destinations.${destinationIndex}.endTime`}
                                       render={({ field }) => (
                                         <FormItem>
-                                          <FormLabel>Thời gian kết thúc</FormLabel>
+                                          <FormLabel>Thời gian kết thúc <span className='text-red-600'>*</span></FormLabel>
                                           <FormControl>
                                             <Input
                                               type="time"
@@ -705,9 +705,9 @@ export default function TourDestinationForm() {
                                                 name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.name`}
                                                 render={({ field }) => (
                                                   <FormItem>
-                                                    <FormLabel>Tên hoạt động</FormLabel>
+                                                    <FormLabel>Tên hoạt động <span className='text-red-600'>*</span></FormLabel>
                                                     <FormControl>
-                                                      <Input {...field} />
+                                                      <Input {...field} placeholder='Nhập tên hoạt động' />
                                                     </FormControl>
                                                     <FormMessage />
                                                   </FormItem>
@@ -720,7 +720,7 @@ export default function TourDestinationForm() {
                                                   name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.startTime`}
                                                   render={({ field }) => (
                                                     <FormItem>
-                                                      <FormLabel>Thời gian bắt đầu</FormLabel>
+                                                      <FormLabel>Thời gian bắt đầu <span className='text-red-600'>*</span></FormLabel>
                                                       <FormControl>
                                                         <Input type="time" step="1" {...field} />
                                                       </FormControl>
@@ -734,7 +734,7 @@ export default function TourDestinationForm() {
                                                   name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.endTime`}
                                                   render={({ field }) => (
                                                     <FormItem>
-                                                      <FormLabel>Thời gian kết thúc</FormLabel>
+                                                      <FormLabel>Thời gian kết thúc <span className='text-red-600'>*</span></FormLabel>
                                                       <FormControl>
                                                         <Input type="time" step="1" {...field} />
                                                       </FormControl>

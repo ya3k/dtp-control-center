@@ -97,7 +97,7 @@ export function DeleteCategoryDialog({
                                 Đang xóa...
                             </>
                         ) : (
-                            'Xóa điểm đến'
+                            'Xóa danh mục'
                         )}
                     </Button>
                 </DialogFooter>

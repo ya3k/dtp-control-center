@@ -93,7 +93,7 @@ export function CompanyTable({
       id: "commissionRate",
       header: "Hoa hồng",
       accessorKey: "commissionRate",
-      cell: (company) => company.commissionRate,
+      cell: (company) => <p>{company.commissionRate} %</p>,
       enableHiding: true,
       align: "center",
     },

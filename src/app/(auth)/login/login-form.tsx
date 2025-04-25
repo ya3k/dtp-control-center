@@ -95,7 +95,7 @@ export function LoginForm({
               <FormItem>
                 <FormLabel className="text-core">Tên người dùng hoặc email</FormLabel>
                 <FormControl >
-                  <Input {...field} placeholder="Nhập tên người dùng"/>
+                  <Input {...field} placeholder="Nhập tên người dùng hoặc email"/>
                 </FormControl>
                 <FormMessage />
               </FormItem>

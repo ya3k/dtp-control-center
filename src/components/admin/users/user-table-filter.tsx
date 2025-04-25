@@ -1,13 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { TableSearchBar } from "@/components/admin/common-table/table-search-bar"
 import { TablePageSizeSelector } from "@/components/admin/common-table/table-page-size"
 import { Role } from "@/schemaValidations/admin-user.schema"
-import companyApiRequest from "@/apiRequests/company"
 import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
 
@@ -21,6 +19,8 @@ interface FilterCardProps {
     companyFilter?: string
     setCompanyFilter?: (value: string) => void
     onClearFilters?: () => void
+    companies: {id: string, name: string}[]
+    loadingCompanies?: boolean
 }
 
 export function UserTableFilterCard({
@@ -32,31 +32,12 @@ export function UserTableFilterCard({
     setRoleFilter = () => {},
     companyFilter = "",
     setCompanyFilter = () => {},
-    onClearFilters
+    onClearFilters,
+    companies = [],
+    loadingCompanies = false
 }: FilterCardProps) {
-    const [companies, setCompanies] = useState<{id: string, name: string}[]>([])
-    const [loading, setLoading] = useState(false)
-
     // Get all roles from the Role enum
     const roleOptions = Object.values(Role)
-
-    useEffect(() => {
-        const fetchCompanies = async () => {
-            setLoading(true)
-            try {
-                // Fetch companies for dropdown
-                const companiesResponse = await companyApiRequest.getWithOData();
-                console.log(JSON.stringify(companiesResponse.payload.value))
-                setCompanies(companiesResponse?.payload.value || [])
-            } catch (error) {
-                console.error("Error fetching companies:", error)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        fetchCompanies()
-    }, [])
 
     // Handle clearing all filters
     const handleClearFilters = () => {
@@ -109,7 +90,7 @@ export function UserTableFilterCard({
                         <Select
                             value={companyFilter}
                             onValueChange={setCompanyFilter}
-                            disabled={loading || companies.length === 0}
+                            disabled={loadingCompanies || companies.length === 0}
                         >
                             <SelectTrigger id="company-filter">
                                 <SelectValue placeholder="Tất cả công ty" />
