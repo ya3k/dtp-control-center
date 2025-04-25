@@ -14,7 +14,7 @@ export enum TicketKind {
 export const BasicTourInfoSchema = z.object({
   title: z.string()
     .min(5, "Tên tour phải có ít nhất 5 ký tự")
-    .max(100, "Tên tour không được vượt quá 100 ký tự"),
+    .max(250, "Tên tour không được vượt quá 100 ký tự"),
   img: z.array(z.string()),
   categoryid: z.string(),
   description: z.string()
@@ -162,4 +162,53 @@ export type POSTTourDestinationType = z.infer<typeof DestinationSchema>;
 export type POSTTourTicketType = z.infer<typeof TicketSchema>;
 export type POSTTourType = z.infer<typeof TourSchema>;
 
+//put tour destination
+export const destinationResActivitySchema = z.object({
+  name: z.string(),
+  startTime: z.string(),
+  endTime: z.string(),
+  sortOrder: z.number(),
+});
+
+export const destinationResSchema = z.object({
+  id: z.string().uuid(),
+  destinationId: z.string().uuid(),
+  destinationActivities: z.array(destinationResActivitySchema),
+  destinationName: z.string(),
+  startTime: z.string(),
+  endTime: z.string(),
+  sortOrder: z.number(),
+  sortOrderByDate: z.number(),
+  img: z.array(z.any()), // if you have a structure for image items, replace `z.any()` with that
+});
+
+export const responseSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+  data: z.array(destinationResSchema),
+});
+
+// Type definitions for response
+export type TourDestinationResType = z.infer<typeof destinationResSchema>;
+export type TourDestinationActivityResType = z.infer<typeof destinationResActivitySchema>;
+export type TourDestinationResponseType = z.infer<typeof responseSchema>;
+
+
+
+export const PUTdestinationSchema = z.object({
+  destinationId: z.string().uuid(),
+  destinationActivities: z.array(destinationResActivitySchema),
+  startTime: z.string(),
+  endTime: z.string(),
+  sortOrder: z.number(),
+  sortOrderByDate: z.number(),
+  img: z.array(z.string()),
+});
+
+export const PUTTourDestinationsSchema = z.object({
+  tourId: z.string().uuid(),
+  destinations: z.array(PUTdestinationSchema),
+});
+
+export type PUTTourDestinationsType = z.infer<typeof PUTTourDestinationsSchema>;
 

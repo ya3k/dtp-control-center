@@ -10,12 +10,16 @@ import { WalletWithdrawDialog } from "@/components/operator/wallet/wallet-withdr
 import { toast } from "sonner"
 import Link from "next/link"
 import { WalletBalanceCard } from "@/components/operator/wallet/wallet-balance-card"
+import { useAuthContext } from "@/providers/AuthProvider"
+import { UserRoleEnum } from "@/types/user"
 
 function WalletDataTable() {
     const [isLoading, setIsLoading] = useState(false)
     const [wallet, setWallet] = useState<WalletResType | undefined>(undefined)
     const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false)
     const [isRefreshing, setIsRefreshing] = useState(false)
+    const { user } = useAuthContext()
+    const isAdmin = user?.roleName === UserRoleEnum.Admin
 
     const fetchWallet = async (showToast = false) => {
         setIsLoading(true)
@@ -73,30 +77,32 @@ function WalletDataTable() {
                 fetchWallet={() => fetchWallet()}
             />
 
-            <Card className="w-full max-w-md">
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                        <CardTitle>Thiết lập xác thực OTP</CardTitle>
-                        <CardDescription>Thiết lập xác thực OTP để bảo vệ giao dịch</CardDescription>
-                    </div>
-                    <LockIcon className="h-5 w-5 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                        Thiết lập xác thực OTP sẽ giúp bảo vệ giao dịch của bạn. 
-                        Mỗi khi rút tiền, bạn sẽ cần nhập mã xác thực từ ứng dụng.
-                    </p>
-                </CardContent>
-                <CardFooter>
-                    <Link href="/operator/wallet/otp-setup" className="w-full">
-                        <Button className="w-full" variant="outline">
-                            Thiết lập xác thực OTP
-                        </Button>
-                    </Link>
-                </CardFooter>
-            </Card>
+            {!isAdmin && (
+                <Card className="w-full max-w-md">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>Thiết lập xác thực OTP</CardTitle>
+                            <CardDescription>Thiết lập xác thực OTP để bảo vệ giao dịch</CardDescription>
+                        </div>
+                        <LockIcon className="h-5 w-5 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground">
+                            Thiết lập xác thực OTP sẽ giúp bảo vệ giao dịch của bạn. 
+                            Mỗi khi rút tiền, bạn sẽ cần nhập mã xác thực từ ứng dụng.
+                        </p>
+                    </CardContent>
+                    <CardFooter>
+                        <Link href="/operator/wallet/otp-setup" className="w-full">
+                            <Button className="w-full" variant="outline">
+                                Thiết lập xác thực OTP
+                            </Button>
+                        </Link>
+                    </CardFooter>
+                </Card>
+            )}
 
-            {wallet && (
+            {!isAdmin && wallet && (
                 <WalletWithdrawDialog 
                     open={withdrawDialogOpen}
                     onOpenChange={setWithdrawDialogOpen}

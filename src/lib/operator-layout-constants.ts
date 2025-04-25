@@ -1,5 +1,5 @@
 import SidebarItem from "@/types/sidebaritems";
-import { Banknote, BookCheck, Calendar, History, Home, MapPin, TestTube, Torus, Users, Wallet, Wallet2 } from "lucide-react";
+import { Banknote, BookCheck, Calendar, History, Home, MapPin, TestTube, TicketSlash, Torus, Users, Wallet, Wallet2 } from "lucide-react";
 export const operatorItems: SidebarItem[] = [
     {
         title: "Dashboard",
