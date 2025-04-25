@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowDownIcon, Loader2, RefreshCcw } from "lucide-react"
 import { useAuthContext } from "@/providers/AuthProvider"
+import { UserRoleEnum } from "@/types/user"
 
 interface WalletBalanceCardProps {
     wallet: WalletResType | undefined
@@ -25,6 +26,7 @@ export function WalletBalanceCard({
     fetchWallet
 }: WalletBalanceCardProps) {
     const { user } = useAuthContext();
+    const isAdmin = user?.roleName === UserRoleEnum.Admin;
     
     return (
         <Card className="w-full max-w-md">
@@ -70,7 +72,7 @@ export function WalletBalanceCard({
                     </div>
                 )}
             </CardContent>
-            {wallet && wallet.balance > 0 && (
+            {!isAdmin && wallet && wallet.balance > 0 && (
                 <CardFooter>
                     <Button 
                         className="w-full" 

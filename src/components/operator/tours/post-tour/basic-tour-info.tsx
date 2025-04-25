@@ -25,6 +25,7 @@ import { toast } from "sonner"
 import CategorySearch from "../categories-search"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Image from "next/image"
+import { TiptapEditor } from "@/components/common/tiptap-editor"
 
 // Maximum number of images allowed
 const MAX_IMAGES = 5;
@@ -291,11 +292,17 @@ export default function BasicTourInfoForm() {
                 <FormItem>
                   <FormLabel>Điểm nổi bật</FormLabel>
                   <FormControl>
-                    <Textarea
+                    {/* <Textarea
                       placeholder="Nhập các điểm nổi bật của tour"
                       className="min-h-[120px]"
                       {...field}
-                    />
+                    /> */}
+                    <TiptapEditor
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder='Điểm nổi bật của tour'
+                          className="min-h-[200px] p-3 border rounded-md focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                        />
                   </FormControl>
                   <FormDescription>
                     Cung cấp các điểm nổi bật của tour.

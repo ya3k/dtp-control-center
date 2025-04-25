@@ -1,17 +1,14 @@
 import { apiEndpoint } from "@/configs/routes";
 import http from "@/lib/http";
-import {  POSTTourType } from "@/schemaValidations/crud-tour.schema";
+import {  POSTTourType, PUTTourDestinationsType, TourDestinationResponseType } from "@/schemaValidations/crud-tour.schema";
 import type {
   CreateTourBodyType,
   DELETETourScheduleBodyType,
   POSTTourScheduleBodyType,
-  PUTTourDestinationType,
   PUTTourInfoBodyType,
   TicketScheduleResType,
   tourByCompanyResType,
-  TourDestinationResType,
   TourInfoResType,
-  tourOdataResType,
   TourResType,
 } from "@/schemaValidations/tour-operator.shema";
 /**
@@ -52,10 +49,10 @@ const tourApiService = {
   },
 
   getTourDestination: async (tourId: string) => {
-    const response = await http.get<TourDestinationResType>(`${apiEndpoint.tourDestination}/${tourId}`)
+    const response = await http.get<TourDestinationResponseType>(`${apiEndpoint.tourDestination}/${tourId}`)
     return response
   },
-  putTourDesitnation: async (tourId: string, body: PUTTourDestinationType) => {
+  putTourDesitnation: async (tourId: string, body: PUTTourDestinationsType) => {
     const response = await http.put(`${apiEndpoint.tourDestination}/${tourId}`, body)
     return response
   }

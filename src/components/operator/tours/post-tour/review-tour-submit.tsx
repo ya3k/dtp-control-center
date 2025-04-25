@@ -196,8 +196,11 @@ export default function ReviewForm() {
               <p className="text-lg font-medium">{formData.title}</p>
             </div>
             <div>
-              <h3 className="font-medium text-sm text-muted-foreground mb-1">Mô tả</h3>
-              <p className="text-gray-700 leading-relaxed">{formData.description}</p>
+              <h3 className="font-medium text-sm text-muted-foreground mb-1" >Điểm nổi bật</h3>
+              <div 
+                className="text-black leading-relaxed prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={renderHtml(formData.description)}
+              />
             </div>
           </div>
           <div>
