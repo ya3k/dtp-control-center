@@ -52,7 +52,7 @@ export function EditCompanyDialog({ open, onOpenChange, company, onEditComplete 
     async function onSubmit(data: TCompanyPUTBodyType) {
         setIsSubmitting(true)
         try {
-            console.log(JSON.stringify(data))
+            // console.log(JSON.stringify(data))
 
             await companyApiRequest.update(data)
             console.log(JSON.stringify(data))
@@ -65,7 +65,7 @@ export function EditCompanyDialog({ open, onOpenChange, company, onEditComplete 
             onOpenChange(false)
             onEditComplete(updatedCompany)
         } catch (error) {
-            console.error("Error updating company:", error)
+            // console.error("Error updating company:", error)
             toast.error("Không thể cập nhật thông tin công ty")
         } finally {
             setIsSubmitting(false)

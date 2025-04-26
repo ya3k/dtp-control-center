@@ -23,11 +23,11 @@ export function OtpQrSetup() {
       if (res.status !== 200) {
         throw new Error("Failed to fetch OTP QR data")
       }
-      console.log(JSON.stringify(res))
+      // console.log(JSON.stringify(res))
       const data = await res.payload.message;
       setOtpQrData(data)
     } catch (error) {
-      console.error(error)
+      // console.error(error)
       toast.error("Không thể tải mã QR xác thực. Vui lòng thử lại sau.")
     } finally {
       setIsLoading(false)

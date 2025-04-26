@@ -68,9 +68,9 @@ export function EditDestinationDialog({
     try {
       // Call API to update destination
       const response = await destinationApiRequest.update(destination.id, data)
-      console.log(JSON.stringify(destination.id))
-      console.log(JSON.stringify(data))
-      console.log(JSON.stringify(response))
+      // console.log(JSON.stringify(destination.id))
+      // console.log(JSON.stringify(data))
+      // console.log(JSON.stringify(response))
       if (response.status !== 400) {
         // Update UI
         onEditComplete(destination)
@@ -78,8 +78,8 @@ export function EditDestinationDialog({
         onOpenChange(false)
       }
     } catch (error: any) {
-      console.error("Error updating destination:", error)
-      toast.error(error.message || "Failed to update destination")
+      // console.error("Error updating destination:", error)
+      toast.error(error.message || "lỗi khi cập nhật điểm đến")
     } finally {
       setIsSubmitting(false)
     }

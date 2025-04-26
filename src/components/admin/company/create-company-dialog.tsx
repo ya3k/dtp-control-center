@@ -41,7 +41,7 @@ function CreateCompanyDialog() {
   async function onSubmit(data: CompanyFormValues) {
     setIsSubmitting(true);
     try {
-      console.log("New Company:", JSON.stringify(data));
+      // console.log("New Company:", JSON.stringify(data));
         // Gọi API tạo công ty
         const response = await fetch("/api/companies", {
             method: "POST",

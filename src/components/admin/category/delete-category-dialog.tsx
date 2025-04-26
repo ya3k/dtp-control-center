@@ -43,13 +43,13 @@ export function DeleteCategoryDialog({
         try {
             // Call API to delete destination
             const res = await categoryApiRequest.delete(category.id)
-            console.log(JSON.stringify(res))
+            // console.log(JSON.stringify(res))
             // Update UI
             toast.success("Xóa danh mục thành công")
             onDeleteComplete(category.id)
             onOpenChange(false)
         } catch (error: any) {
-            console.error("Error deleting category:", error)
+            // console.error("Error deleting category:", error)
             toast.error(error.message || "Không thể xóa danh mục")
         } finally {
             setIsDeleting(false)

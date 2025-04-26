@@ -80,7 +80,8 @@ export function UserTable({
           </span>
         </div>
       ),
-      enableHiding: false,
+      defaultHidden: true,
+      enableHiding: true,
       align: "center", // Add center alignment
       className: "text-center", // Add text-center class
     },
@@ -97,7 +98,7 @@ export function UserTable({
           >
             <Edit className="h-4 w-4" />
           </Button>
-         
+
           <Button
             variant="ghost"
             size="icon"

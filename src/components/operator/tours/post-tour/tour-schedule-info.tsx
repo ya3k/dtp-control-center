@@ -48,7 +48,7 @@ export default function TourScheduleInfoForm() {
   });
 
   function onSubmit(data: POSTTourScheduleInfoType) {
-    console.log(JSON.stringify(data))
+    // console.log(JSON.stringify(data))
     setTourScheDuleInfo(data);
     nextStep();
   }
@@ -65,7 +65,7 @@ export default function TourScheduleInfoForm() {
                 name="openDay"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Ngày bắt đầu</FormLabel>
+                    <FormLabel>Ngày bắt đầu <span className="text-red-500">*</span></FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -111,7 +111,7 @@ export default function TourScheduleInfoForm() {
                 name="closeDay"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Ngày ngừng khai thác tour</FormLabel>
+                    <FormLabel>Ngày ngừng khai thác tour <span className="text-red-500">*</span></FormLabel>
                     <div className="space-y-2">
                       <Popover>
                         <PopoverTrigger asChild>
@@ -153,9 +153,7 @@ export default function TourScheduleInfoForm() {
                           />
                         </PopoverContent>
                       </Popover>
-                      <div className="text-sm text-muted-foreground">
-                        Thời gian kết thúc: 12:00 PM
-                      </div>
+                     
                     </div>
                     <FormDescription>
                       Chọn ngày ngừng khai thác tour
@@ -171,7 +169,7 @@ export default function TourScheduleInfoForm() {
               name="scheduleFrequency"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tần suất lịch trình</FormLabel>
+                  <FormLabel>Tần suất lịch trình <span className="text-red-500">*</span></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>

@@ -33,12 +33,12 @@ export function DeleteUsersDialog({ user, open, onOpenChange, onDeleteComplete }
         try {
             const response = await userApiRequest.delete(user.id)
             if (response.payload.success === true) {
-                toast.success(`Người dùng ${user.email} đã được xóa`)
+                toast.success(`Người dùng ${user.email} đã được vô hiệu hóa`)
                 onDeleteComplete(user.id)
                 onOpenChange(false);
             }
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Failed to delete employee")
+            toast.error(error instanceof Error ? error.message : "Lỗi khi vô hiệu hóa user")
         } finally {
             setIsDeleting(false)
         }

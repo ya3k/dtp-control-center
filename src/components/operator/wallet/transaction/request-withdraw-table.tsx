@@ -128,7 +128,7 @@ export function RequestWithdrawTable({
             break;
 
           default:
-            badgeVariant = "default";
+            badgeVariant = "success";
             label = "Hoàn thành";
         }
 

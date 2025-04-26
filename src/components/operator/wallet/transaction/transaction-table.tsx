@@ -151,7 +151,11 @@ export function TransactionTable({
       id: "description",
       header: "Mô tả",
       accessorKey: "description",
-      cell: (transaction) => transaction.description || "—",
+      cell: (transaction) => (
+        <div className="max-w-[350px] truncate">
+          {transaction.description || "—"}
+        </div>
+      ),
       enableHiding: true,
     },
     {

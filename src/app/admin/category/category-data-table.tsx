@@ -88,10 +88,10 @@ export default function CategoryDataTable() {
 
             // Construct the OData query string
             const queryString = `?${params.toString()}`
-            console.log(queryString)
+            // console.log(queryString)
             // Use categoryApiRequest instead of direct fetch
             const response = await categoryApiRequest.getWithOData(queryString)
-            console.log(JSON.stringify(response))
+            // console.log(JSON.stringify(response))
             setCategory(response.payload?.value)
             setTotalCount(response.payload["@odata.count"] || 0)
         } catch (error) {

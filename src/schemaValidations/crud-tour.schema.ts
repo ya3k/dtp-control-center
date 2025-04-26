@@ -49,9 +49,9 @@ export const destinationActivities = z.object({
   name: z.string()
     .min(3, "Tên hoạt động phải có ít nhất 3 ký tự"),
   startTime: z.string()
-    .regex(/^\d{2}:\d{2}:\d{2}$/, "Định dạng thời gian không hợp lệ. Sử dụng HH:MM:SS"),
+    .regex(/^\d{2}:\d{2}:\d{2}$/, "Hãy nhập thời gian."),
   endTime: z.string()
-    .regex(/^\d{2}:\d{2}:\d{2}$/, "Định dạng thời gian không hợp lệ. Sử dụng HH:MM:SS"),
+    .regex(/^\d{2}:\d{2}:\d{2}$/, "Hãy nhập thời gian."),
   sortOrder: z.number()
     .int("Thứ tự phải là số nguyên")
     .nonnegative("Thứ tự không được âm"),

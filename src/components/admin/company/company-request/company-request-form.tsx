@@ -14,7 +14,7 @@ import { Loader2 } from "lucide-react"
 
 export default function CompanyRequestForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  
+
   // Khởi tạo biểu mẫu với hook useForm
   const form = useForm<TCompanyQuestBodyType>({
     resolver: zodResolver(CompanyRequestSchema),
@@ -33,7 +33,7 @@ export default function CompanyRequestForm() {
     setIsSubmitting(true)
     
     try {
-      console.log(`Request body: `, JSON.stringify(data));
+      // console.log(`Request body: `, JSON.stringify(data));
       const response = await companyApiRequest.create(data);
       if (response.payload.success == true) {
         toast.success(`Đơn đăng ký đã được gửi!`)

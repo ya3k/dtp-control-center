@@ -88,10 +88,10 @@ export default function DestinationDataTable() {
 
       // Construct the OData query string
       const queryString = `?${params.toString()}`
-console.log(queryString)
+      // console.log(queryString)
       // Use destinationApiRequest instead of direct fetch
       const response = await destinationApiRequest.getAll(queryString)
-      console.log(JSON.stringify(response))
+      // console.log(JSON.stringify(response))
       setDestinations(response.payload?.value)
       setTotalCount(response.payload["@odata.count"] || 0)
     } catch (error) {
@@ -129,10 +129,7 @@ console.log(queryString)
   }
 
   const handleEditComplete = (updatedDestination: DestinationType) => {
-    // Update the destination in the local state without refetching
-    setDestinations((prevDestinations) =>
-      prevDestinations.map((dest) => (dest.id === updatedDestination.id ? updatedDestination : dest))
-    )
+   fetchDestinations()
   }
 
   // Handle delete
