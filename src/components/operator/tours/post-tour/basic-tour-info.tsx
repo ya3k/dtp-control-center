@@ -178,7 +178,7 @@ export default function BasicTourInfoForm() {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tên tour</FormLabel>
+                  <FormLabel>Tên tour <span className="text-red-500">*</span></FormLabel>
                   <FormControl>
                     <Input placeholder="Nhập tên tour" {...field} />
                   </FormControl>
@@ -195,7 +195,7 @@ export default function BasicTourInfoForm() {
               name="img"
               render={() => (
                 <FormItem>
-                  <FormLabel>Hình ảnh tour (tối đa {MAX_IMAGES} hình)</FormLabel>
+                  <FormLabel>Hình ảnh tour (tối đa {MAX_IMAGES} hình)<span className="text-red-500">*</span></FormLabel>
                   <div className="space-y-4">
                     <div className="flex items-center gap-4">
                       <Input
@@ -290,7 +290,7 @@ export default function BasicTourInfoForm() {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Điểm nổi bật</FormLabel>
+                  <FormLabel>Điểm nổi bật <span className="text-red-500">*</span></FormLabel>
                   <FormControl>
                     {/* <Textarea
                       placeholder="Nhập các điểm nổi bật của tour"

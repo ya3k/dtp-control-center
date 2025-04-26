@@ -9,6 +9,7 @@ import { AdminExternalTransactionType } from "@/schemaValidations/wallet.schema"
 import { walletApiRequest } from "@/apiRequests/wallet"
 import { WithdrawFilterCard } from "@/components/operator/wallet/transaction/withdraw-filter-card"
 import { RequestWithdrawTable } from "@/components/operator/wallet/transaction/request-withdraw-table"
+import { toast } from "sonner"
 
 export default function RequestWithdrawDataTable() {
   // Data state
@@ -104,7 +105,7 @@ export default function RequestWithdrawDataTable() {
 
       // Fetch withdrawal requests
       const response = await walletApiRequest.getAdminTransactionWithOData(queryString)
-      console.log(JSON.stringify(response))
+      // console.log(JSON.stringify(response))
       setWithdrawRequests(response.payload?.value)
       setTotalCount(response.payload["@odata.count"] || 0)
     } catch (error) {
@@ -133,7 +134,8 @@ export default function RequestWithdrawDataTable() {
       console.log(`Approving request ${requestId}`)
       const res = await walletApiRequest.acceptWithdraw(requestId);
       console.log(JSON.stringify(res))
-      
+      toast.success("Duyệt thành công")
+
       // Refresh the list after approval
       fetchWithdrawRequests()
     } catch (error) {

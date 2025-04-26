@@ -73,8 +73,8 @@ export function ApproveCompanyDialog({ open, onOpenChange, onApprovalComplete }:
         confirmUrl: `${envConfig.NEXT_PUBLIC_BASE_URL}${links.companyConfirm.href}`,
         accept: true,
       })
-      console.log(`Request body: `, JSON.stringify(respones))
-      console.log(JSON.stringify(respones))
+      // console.log(`Request body: `, JSON.stringify(respones))
+      // console.log(JSON.stringify(respones))
 
       // Remove from pending list
       setPendingCompanies((prev) => prev.filter((c) => c.id !== company.id))

@@ -148,8 +148,6 @@ export function EditTourTicketDialog({
             // Reset only the price and quantity fields, keep the ticket type
             form.setValue("ticketKindUpdates.0.newNetCost", 0);
             form.setValue("ticketKindUpdates.0.newAvailableTicket", 0);
-
-            toast.success("Đã thêm vé vào danh sách");
         } else {
             toast.error("Vui lòng nhập giá và số lượng vé lớn hơn 0");
         }
@@ -180,19 +178,19 @@ export function EditTourTicketDialog({
                 ticketKindUpdates: ticketsToSubmit,
             };
 
-            // Debug logs
-            console.log('Submitting ticket update with data:');
-            console.log('Tour ID:', tourId);
-            console.log('Date Range:', {
-                start: format(data.startDate, 'dd/MM/yyyy'),
-                end: format(data.endDate, 'dd/MM/yyyy')
-            });
-            console.log('Ticket Updates:', ticketsToSubmit.map(ticket => ({
-                type: ticketKindLabels[ticket.ticketKind as TicketKind],
-                cost: ticket.newNetCost,
-                quantity: ticket.newAvailableTicket
-            })));
-            console.log('Raw formatted data:', JSON.stringify(formattedData, null, 2));
+            // // Debug logs
+            // console.log('Submitting ticket update with data:');
+            // console.log('Tour ID:', tourId);
+            // console.log('Date Range:', {
+            //     start: format(data.startDate, 'dd/MM/yyyy'),
+            //     end: format(data.endDate, 'dd/MM/yyyy')
+            // });
+            // console.log('Ticket Updates:', ticketsToSubmit.map(ticket => ({
+            //     type: ticketKindLabels[ticket.ticketKind as TicketKind],
+            //     cost: ticket.newNetCost,
+            //     quantity: ticket.newAvailableTicket
+            // })));
+            // console.log('Raw formatted data:', JSON.stringify(formattedData, null, 2));
 
             await tourApiService.updateTourTickets(tourId, formattedData);
             form.reset();

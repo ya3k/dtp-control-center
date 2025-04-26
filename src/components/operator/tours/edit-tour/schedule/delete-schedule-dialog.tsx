@@ -73,7 +73,7 @@ export default function DeleteScheduleDialog({
                 remark: remark.trim()
             }
 
-            console.log("Delete request data:", JSON.stringify(deleteData));
+            // console.log("Delete request data:", JSON.stringify(deleteData));
 
             const response = await tourApiService.deleteTourSchedule(tourId, deleteData);
 
@@ -85,7 +85,7 @@ export default function DeleteScheduleDialog({
             onDeleteSuccess();
             setOpen(false); // Close the dialog after successful deletion
         } catch (error) {
-            console.error("Error deleting schedule:", error);
+            // console.error("Error deleting schedule:", error);
             toast.error("Không thể xóa lịch trình");
         } finally {
             setIsSubmitting(false);

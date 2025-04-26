@@ -232,12 +232,12 @@ export default function AddScheduleDialog({
                 scheduleFrequency: values.scheduleFrequency,
             };
 
-            console.log("Sending schedule data:", {
-                openDay: format(openDayFixed, 'yyyy-MM-dd HH:mm:ss'),
-                closeDay: format(closeDayFixed, 'yyyy-MM-dd HH:mm:ss'),
-                originalOpenDay: format(values.openDay, 'yyyy-MM-dd HH:mm:ss'),
-                originalCloseDay: format(values.closeDay, 'yyyy-MM-dd HH:mm:ss'),
-            });
+            // console.log("Sending schedule data:", {
+            //     openDay: format(openDayFixed, 'yyyy-MM-dd HH:mm:ss'),
+            //     closeDay: format(closeDayFixed, 'yyyy-MM-dd HH:mm:ss'),
+            //     originalOpenDay: format(values.openDay, 'yyyy-MM-dd HH:mm:ss'),
+            //     originalCloseDay: format(values.closeDay, 'yyyy-MM-dd HH:mm:ss'),
+            // });
 
             const response = await tourApiService.postTourSchedule(tourId, scheduleData);
 

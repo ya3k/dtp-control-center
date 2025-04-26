@@ -42,13 +42,13 @@ export function DeleteCompanyDialog({
         try {
             // Call API to delete company
             const res = await companyApiRequest.delete(company.id)
-            console.log(JSON.stringify(res))
+            //  console.log(JSON.stringify(res))
             // Update UI
             toast.success("Vô hiệu hóa công ty thành công")
             onDeleteComplete(company.id)
             onOpenChange(false)
         } catch (error) {
-            console.error("Error deleting company:", error)
+            // console.error("Error deleting company:", error)
             toast.error("Không thể vô hiệu hóa công ty")
         } finally {
             setIsDeleting(false)

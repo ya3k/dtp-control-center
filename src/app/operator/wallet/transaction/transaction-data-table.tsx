@@ -108,7 +108,7 @@ export default function TransactionDataTable() {
       console.log(queryString)
       // Fetch transactions
       const response = await walletApiRequest.getTransactionWithOData(queryString)
-      console.log(JSON.stringify(response))
+      // console.log(JSON.stringify(response))
 
       setTransactions(response.payload?.value)
       setTotalCount(response.payload["@odata.count"] || 0)

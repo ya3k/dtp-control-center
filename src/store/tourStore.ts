@@ -143,10 +143,10 @@ const useTourStore = create<POSTTourState>((set, get) => ({
             let finalTourImageUrls = [...formData.img];
 
             if (pendingImages.tourImages.length > 0) {
-                console.log(`Uploading ${pendingImages.tourImages.length} pending tour images...`);
+                // console.log(`Uploading ${pendingImages.tourImages.length} pending tour images...`);
 
                 const tourUploadResponse = await uploadApiRequest.uploadTourImages(pendingImages.tourImages);
-                console.log('Tour images upload response:', tourUploadResponse);
+                // console.log('Tour images upload response:', tourUploadResponse);
 
                 finalTourImageUrls = [...finalTourImageUrls, ...tourUploadResponse.urls];
             }
@@ -159,10 +159,10 @@ const useTourStore = create<POSTTourState>((set, get) => ({
                 const destinationIndex = parseInt(indexStr, 10);
 
                 if (files.length > 0 && updatedDestinations[destinationIndex]) {
-                    console.log(`Uploading ${files.length} pending images for destination ${destinationIndex}...`);
+                    // console.log(`Uploading ${files.length} pending images for destination ${destinationIndex}...`);
 
                     const destUploadResponse = await uploadApiRequest.uploadDestinationImages(files);
-                    console.log(`Destination ${destinationIndex} images upload response:`, destUploadResponse);
+                    // console.log(`Destination ${destinationIndex} images upload response:`, destUploadResponse);
 
                     // Add new images to existing destination images
                     const existingImages = updatedDestinations[destinationIndex].img || [];
@@ -180,7 +180,7 @@ const useTourStore = create<POSTTourState>((set, get) => ({
                 destinations: updatedDestinations
             };
 
-            console.log(JSON.stringify(tourData, null, 2));
+            // console.log(JSON.stringify(tourData, null, 2));
             // Submit the tour data
             await tourApiService.postTour(tourData);
             console.log("Tour created successfully:", JSON.stringify(tourData, null, 2));
@@ -194,7 +194,7 @@ const useTourStore = create<POSTTourState>((set, get) => ({
                 pendingImages: initialPendingImages  // Clear all pending images
             });
         } catch (error) {
-            console.error("Failed to submit tour:", error);
+            // console.error("Failed to submit tour:", error);
             toast.error("Có lỗi xảy ra khi tạo tour. Vui lòng thử lại!");
             set({ isSubmitting: false });
         }

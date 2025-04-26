@@ -88,7 +88,7 @@ export default function EditTourDestinationForm({
         
         // Fetch tour destinations
         const tourDestinationsResponse = await tourApiService.getTourDestination(tourId);
-        console.log(JSON.stringify(tourDestinationsResponse))
+        // console.log(JSON.stringify(tourDestinationsResponse))
         if (!tourDestinationsResponse.payload.data) {
           throw new Error("No tour destinations data received");
         }
@@ -368,7 +368,7 @@ export default function EditTourDestinationForm({
       // Upload images if there are any pending
       // For real implementation you'd need to handle file uploads
       // This is a placeholder for where you'd upload the images and get URLs
-      console.log(JSON.stringify(requestBody))
+      // console.log(JSON.stringify(requestBody))
       // Call API to update destinations
       await tourApiService.putTourDesitnation(tourId, requestBody);
       

@@ -60,7 +60,7 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
 
     useEffect(() => {
         const fetchTourInfo = async () => {
-            console.log(tourId)
+            // console.log(tourId)
             
             try {
                 setIsLoading(true);
@@ -190,7 +190,7 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                         }
                         
                         updatedFormData.img = allUrls;
-                        toast.success(`${response.urls.length} images uploaded successfully`);
+                        toast.success(`${response.urls.length} upload ảnh thành công.`);
                     } else {
                         throw new Error("No URLs returned from tour image upload");
                     }
@@ -205,12 +205,12 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
 
             // Call API to update tour info with possibly new image URL
             const response = await tourApiService.updateTourInfo(tourId, updatedFormData);
-            console.log(JSON.stringify(response))
-            toast.success("Cập nhật tour thành công");
+            // console.log(JSON.stringify(response))
+            toast.success("Cập nhật thông tin tour thành công");
             onUpdateSuccess(); // Notify parent component
         } catch (error) {
             console.error("Failed to update tour:", error);
-            toast.error("Failed to update tour information");
+            toast.error("Lỗi khi cập nhật thông tin tour");
         } finally {
             setIsSubmitting(false);
             setUploadProgress(0);
