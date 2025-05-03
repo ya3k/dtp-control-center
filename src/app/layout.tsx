@@ -4,9 +4,9 @@ import { cookies } from "next/headers";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import AuthProvider from "@/providers/AuthProvider";
-import TrackingToken from "@/components/common/TrackingToken";
 import userApiRequest from "@/apiRequests/user";
 import { UserProfile } from "@/types/user";
+import FirebaseInit from "@/components/notification/FirebaseInit";
 
 const ibmPlexSans = IBM_Plex_Sans({
   variable: "--font-ibm-plex-sans",
@@ -59,6 +59,7 @@ export default async function RootLayout({
           user={user}
         >
           {/* <TrackingToken /> */}
+          <FirebaseInit />
           {children}
           <Toaster closeButton richColors position="top-right" />
         </AuthProvider>

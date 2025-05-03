@@ -8,6 +8,7 @@ export const loginSchema = z
       .string()
       .min(6, { message: "Mật khẩu phải có ít nhất 6 kí tự" })
       .max(32, { message: "Mật khẩu không được quá 32 kí tự" }),
+    fcmToken: z.string().nullable().optional(),
   })
   .strict();
 
