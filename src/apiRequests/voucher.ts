@@ -1,28 +1,44 @@
 import { apiEndpoint } from "@/configs/routes";
 import http from "@/lib/http";
-import { VoucherPOSTType } from "@/schemaValidations/admin-voucher.schema";
-
+import { VoucherPOSTType, VoucherPUTType, VoucherResType } from "@/schemaValidations/admin-voucher.schema";
 
 export const voucherApiRequest = {
-  getOdata: async () => {
+  getOdata: async (queryParams?: string) => {
     try {
-      const response = await http.get(`${apiEndpoint.voucher}`);
+      const endpoint = queryParams 
+        ? `${apiEndpoint.odataVoucher}${queryParams}` 
+        : `${apiEndpoint.odataVoucher}`;
+      
+      const response = await http.get<VoucherResType[]>(endpoint);
       return response;
     } catch (error) {
-      console.error("Failed to fetch voucher:", error);
+      console.error("Failed to fetch vouchers:", error);
       throw error;
     }
   },
 
-  postVoucher: async (body : VoucherPOSTType) => {
+  postVoucher: async (body: VoucherPOSTType) => {
     try {
       const response = await http.post(
         `${apiEndpoint.voucher}`,
-       body
+        body
       );
       return response;
     } catch (error) {
       console.error("Failed to create voucher:", error);
+      throw error;
+    }
+  },
+
+  updateVoucher: async (voucherId: string, body: VoucherPUTType) => {
+    try {
+      const response = await http.put(
+        `${apiEndpoint.voucher}/${voucherId}`,
+        body
+      );
+      return response;
+    } catch (error) {
+      console.error("Failed to update voucher:", error);
       throw error;
     }
   },

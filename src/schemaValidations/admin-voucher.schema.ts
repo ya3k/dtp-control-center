@@ -19,5 +19,7 @@ export const voucherPOSTSchema = z.object({
     description: z.string(),
   });
 
+
 export type VoucherResType = z.infer<typeof voucherSchema>;
 export type VoucherPOSTType = z.infer<typeof voucherPOSTSchema>;
+export type VoucherPUTType = z.infer<typeof voucherPOSTSchema>;

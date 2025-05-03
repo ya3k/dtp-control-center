@@ -77,6 +77,8 @@ export const apiEndpoint = {
 
     //voucher
     voucher: `/api/voucher`,
+    odataVoucher: `/odata/voucher`,
+
     wallet: `/api/wallet`,
     otp: `/api/wallet/otp`,
     transaction: `/api/wallet/transaction`,
