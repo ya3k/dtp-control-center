@@ -67,7 +67,7 @@ export const apiEndpoint = {
     destinationOdata: `/odata/destination`,
     destination: `/api/destination`,
 
-    //companh
+    //company
     companyOdata: `odata/company`,
     company: `/api/company`,
     grant: `/api/company/grant`,
@@ -75,6 +75,8 @@ export const apiEndpoint = {
     //media
     upload: `/api/media`,
 
+    //voucher
+    voucher: `/api/voucher`,
     wallet: `/api/wallet`,
     otp: `/api/wallet/otp`,
     transaction: `/api/wallet/transaction`,
