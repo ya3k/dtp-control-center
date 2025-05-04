@@ -51,7 +51,7 @@ export function VoucherTableFilterCard({
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 id="search-voucher"
-                placeholder="Tìm theo mã..."
+                placeholder="Tìm theo mã hoặc mô tả..."
                 className="pl-8"
                 value={inputValue}
                 onChange={handleInputChange}
@@ -78,6 +78,7 @@ export function VoucherTableFilterCard({
                 <SelectItem value="active">Còn hiệu lực</SelectItem>
                 <SelectItem value="expired">Hết hạn</SelectItem>
                 <SelectItem value="used-up">Hết lượt</SelectItem>
+                <SelectItem value="deleted">Đã xóa</SelectItem>
               </SelectContent>
             </Select>
           </div>

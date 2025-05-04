@@ -72,17 +72,22 @@ function VoucherDataTable() {
 
             // Search term (code, description contains)
             if (debouncedSearchTerm) {
-                filterConditions.push(`contains(code, '${debouncedSearchTerm}')`)
+                filterConditions.push(`contains(code, '${debouncedSearchTerm}') or contains(description, '${debouncedSearchTerm}')`)
             }
 
             // Status filter
-            const now = new Date().toISOString()
+            const now = new Date().toISOString().split("T")[0];
             if (statusFilter === "active") {
-                filterConditions.push(`expiryDate gt '${now}' and availableVoucher gt 0`)
+                filterConditions.push(`expiryDate gt ${now} and availableVoucher gt 0 and isDeleted eq false`);
             } else if (statusFilter === "expired") {
-                filterConditions.push(`expiryDate lt '${now}'`)
+                filterConditions.push(`expiryDate lt ${now} and isDeleted eq false`);
             } else if (statusFilter === "used-up") {
-                filterConditions.push(`availableVoucher eq 0 and expiryDate gt '${now}'`)
+                filterConditions.push(`availableVoucher eq 0 and expiryDate gt ${now} and isDeleted eq false`);
+            } else if (statusFilter === "deleted") {
+                filterConditions.push(`isDeleted eq true`);
+            } else {
+                // default case (e.g. "all")
+                // filterConditions.push(`isDeleted eq false`);
             }
 
             // Combine filter conditions
@@ -200,7 +205,7 @@ function VoucherDataTable() {
                             </Button>
 
                             <Button
-                                variant="default"
+                                variant="core"
                                 size="default"
                                 className="gap-2"
                                 disabled={loading || isRefreshing}

@@ -1,5 +1,5 @@
 import SidebarItem from "@/types/sidebaritems";
-import { Banknote, BanknoteIcon, Building2, History, LayoutDashboard, Library, Map, TicketSlash, User, Wallet2 } from "lucide-react";
+import { Banknote, BanknoteIcon, Building2, History, LayoutDashboard, Library, Map, TicketPercent, TicketSlash, User, Wallet2 } from "lucide-react";
 
 export const adminItems: SidebarItem[] = [
     {
@@ -33,7 +33,7 @@ export const adminItems: SidebarItem[] = [
     {
         title: "Quản lý Voucher",
         url: "/admin/voucher",
-        icon: TicketSlash,
+        icon: TicketPercent,
     },
     {
         title: "Ví",

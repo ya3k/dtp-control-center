@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { voucherApiRequest } from "@/apiRequests/voucher"
-import { voucherPOSTSchema, VoucherPOSTType, VoucherPUTType, VoucherResType } from "@/schemaValidations/admin-voucher.schema"
+import { voucherPOSTSchema, VoucherPUTType, VoucherResType } from "@/schemaValidations/admin-voucher.schema"
 import { CalendarIcon } from "lucide-react"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -49,7 +49,7 @@ export function EditVoucherDialog({
         maxDiscountAmount: voucher.maxDiscountAmount,
         percent: voucher.percent * 100, // Convert from decimal to percentage
         quantity: voucher.quantity,
-        description: voucher.code, // Using code as description
+        description: voucher.description, // Using code as description
         expiryDate: voucher.expiryDate,
       })
       
@@ -212,6 +212,7 @@ export function EditVoucherDialog({
                               field.onChange("")
                             }
                           }}
+                          disabled={{ before: new Date() }}
                           initialFocus
                         />
                       </PopoverContent>

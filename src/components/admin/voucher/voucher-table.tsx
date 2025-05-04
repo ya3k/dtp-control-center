@@ -75,11 +75,44 @@ export function VoucherTable({
       align: "center",
     },
     {
+      id: "description",
+      header: "Mô tả",
+      accessorKey: "description",
+      cell: (voucher) => (
+        <div className="max-w-xs truncate" title={voucher.description}>
+          {voucher.description}
+        </div>
+      ),
+      enableHiding: true,
+      defaultHidden: false,
+    },
+    {
+      id: "createdAt",
+      header: "Ngày tạo",
+      accessorKey: "createdAt",
+      cell: (voucher) => format(new Date(voucher.createdAt), 'dd/MM/yyyy'),
+      enableHiding: true,
+      defaultHidden: true,
+    },
+    {
       id: "expiryDate",
       header: "Ngày hết hạn",
       accessorKey: "expiryDate",
       cell: (voucher) => format(new Date(voucher.expiryDate), 'dd/MM/yyyy'),
       enableHiding: true,
+    },
+    {
+      id: "isDeleted",
+      header: "Đã xóa",
+      accessorKey: "isDeleted",
+      cell: (voucher) => (
+        voucher.isDeleted ? 
+          <Badge variant="destructive">Đã xóa</Badge> : 
+          <Badge variant="outline">Chưa xóa</Badge>
+      ),
+      enableHiding: true,
+      defaultHidden: true,
+      align: "center",
     },
     {
       id: "status",
@@ -89,7 +122,9 @@ export function VoucherTable({
         const now = new Date();
         const expiryDate = new Date(voucher.expiryDate);
         
-        if (expiryDate < now) {
+        if (voucher.isDeleted) {
+          return <Badge variant="destructive">Đã xóa</Badge>;
+        } else if (expiryDate < now) {
           return <Badge variant="destructive">Hết hạn</Badge>;
         } else if (voucher.availableVoucher === 0) {
           return <Badge variant="outline" className="text-orange-500 border-orange-500">Hết lượt</Badge>;
