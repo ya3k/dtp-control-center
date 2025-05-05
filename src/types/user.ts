@@ -27,6 +27,7 @@ export interface UserProfile {
     phoneNumber: string;
     address: string;
     companyName: string | null;
+    companyId: string | null;
     roleName: UserRoleEnum;
     isActive: boolean;
 }

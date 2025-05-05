@@ -88,10 +88,20 @@ export default function EditTourDestinationForm({
         
         // Fetch tour destinations
         const tourDestinationsResponse = await tourApiService.getTourDestination(tourId);
-        // console.log(JSON.stringify(tourDestinationsResponse))
+        
+        // Debug log - Full tour destinations response
+        console.log("DEBUG - FULL RESPONSE DATA:", JSON.stringify(tourDestinationsResponse));
+        
         if (!tourDestinationsResponse.payload.data) {
           throw new Error("No tour destinations data received");
         }
+
+        // Debug log - Initial destinations data
+        console.log("DEBUG - Initial destinations data:", JSON.stringify(tourDestinationsResponse.payload.data.map((dest: TourDestinationResType) => ({
+          destinationId: dest.destinationId,
+          sortOrderByDate: dest.sortOrderByDate,
+          sortOrder: dest.sortOrder
+        }))));
 
         // Transform data for form
         const transformedDestinations = tourDestinationsResponse.payload.data.map((dest: TourDestinationResType) => ({
@@ -104,11 +114,21 @@ export default function EditTourDestinationForm({
           img: dest.img || [],
         }));
         
+        // Debug log - Transformed destinations
+        console.log("DEBUG - Transformed destinations:", JSON.stringify(transformedDestinations.map((dest: POSTTourDestinationType) => ({
+          destinationId: dest.destinationId,
+          sortOrderByDate: dest.sortOrderByDate,
+          sortOrder: dest.sortOrder
+        }))));
+        
         form.setValue('destinations', transformedDestinations);
         
         // Calculate days from destinations
         if (transformedDestinations.length > 0) {
-          const maxDay = Math.max(...transformedDestinations.map((d: POSTTourDestinationType) => d.sortOrderByDate)) + 1;
+          const maxDay = Math.max(...transformedDestinations.map((d: POSTTourDestinationType) => d.sortOrderByDate));
+          // Debug log - Max day calculation
+          console.log("DEBUG - Max day:", maxDay);
+          
           setDays(Array.from({ length: maxDay }, (_, i) => i + 1));
           
           // Set all days as expanded by default
@@ -117,7 +137,7 @@ export default function EditTourDestinationForm({
           // Set destinations as expanded by default
           const destKeys: string[] = [];
           transformedDestinations.forEach((dest: POSTTourDestinationType, idx: number) => {
-            destKeys.push(`day-${dest.sortOrderByDate+1}-dest-${idx}`);
+            destKeys.push(`day-${dest.sortOrderByDate}-dest-${idx}`);
           });
           setExpandedDestinations(destKeys);
         }
@@ -159,7 +179,7 @@ export default function EditTourDestinationForm({
   const addDestination = (dayNumber: number = days.length) => {
     // Find the highest sortOrder for this day
     const destinationsForThisDay = form.getValues().destinations?.filter(
-      d => d.sortOrderByDate === dayNumber - 1
+      d => d.sortOrderByDate === dayNumber
     ) || [];
     
     const maxSortOrder = destinationsForThisDay.length > 0 
@@ -172,9 +192,19 @@ export default function EditTourDestinationForm({
       startTime: "08:00:00",
       endTime: "17:00:00",
       sortOrder: maxSortOrder + 1, // Next order within the day
-      sortOrderByDate: dayNumber - 1, // Which day this belongs to (0-based)
+      sortOrderByDate: dayNumber, // Which day this belongs to (1-based)
       img: [],
     };
+
+    // Debug log - New destination
+    console.log("DEBUG - Adding new destination:", JSON.stringify({
+      dayNumber,
+      destinationsInDay: destinationsForThisDay.length,
+      newDestination: {
+        sortOrderByDate: newDestination.sortOrderByDate,
+        sortOrder: newDestination.sortOrder
+      }
+    }));
 
     const updatedDestinations = [...(form.getValues().destinations || []), newDestination];
     form.setValue('destinations', updatedDestinations);
@@ -193,6 +223,13 @@ export default function EditTourDestinationForm({
 
   const addDay = () => {
     const newDayNumber = days.length + 1;
+    
+    // Debug log - Adding new day
+    console.log("DEBUG - Adding new day:", JSON.stringify({
+      currentDays: days,
+      newDayNumber
+    }));
+    
     setDays([...days, newDayNumber]);
     // Automatically add a first destination for this day
     addDestination(newDayNumber);
@@ -317,11 +354,23 @@ export default function EditTourDestinationForm({
 
   // Get destinations for a specific day
   const getDestinationsForDay = (day: number) => {
-    // Convert from 1-based day number to 0-based sortOrderByDate
-    const zeroBasedDay = day; 
-    return form.watch('destinations')?.filter(
-      destination => destination.sortOrderByDate === zeroBasedDay
+    const destinations = form.watch('destinations')?.filter(
+      destination => destination.sortOrderByDate === day
     ) || [];
+    
+    // Debug log - only log occasionally to avoid too many logs
+    if (destinations.length > 0 && Math.random() < 0.1) {
+      console.log("DEBUG - getDestinationsForDay:", JSON.stringify({
+        day,
+        count: destinations.length,
+        sample: destinations.map(d => ({
+          destinationId: d.destinationId,
+          sortOrderByDate: d.sortOrderByDate
+        }))
+      }));
+    }
+    
+    return destinations;
   };
 
   // Save all changes
@@ -342,6 +391,13 @@ export default function EditTourDestinationForm({
         setIsSaving(false);
         return;
       }
+
+      // Debug log - Before sorting
+      console.log("DEBUG - Before sorting:", JSON.stringify(data.destinations.map(d => ({
+        destinationId: d.destinationId,
+        sortOrderByDate: d.sortOrderByDate,
+        sortOrder: d.sortOrder
+      }))));
       
       // Sort destinations by day first, then by sortOrder within each day
       const sortedDestinations = [...data.destinations].sort((a, b) => {
@@ -351,6 +407,13 @@ export default function EditTourDestinationForm({
         return a.sortOrderByDate - b.sortOrderByDate;
       });
       
+      // Debug log - After sorting
+      console.log("DEBUG - After sorting:", JSON.stringify(sortedDestinations.map(d => ({
+        destinationId: d.destinationId,
+        sortOrderByDate: d.sortOrderByDate,
+        sortOrder: d.sortOrder
+      }))));
+
       // Prepare API request body
       const requestBody: PUTTourDestinationsType = {
         tourId: tourId,
@@ -365,12 +428,14 @@ export default function EditTourDestinationForm({
         }))
       };
       
-      // Upload images if there are any pending
-      // For real implementation you'd need to handle file uploads
-      // This is a placeholder for where you'd upload the images and get URLs
-      // console.log(JSON.stringify(requestBody))
+      // Debug log - Full request body
+      console.log("DEBUG - FULL REQUEST BODY:", JSON.stringify(requestBody));
+      
       // Call API to update destinations
-      await tourApiService.putTourDesitnation(tourId, requestBody);
+      const response = await tourApiService.putTourDesitnation(tourId, requestBody);
+      
+      // Debug log - Full API response
+      console.log("DEBUG - FULL API RESPONSE:", JSON.stringify(response));
       
       toast.success("Cập nhật điểm đến thành công");
       
@@ -429,7 +494,7 @@ export default function EditTourDestinationForm({
               </div>
             )}
 
-            <ScrollArea className="h-[700px] pr-4">
+            <ScrollArea className="h-[520px] pr-4">
               <Accordion 
                 type="multiple" 
                 value={expandedDays} 

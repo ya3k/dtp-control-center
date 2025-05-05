@@ -34,7 +34,10 @@ export default function CompanyRequestForm() {
     
     try {
       // console.log(`Request body: `, JSON.stringify(data));
+      console.log(JSON.stringify(data))
+
       const response = await companyApiRequest.create(data);
+      console.log(response)
       if (response.payload.success == true) {
         toast.success(`Đơn đăng ký đã được gửi!`)
         form.reset()

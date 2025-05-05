@@ -18,7 +18,12 @@ export enum TicketKind {
       Cancelled,
       Paid,
   }
-
+export enum PaymentStatus {
+  PENDING = "Pending",
+  PROCESSING = "Processing",
+  PAID = "Paid",
+  CANCELED = "Canceled",
+}
 
 
 export const OrderTicketSchema = z.object({

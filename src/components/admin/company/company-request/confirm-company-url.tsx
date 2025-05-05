@@ -35,6 +35,7 @@ export default function CompanyConfirm() {
     setLoading(true);
     const fetchConfirmation = async () => {
       try {
+        console.log(decodedToken)
         const res = await authApiRequest.confrimAccountClientToBe({
           confirmationToken: decodedToken,
         });

@@ -4,8 +4,8 @@ import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Edit, Loader2, Eye } from "lucide-react"
-import { TourOrderType } from "@/schemaValidations/oprator-order.schema"
+import { Loader2, Eye } from "lucide-react"
+import { TourOrderType, PaymentStatus } from "@/schemaValidations/oprator-order.schema"
 import { ColumnDef, ColumnToggleDropdown } from "@/components/common/table/column-toggle-dropdown"
 
 interface OrderTableProps {
@@ -13,15 +13,13 @@ interface OrderTableProps {
   loading: boolean
   resetFilters: () => void
   onViewOrder?: (order: TourOrderType) => void
-  onEditOrder?: (order: TourOrderType) => void
 }
 
 export function OrderTable({
   orders,
   loading,
   resetFilters,
-  onViewOrder,
-  onEditOrder
+  onViewOrder
 }: OrderTableProps) {
   // Define column configuration
   const columns: ColumnDef<TourOrderType>[] = [
@@ -91,13 +89,13 @@ export function OrderTable({
         const getStatusVariant = () => {
           switch (order.status) {
             case "Submitted":
-              return "default"
+              return "submitted"
             case "AwaitingPayment":
               return "secondary"
             case "Completed":
               return "active"
             case "Cancelled":
-              return "destructive"
+              return "cancel"
             case "Paid":
               return "active"
             default:
@@ -138,25 +136,29 @@ export function OrderTable({
       cell: (order) => {
         const getPaymentStatusVariant = () => {
           switch (order.paymentStatus) {
-            case "Pending":
+            case PaymentStatus.PENDING:
               return "secondary"
-            case "Completed":
+            case PaymentStatus.PROCESSING:
+              return "secondary"
+            case PaymentStatus.PAID:
               return "active"
-            case "Failed":
-              return "destructive"
+            case PaymentStatus.CANCELED:
+              return "cancel"
             default:
-              return "default"
+              return "refund"
           }
         }
 
         const getPaymentStatusLabel = () => {
           switch (order.paymentStatus) {
-            case "Pending":
+            case PaymentStatus.PENDING:
               return "Chờ xử lý"
-            case "Completed":
+            case PaymentStatus.PROCESSING:
+              return "Đang xử lý"
+            case PaymentStatus.PAID:
               return "Hoàn thành"
-            case "Failed":
-              return "Thất bại"
+            case PaymentStatus.CANCELED:
+              return "Đã hủy"
             default:
               return order.paymentStatus
           }
@@ -171,32 +173,24 @@ export function OrderTable({
       enableHiding: true,
       align: "center",
     },
-    {
-      id: "actions",
-      header: "Thao tác",
-      cell: (order) => (
-        <div className="flex justify-end gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onViewOrder && onViewOrder(order)}
-            title="Xem chi tiết"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onEditOrder && onEditOrder(order)}
-            title="Chỉnh sửa"
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-        </div>
-      ),
-      enableHiding: true,
-      align: "center",
-    },
+      // {
+      //   id: "actions",
+      //   header: "Thao tác",
+      //   cell: (order) => (
+      //     <div className="flex justify-end gap-2">
+      //       <Button
+      //         variant="ghost"
+      //         size="icon"
+      //         onClick={() => onViewOrder && onViewOrder(order)}
+      //         title="Xem chi tiết"
+      //       >
+      //         <Eye className="h-4 w-4" />
+      //       </Button>
+      //     </div>
+      //   ),
+      //   enableHiding: true,
+      //   align: "center",
+      // },
   ]
 
   // Track visible columns

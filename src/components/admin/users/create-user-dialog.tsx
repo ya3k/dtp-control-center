@@ -27,6 +27,10 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
+import envConfig from "@/configs/envConfig"
+import { links } from "@/configs/routes"
+import { useAuthContext } from "@/providers/AuthProvider"
+import { UserRoleEnum } from "@/types/user"
 
 interface CreateUserDialogProps {
   open: boolean
@@ -41,7 +45,13 @@ export function CreateUserDialog({
 }: CreateUserDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [companies, setCompanies] = useState<{ id: string, name: string }[]>([])
-  const [isLoadingCompanies, setIsLoadingCompanies] = useState(false)
+  const [isLoadingCompanies, setIsLoadingCompanies] = useState(false);
+  const { user } = useAuthContext();
+  console.log(`dada`, user?.companyId)
+  const confirmURL = `${envConfig.NEXT_PUBLIC_BASE_URL}${links.companyConfirm.href}`;
+
+  const companyId = user?.roleName === UserRoleEnum.Operator ? user.companyId : null;
+
   const form = useForm<PostUserBodyType>({
     resolver: zodResolver(postUserSchema),
     defaultValues: {
@@ -49,9 +59,10 @@ export function CreateUserDialog({
       userName: "",
       email: "",
       address: "",
-      roleName: Role.Tourist,
+      roleName: user?.roleName === UserRoleEnum.Operator ? Role.Manager : Role.Tourist,
       phoneNumber: "",
       companyId: undefined, // Make it undefined by default since it's optional
+      confirmUrl: confirmURL
     }
   })
   // Get the selected role to conditionally show company field
@@ -95,11 +106,17 @@ export function CreateUserDialog({
 
     // If companyId is not required for this role, remove it from submission
     const submitData = { ...data }
-    if (!showCompanyField) {
-      delete submitData.companyId
+    if (user?.roleName != UserRoleEnum.Operator) {
+      if (!showCompanyField) {
+        delete submitData.companyId
+      }
     }
+    
+    submitData.companyId = companyId as string;
+
 
     try {
+      console.log(JSON.stringify(submitData))
       await userApiRequest.create(submitData)
 
       // Show success message
@@ -229,6 +246,7 @@ export function CreateUserDialog({
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                       value={field.value}
+                      disabled={user?.roleName === UserRoleEnum.Operator}
                     >
                       <FormControl>
                         <SelectTrigger>

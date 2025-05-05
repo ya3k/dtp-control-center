@@ -3,7 +3,9 @@ import { z } from "zod";
 export enum Role {
     Admin = `Admin`,
     Tourist = `Tourist`,
-    Operator = `Operator`
+    Operator = `Operator`,
+    Manager = `Manager`
+
 }
 
 
@@ -29,6 +31,7 @@ export const postUserSchema = z.object({
     roleName: z.string(),
     phoneNumber: z.string(),
     companyId: z.string().optional(),
+    confirmUrl: z.string()
 });
 
 export type PostUserBodyType = z.infer<typeof postUserSchema>;

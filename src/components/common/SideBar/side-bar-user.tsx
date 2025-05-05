@@ -35,7 +35,6 @@ export function NavUser() {
   const { user, setUser } = useAuthContext();
   const pathname = usePathname();
   const router = useRouter();
-
   useLayoutEffect(() => {
     router.refresh();
   }, [setUser]);

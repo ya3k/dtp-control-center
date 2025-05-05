@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 
 import { cn, handleErrorApi } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { adminLinks, links, operatorLinks } from "@/configs/routes";
+import { adminLinks, links, managerLinks, operatorLinks } from "@/configs/routes";
 import {
   Form,
   FormControl,
@@ -62,6 +62,8 @@ export function LoginForm({
           router.push(adminLinks.dashboard.href);
         } else if (response.payload.role === UserRoleEnum.Operator) {
           router.push(operatorLinks.dashboard.href);
+        } else if (response.payload.role === UserRoleEnum.Manager) {
+          router.push(managerLinks.dashboard.href);
         } else {
           router.push("/");
         }
@@ -95,7 +97,7 @@ export function LoginForm({
               <FormItem>
                 <FormLabel className="text-core">Tên người dùng hoặc email</FormLabel>
                 <FormControl >
-                  <Input {...field} placeholder="Nhập tên người dùng hoặc email"/>
+                  <Input {...field} placeholder="Nhập tên người dùng hoặc email" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -108,7 +110,7 @@ export function LoginForm({
               <FormItem>
                 <FormLabel className="flex items-center">
                   <span className="text-core"> Mật khẩu </span>
-                 
+
                 </FormLabel>
                 <FormControl>
                   <Input {...field} type={"password"} placeholder="Nhập mật khẩu" />
@@ -119,7 +121,7 @@ export function LoginForm({
           />
           <LoadingButton pending={loading}>Đăng nhập</LoadingButton>
 
-          <div  className="text-end text-sm underline">
+          <div className="text-end text-sm underline">
             <Link href={`/partner`} >
               Đăng ký công ty
             </Link>
