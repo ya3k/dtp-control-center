@@ -1,5 +1,5 @@
 import SidebarItem from "@/types/sidebaritems";
-import { Banknote, BookCheck, Calendar, History, Home, MapPin, TestTube, TicketSlash, Torus, Users, Wallet, Wallet2 } from "lucide-react";
+import { Banknote, Calendar, History, Home, MapPin, Torus, Users, Wallet2 } from "lucide-react";
 export const operatorItems: SidebarItem[] = [
     {
         title: "Dashboard",
@@ -28,6 +28,12 @@ export const operatorItems: SidebarItem[] = [
             { title: "Số dư", url: "/operator/wallet", icon: Banknote },
             { title: "Lịch sử giao dịch", url: "/operator/wallet/transaction", icon: History },
         ],
+    },
+    {
+        title: "Nhân viên",
+        url: "/operator/employee",
+        icon: Users,
+       
     },
 
     // {

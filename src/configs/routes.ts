@@ -9,7 +9,12 @@ export const links = {
 export const adminLinks = {
     admin: { href: "/admin", label: "Admin" },
     dashboard: { href: "/admin/dashboard", label: "Dashboard" },
-    user: { href: "/admin/user", label: "Người dùng" },
+    user: { href: "/admin/users", label: "Người dùng" },
+    voucher: { href: "/admin/voucher", label: "Voucher" },
+    category: { href: "/admin/category", label: "Danh mục" },
+    company: { href: "/admin/company", label: "Company" },
+    destination: { href: "/admin/destination", label: "destination" },
+
 }
 
 export const operatorLinks = {
@@ -17,10 +22,19 @@ export const operatorLinks = {
     dashboard: { href: "/operator/dashboard", label: "Dashboard" },
     employee: { href: "/operator/employee", label: "Nhân viên" },
     tour: { href: "/operator/tours", label: "Tour" },
-    createTour: { href: "/operator/tours/locations", label: "Tạo tour" },
+    createTour: { href: "/operator/tours/create", label: "Tạo tour" },
+    wallet: { href: "/operator/wallet", label: "ví" },
+    transaction: { href: "/operator/wallet/transaction", label: "Giao dịch" },
+    opt: { href: "/operator/wallet/otp-setup", label: "Giao dịch" },
 
 }
+export const managerLinks = {
+    dashboard: { href: "/manager/dashboard", label: "Dashboard" },
 
+    tour: { href: "/manager/tours", label: "Tour" },
+    createTour: { href: "/manager/tours/create", label: "Tạo tour" },
+
+}
 export const nextServer = {
     setToken: "/api/auth/set-token",
     logout: "/api/auth/logout",

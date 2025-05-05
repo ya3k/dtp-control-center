@@ -15,9 +15,10 @@ const userApiRequest = {
           }
         : {},
     ),
-  getWithOdata: (queryParams?: string) => {
+  getWithOdata: async (queryParams?: string) => {
     const finalQuery = queryParams ? `${queryParams}` : "";
-    return http.get<UserOdataResponse>(`${apiEndpoint.odataUser}${finalQuery}`);
+   const response = await http.get<UserOdataResponse>(`${apiEndpoint.odataUser}${finalQuery}`);
+   return response;
   },
   create: (body: PostUserBodyType) => http.post(apiEndpoint.user, body),
   update: (body: PutUserBodyType) => http.put(apiEndpoint.user, body),

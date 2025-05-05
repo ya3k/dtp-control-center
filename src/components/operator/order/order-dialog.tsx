@@ -26,6 +26,7 @@ export function OrderToursHistoryDialog({ tour, open, onOpenChange }: OrderListT
             try {
                 setIsLoading(true)
                 const response = await orderApiRequest.getTourOrderHistory(tour.id)
+                console.log("Order history response:", JSON.stringify(response.payload.value))
                 setOrderHistory(response.payload.value || [])
             } catch (error) {
                 console.error("Error fetching order history:", error)
@@ -73,7 +74,6 @@ export function OrderToursHistoryDialog({ tour, open, onOpenChange }: OrderListT
                         loading={false}
                         resetFilters={handleResetFilters}
                         onViewOrder={handleViewOrder}
-                        onEditOrder={handleEditOrder}
                     />
                 )}
             </DialogContent>

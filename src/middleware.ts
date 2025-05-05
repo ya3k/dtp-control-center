@@ -1,17 +1,28 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { UserRoleEnum } from "@/types/user";
-import { adminLinks, links, operatorLinks } from "./configs/routes";
+import { adminLinks, links, managerLinks, operatorLinks } from "./configs/routes";
 
 const privatePath = [
   adminLinks.admin.href,
   adminLinks.dashboard.href,
   adminLinks.user.href,
+  adminLinks.voucher.href,
+  adminLinks.category.href,
+  adminLinks.company.href,
+  adminLinks.destination.href,
   operatorLinks.operator.href,
   operatorLinks.dashboard.href,
   operatorLinks.employee.href,
   operatorLinks.tour.href,
   operatorLinks.createTour.href,
+  managerLinks.dashboard.href,
+  managerLinks.tour.href,
+  managerLinks.createTour.href,
+  operatorLinks.wallet.href,
+  operatorLinks.transaction.href,
+  operatorLinks.opt.href,
+  
 ];
 
 const authPath = [links.login.href];
@@ -43,7 +54,9 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL(adminLinks.dashboard.href, request.url));
       } else if (userRole === UserRoleEnum.Operator) {
         return NextResponse.redirect(new URL(operatorLinks.dashboard.href, request.url));
-      } 
+      } else if (userRole === UserRoleEnum.Manager) {
+        return NextResponse.redirect(new URL(managerLinks.dashboard.href, request.url));
+      }
     }
   }
 
@@ -81,6 +94,46 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL(operatorLinks.dashboard.href, request.url), { status: 303 });
     }
 
+    // Redirect admin trying to access operator routes
+    if (
+      userRole === UserRoleEnum.Admin &&
+      Object.values(operatorLinks).some((operatorLink) =>
+        pathname.startsWith(operatorLink.href)
+      )
+    ) {
+      return NextResponse.redirect(new URL(adminLinks.dashboard.href, request.url), { status: 303 });
+    }
+
+    //redirect manager trying to access operator routes
+    if (
+      userRole === UserRoleEnum.Manager &&
+      Object.values(operatorLinks).some((operatorLink) =>
+        pathname.startsWith(operatorLink.href)
+      )
+    ) {
+      return NextResponse.redirect(new URL(managerLinks.dashboard.href, request.url), { status: 303 });
+    }
+    // Redirect manager trying to access admin routes
+    if (
+      userRole === UserRoleEnum.Manager &&
+      Object.values(adminLinks).some((adminLink) =>
+        pathname.startsWith(adminLink.href)
+      )
+    ) {
+      return NextResponse.redirect(new URL(managerLinks.dashboard.href, request.url), { status: 303 });
+    }
+
+    // Redirect admin trying to access manager routes
+    if (
+      userRole === UserRoleEnum.Admin &&
+      Object.values(managerLinks).some((managerLink) =>
+        pathname.startsWith(managerLink.href)
+      )
+    ) {
+      return NextResponse.redirect(new URL(adminLinks.dashboard.href, request.url), { status: 303 });
+    }
+    
+
     // Redirect admin after login
     if (
       userRole === UserRoleEnum.Admin &&
@@ -96,6 +149,11 @@ export function middleware(request: NextRequest) {
     ) {
       return NextResponse.redirect(new URL(operatorLinks.dashboard.href, request.url));
     }
+
+    // Redirect manager after login
+
+
+
   }
 
   return response;
@@ -124,6 +182,13 @@ export const config = {
     '/operator/tours',
     '/operator/tours/create',
     '/operator/wallet',
-    '/operator/wallet/transaction'
+    '/operator/wallet/transaction',
+
+    //manager
+    '/manager',
+    '/manager/dashboard',
+    '/manager/tours',
+    '/manager/tours/create',
+
   ]
 };

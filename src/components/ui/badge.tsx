@@ -21,6 +21,8 @@ const badgeVariants = cva(
         transfer: "border-transparent bg-blue-500 font-bold shadow hover:bg-blue-600 text-white",
         success: "border-transparent bg-green-500 font-bold shadow hover:bg-green-600 text-white",
         pending: "border-transparent bg-yellow-500 font-bold shadow hover:bg-yellow-600 text-black",
+        submitted: "border-transparent bg-blue-500 font-bold shadow hover:bg-blue-600 text-white",
+        cancel: "border-transparent bg-red-500 font-bold shadow hover:bg-red-600 text-white",
       },
     },
     defaultVariants: {

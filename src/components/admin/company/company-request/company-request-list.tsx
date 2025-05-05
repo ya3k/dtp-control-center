@@ -64,7 +64,7 @@ export function ApproveCompanyDialog({ open, onOpenChange, onApprovalComplete }:
       console.log(JSON.stringify(
         {
           companyId: company.id,
-          confirmUrl: `${envConfig.NEXT_PUBLIC_BASE_URL}/company/${company.id}`,
+          confirmUrl: `${envConfig.NEXT_PUBLIC_BASE_URL}${links.companyConfirm.href}`,
           accept: true,
         }
       ))
