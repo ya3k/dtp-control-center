@@ -49,6 +49,7 @@ export const apiEndpoint = {
     logout: "api/authentication/logout",
     refresh: "/api/authentication/refresh",
     confirmation: "/api/authentication/confirmation",
+    storeToken: "/api/authentication/store-token",
     //user
     user: `/api/user`,
     profile: "/api/user/me",

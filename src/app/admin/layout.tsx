@@ -1,6 +1,7 @@
 'use client'
 import SidebarBreadcrumb from "@/components/common/SideBar/SidebarBreadcrumb";
 import { SidebarDashboard } from "@/components/common/SideBar/SideBarDashboard";
+import FcmTokenComp from "@/components/firebaseForeground";
 
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -25,6 +26,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             </div> */}
                         </div>
                     </header>
+                    <FcmTokenComp />
 
                     <div className="ml-4">
                         {children}

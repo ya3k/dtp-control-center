@@ -7,6 +7,7 @@ import AuthProvider from "@/providers/AuthProvider";
 import TrackingToken from "@/components/common/TrackingToken";
 import userApiRequest from "@/apiRequests/user";
 import { UserProfile } from "@/types/user";
+import FcmTokenComp from "@/components/firebaseForeground";
 
 const ibmPlexSans = IBM_Plex_Sans({
   variable: "--font-ibm-plex-sans",
