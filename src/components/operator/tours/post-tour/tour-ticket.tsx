@@ -112,7 +112,7 @@ export default function TourTicketForm() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12">
       <div className="grid grid-cols-2 gap-6">
         {/* Left side - Add Ticket Form */}
         <Card>
@@ -197,7 +197,7 @@ export default function TourTicketForm() {
                 <div className='text-sm italic font-light text-black-600'><span>Số lượng mặc định của mỗi vé là <span className='font-bold text-red-600'>100</span> có thể chỉnh sửa sau khi tạo tour thành công</span></div>
                 <div className="flex space-x-2">
 
-                  <Button type="submit" className="flex-1">
+                  <Button variant={"core"} type="submit" className="flex-1">
                     {editingIndex !== null ? "Cập nhật" : "Thêm vé"}
                   </Button>
                   {editingIndex !== null && (
@@ -274,7 +274,7 @@ export default function TourTicketForm() {
         <Button type="button" variant="outline" onClick={prevStep}>
           Quay lại
         </Button>
-        <Button type="button" onClick={validateAndNext}>
+        <Button variant={"core"} type="button" onClick={validateAndNext}>
           Tiếp theo
         </Button>
       </div>

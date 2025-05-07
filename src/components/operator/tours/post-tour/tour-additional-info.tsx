@@ -47,7 +47,7 @@ export default function TourAdditionalInfo() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmitForm)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmitForm)} className="space-y-6 pb-12">
         <Card>
           <CardContent className="pt-6 space-y-4">
             <Collapsible
@@ -165,7 +165,7 @@ export default function TourAdditionalInfo() {
           <Button type="button" variant="outline" onClick={prevStep}>
             Quay lại
           </Button>
-          <Button type="submit">
+          <Button variant={"core"} type="submit">
             Tiếp theo
           </Button>
         </div>

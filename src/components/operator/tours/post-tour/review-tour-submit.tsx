@@ -496,6 +496,7 @@ export default function ReviewForm() {
           Quay lại
         </Button>
         <Button
+          variant={"core"}
           onClick={submitForm}
           className="gap-2 min-w-[180px] relative"
           disabled={isSubmitting}

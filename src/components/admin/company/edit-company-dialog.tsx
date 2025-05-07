@@ -175,7 +175,7 @@ export function EditCompanyDialog({ open, onOpenChange, company, onEditComplete 
                             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                                 Hủy
                             </Button>
-                            <Button type="submit" disabled={isSubmitting}>
+                            <Button variant={"core"} type="submit" disabled={isSubmitting}>
                                 {isSubmitting ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

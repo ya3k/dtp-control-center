@@ -196,7 +196,7 @@ export default function TourScheduleInfoForm() {
               <Button type="button" variant="outline" onClick={prevStep}>
                 Quay lại
               </Button>
-              <Button type="submit">
+              <Button variant={"core"} type="submit">
                 Tiếp tục
               </Button>
             </div>
