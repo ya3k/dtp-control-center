@@ -70,7 +70,7 @@ export function CategoryForm({
           >
             Hủy
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button variant="core" type="submit" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {initialData ? "Cập nhật" : "Tạo danh mục"}
           </Button>

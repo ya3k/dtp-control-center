@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
 import { cn, handleErrorApi } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -22,9 +23,11 @@ import LoadingButton from "@/components/common/loading/LoadingButton";
 import { useState } from "react";
 import authApiRequest from "@/apiRequests/auth";
 import { UserRoleEnum } from "@/types/user";
-import { getMessaging, getToken } from 'firebase/messaging';
-import firebaseApp from '@/firebase';
-import envConfig from '@/configs/envConfig';
+import { getMessaging, getToken } from "firebase/messaging";
+import firebaseApp from "@/firebase";
+import envConfig from "@/configs/envConfig";
+import userApiRequest from "@/apiRequests/user";
+import { useAuthContext } from "@/providers/AuthProvider";
 
 export function LoginForm({
   className,
@@ -32,7 +35,9 @@ export function LoginForm({
 }: React.ComponentPropsWithoutRef<"form">) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  
+  const { setUser } = useAuthContext();
+  const [showPassword, setShowPassword] = useState(false);
+
   const form = useForm<LoginSchemaType>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -41,32 +46,36 @@ export function LoginForm({
     },
   });
 
+  const password = form.watch("password");
+
   // Function to get FCM token
   const getFcmToken = async () => {
     try {
-      if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      if (typeof window !== "undefined" && "serviceWorker" in navigator) {
         const messaging = getMessaging(firebaseApp);
-        
+
         // Request notification permission
         const permission = await Notification.requestPermission();
-        
-        if (permission === 'granted') {
+
+        if (permission === "granted") {
           const currentToken = await getToken(messaging, {
             vapidKey: envConfig.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
           });
-          
+
           if (currentToken) {
-            console.log(currentToken)
+            console.log(currentToken);
             return currentToken;
           } else {
-            console.log('No registration token available. Request permission to generate one.');
+            console.log(
+              "No registration token available. Request permission to generate one.",
+            );
             return null;
           }
         }
       }
       return null;
     } catch (error) {
-      console.log('Error retrieving FCM token:', error);
+      console.log("Error retrieving FCM token:", error);
       return null;
     }
   };
@@ -80,8 +89,13 @@ export function LoginForm({
       });
 
       // Check if user's role is Tourist before setting tokens
-      if (response.payload && response.payload.data.role === UserRoleEnum.Tourist) {
-        toast.error("Tài khoản của bạn không được phép đăng nhập vào hệ thống này");
+      if (
+        response.payload &&
+        response.payload.data.role === UserRoleEnum.Tourist
+      ) {
+        toast.error(
+          "Tài khoản của bạn không được phép đăng nhập vào hệ thống này",
+        );
         return;
       }
       // Only set token if not a Tourist
@@ -90,8 +104,17 @@ export function LoginForm({
 
       if (responseFromNextServer.payload.success) {
         window.notifyAuthChange?.();
-        toast.success("Đăng nhập thành công");
-        
+        try {
+          const res = await userApiRequest.me(
+            response.payload.data.accessToken,
+          );
+          if (res.status === 200) {
+            setUser(res.payload.data);
+          }
+        } catch (error) {
+          console.log("Get user info error", error);
+        }
+
         // Get and store FCM token after successful login
         try {
           const fcmToken = await getFcmToken();
@@ -103,7 +126,7 @@ export function LoginForm({
           console.error("Failed to store FCM token:", error);
           // Don't block the login process if storing FCM token fails
         }
-        
+
         // Instead of router.refresh(), use router.push() to explicitly navigate
         if (response.payload.data.role === UserRoleEnum.Admin) {
           router.push(adminLinks.dashboard.href);
@@ -115,6 +138,7 @@ export function LoginForm({
           router.push("/");
         }
       }
+      toast.success("Đăng nhập thành công");
     } catch (error: any) {
       handleErrorApi(error);
     } finally {
@@ -142,9 +166,14 @@ export function LoginForm({
             name="userName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-core">Tên người dùng hoặc email</FormLabel>
-                <FormControl >
-                  <Input {...field} placeholder="Nhập tên người dùng hoặc email" />
+                <FormLabel className="text-core">
+                  Tên người dùng hoặc email
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="Nhập tên người dùng hoặc email"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -157,10 +186,31 @@ export function LoginForm({
               <FormItem>
                 <FormLabel className="flex items-center">
                   <span className="text-core"> Mật khẩu </span>
-
                 </FormLabel>
                 <FormControl>
-                  <Input {...field} type={"password"} placeholder="Nhập mật khẩu" />
+                  <div className="relative">
+                    <Input
+                      {...field}
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Nhập mật khẩu"
+                    />
+                    {password && (
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                        <span className="sr-only">
+                          {showPassword ? "Hide password" : "Show password"}
+                        </span>
+                      </button>
+                    )}
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -169,9 +219,7 @@ export function LoginForm({
           <LoadingButton pending={loading}>Đăng nhập</LoadingButton>
 
           <div className="text-end text-sm underline">
-            <Link href={`/partner`} >
-              Đăng ký công ty
-            </Link>
+            <Link href={`/partner`}>Đăng ký công ty</Link>
           </div>
         </div>
       </form>

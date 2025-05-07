@@ -314,6 +314,7 @@ export default function BasicTourInfoForm() {
 
             <div className="flex justify-end space-x-4">
               <Button 
+                variant={"core"}
                 type="submit" 
                 disabled={isSubmitting || !!imageError || imagePreviews.length > MAX_IMAGES}
               >

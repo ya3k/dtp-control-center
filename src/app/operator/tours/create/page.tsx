@@ -32,7 +32,7 @@ export default function POSTTourPage() {
 
     return (
         <div className="flex flex-col gap-4 mx-3">
-            <h1 className="text-2xl font-bold">Post Tour</h1>
+            <h1 className="text-2xl font-bold">Tạo Tour</h1>
 
             {/* progress bar */}
             <ProgressBar  />

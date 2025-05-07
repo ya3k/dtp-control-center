@@ -1,22 +1,41 @@
-"use client"
+"use client";
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { TopTour } from "@/schemaValidations/operator-analys-schema"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { TopTour } from "@/schemaValidations/operator-analys-schema";
 
 interface TopToursTableProps {
-  data: TopTour[]
+  data: TopTour[];
 }
 
 export function TopToursTable({ data }: TopToursTableProps) {
   // Sắp xếp tour theo số lượng vé bán giảm dần
-  const sortedTours = [...data].sort((a, b) => b.ticketsSold - a.ticketsSold)
+  const sortedTours = [...data].sort((a, b) => b.ticketsSold - a.ticketsSold);
 
   // Hàm cắt ngắn tiêu đề tour dài
   const truncateTitle = (title: string, maxLength = 30) => {
-    if (title.length <= maxLength) return title
-    return `${title.substring(0, maxLength)}...`
-  }
+    if (title.length <= maxLength) return title;
+    return `${title.substring(0, maxLength)}...`;
+  };
+
+  const classNameModifier = (index: number) => {
+    if (index === 0) {
+      return "bg-[#C14600]";
+    } else if (index === 1) {
+      return "bg-[#FF9D23]";
+    } else if (index === 2) {
+      return "bg-gray-500";
+    } else {
+      return "bg-white";
+    }
+  };
 
   return (
     <div className="rounded-md border">
@@ -38,7 +57,7 @@ export function TopToursTable({ data }: TopToursTableProps) {
               <TableCell className="text-right">
                 <Badge
                   variant={index < 3 ? "default" : "outline"}
-                  className={index === 0 ? "bg-yellow-500 hover:bg-yellow-600" : ""}
+                  className={classNameModifier(index)}
                 >
                   #{index + 1}
                 </Badge>
@@ -48,5 +67,5 @@ export function TopToursTable({ data }: TopToursTableProps) {
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

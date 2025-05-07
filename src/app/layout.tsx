@@ -7,6 +7,8 @@ import AuthProvider from "@/providers/AuthProvider";
 import userApiRequest from "@/apiRequests/user";
 import { UserProfile } from "@/types/user";
 import FirebaseMessagingSetup from "@/components/FirebaseMessagingSetup";
+import TrackingToken from "@/components/common/TrackingToken";
+import UserInitializer from "@/components/common/UserInitializer";
 
 const ibmPlexSans = IBM_Plex_Sans({
   variable: "--font-ibm-plex-sans",
@@ -59,6 +61,8 @@ export default async function RootLayout({
           initialRefreshToken={refreshToken?.value}
           user={user}
         >
+          <TrackingToken />
+          <UserInitializer />
           <FirebaseMessagingSetup />
 
           {children}

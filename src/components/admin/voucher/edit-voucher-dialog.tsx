@@ -246,7 +246,7 @@ export function EditVoucherDialog({
               >
                 Hủy
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button variant={"core"} type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Đang lưu..." : "Lưu thay đổi"}
               </Button>
             </DialogFooter>

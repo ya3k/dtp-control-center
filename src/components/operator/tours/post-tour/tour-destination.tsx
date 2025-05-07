@@ -379,7 +379,7 @@ export default function TourDestinationForm() {
 
   return (
     <Form {...form}>
-      <form className="space-y-6">
+      <form className="space-y-6 pb-12">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-6">
@@ -767,7 +767,7 @@ export default function TourDestinationForm() {
           <Button type="button" variant="outline" onClick={prevStep}>
             Quay lại
           </Button>
-          <Button type="button" onClick={validateAndNext}>
+          <Button variant={"core"} type="button" onClick={validateAndNext}>
             Tiếp theo
           </Button>
         </div>

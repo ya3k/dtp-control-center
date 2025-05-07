@@ -326,6 +326,7 @@ export function CreateDestinationDialog({
                     onKeyUp={(e) => e.key === 'Enter' && handleSearch()}
                   />
                   <Button
+                    variant={"outline"}
                     type="button"
                     onClick={handleSearch}
                     disabled={isSearching}
@@ -428,7 +429,7 @@ export function CreateDestinationDialog({
                 >
                   Hủy
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button variant={"core"} type="submit" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Tạo điểm đến
                 </Button>
