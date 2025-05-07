@@ -13,6 +13,9 @@ import {
 const authApiRequest = {
   login: (body: LoginSchemaType) =>
     http.post<LoginResponseSchemaType>(apiEndpoint.login, body),
+  storeToken: (token : string) =>{
+    http.put(apiEndpoint.storeToken, token)
+  },
   register: (body: Omit<RegisterSchemaType, "confirmPassword">) =>
     http.post<RegisterResponseSchemaType>(apiEndpoint.register, body),
   logoutFromNextServerToServer: (sessionToken: string) =>

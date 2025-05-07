@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 
 import { cn, handleErrorApi } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { adminLinks, links, managerLinks, operatorLinks } from "@/configs/routes";
+import { adminLinks, managerLinks, operatorLinks } from "@/configs/routes";
 import {
   Form,
   FormControl,
@@ -22,6 +22,9 @@ import LoadingButton from "@/components/common/loading/LoadingButton";
 import { useState } from "react";
 import authApiRequest from "@/apiRequests/auth";
 import { UserRoleEnum } from "@/types/user";
+import { getMessaging, getToken } from 'firebase/messaging';
+import firebaseApp from '@/firebase';
+import envConfig from '@/configs/envConfig';
 
 export function LoginForm({
   className,
@@ -29,6 +32,7 @@ export function LoginForm({
 }: React.ComponentPropsWithoutRef<"form">) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  
   const form = useForm<LoginSchemaType>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -36,6 +40,36 @@ export function LoginForm({
       password: "",
     },
   });
+
+  // Function to get FCM token
+  const getFcmToken = async () => {
+    try {
+      if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+        const messaging = getMessaging(firebaseApp);
+        
+        // Request notification permission
+        const permission = await Notification.requestPermission();
+        
+        if (permission === 'granted') {
+          const currentToken = await getToken(messaging, {
+            vapidKey: envConfig.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+          });
+          
+          if (currentToken) {
+            console.log(currentToken)
+            return currentToken;
+          } else {
+            console.log('No registration token available. Request permission to generate one.');
+            return null;
+          }
+        }
+      }
+      return null;
+    } catch (error) {
+      console.log('Error retrieving FCM token:', error);
+      return null;
+    }
+  };
 
   const onSubmit = async (values: LoginSchemaType) => {
     try {
@@ -57,12 +91,25 @@ export function LoginForm({
       if (responseFromNextServer.payload.success) {
         window.notifyAuthChange?.();
         toast.success("Đăng nhập thành công");
+        
+        // Get and store FCM token after successful login
+        try {
+          const fcmToken = await getFcmToken();
+          if (fcmToken) {
+            await authApiRequest.storeToken(fcmToken);
+            console.log("FCM token stored successfully");
+          }
+        } catch (error) {
+          console.error("Failed to store FCM token:", error);
+          // Don't block the login process if storing FCM token fails
+        }
+        
         // Instead of router.refresh(), use router.push() to explicitly navigate
-        if (response.payload.role === UserRoleEnum.Admin) {
+        if (response.payload.data.role === UserRoleEnum.Admin) {
           router.push(adminLinks.dashboard.href);
-        } else if (response.payload.role === UserRoleEnum.Operator) {
+        } else if (response.payload.data.role === UserRoleEnum.Operator) {
           router.push(operatorLinks.dashboard.href);
-        } else if (response.payload.role === UserRoleEnum.Manager) {
+        } else if (response.payload.data.role === UserRoleEnum.Manager) {
           router.push(managerLinks.dashboard.href);
         } else {
           router.push("/");

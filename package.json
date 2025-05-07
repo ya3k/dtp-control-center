@@ -53,6 +53,7 @@
     "embla-carousel": "^8.5.2",
     "embla-carousel-auto-scroll": "^8.5.2",
     "embla-carousel-react": "^8.5.2",
+    "firebase": "^11.6.1",
     "framer-motion": "^12.4.7",
     "lucide-react": "^0.475.0",
     "motion": "^12.5.0",
