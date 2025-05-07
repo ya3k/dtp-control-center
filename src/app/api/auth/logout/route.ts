@@ -61,7 +61,7 @@ export async function POST(req: Request) {
         },
       );
     } else {
-      return Response.json(
+      return NextResponse.json(
         {
           success: false,
         },

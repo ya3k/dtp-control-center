@@ -29,7 +29,7 @@ export default function CompanyDataTable() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("")
 
   // Filter state
-  const [licenseFilter, setLicenseFilter] = useState<string>(`all`)
+  const [licenseFilter, setLicenseFilter] = useState<string>(`true`)
 
   //Edit state
   const [selectedCompany, setSelectedCompany] = useState<CompanyResType | null>(null)
@@ -82,7 +82,7 @@ export default function CompanyDataTable() {
 
       // License filter
       if (licenseFilter !== "all") {
-        filterConditions.push(`lisenced eq ${licenseFilter}`)
+        filterConditions.push(`licensed eq ${licenseFilter}`)
       }
 
 
@@ -96,7 +96,8 @@ export default function CompanyDataTable() {
 
       // Use tourApiService instead of direct fetch
       const response = await companyApiRequest.getWithOData(queryString)
-      // console.log(queryString)
+      console.log(queryString)
+      console.log(JSON.stringify(response.payload))
       setCompanies(response.payload?.value)
       setTotalCount(response.payload["@odata.count"] || 0)
     } catch (error) {

@@ -173,6 +173,7 @@ const request = async <Response>(
     if (contentType && contentType.includes("application/json")) {
       try {
         payload = await response.json();
+
       } catch (error) {
         console.error("Failed to parse JSON response:", error);
         payload = {
@@ -195,7 +196,7 @@ const request = async <Response>(
       if (payload.success === false && payload.error) {
         if (!response.ok || response.status >= 400) {
           // Show error toast if enabled
-          if (options?.showErrorToast !== false) {
+          if (options?.showErrorToast !== false && typeof window !== "undefined") {
             // Use the first error message, or fallback to the general message, or a default
             const errorMsg = Array.isArray(payload.error) && payload.error.length > 0
               ? payload.error[0]
@@ -251,7 +252,7 @@ const request = async <Response>(
         }
       } else {
         // Show error toast for other errors if enabled
-        if (options?.showErrorToast !== false) {
+        if (options?.showErrorToast !== false && typeof window !== "undefined") {
           toast.error(options?.errorMessage || payload?.message || `Error: ${response.status}`);
         }
 
@@ -289,7 +290,7 @@ const request = async <Response>(
     }
 
     // Handle unexpected errors
-    if (options?.showErrorToast !== false) {
+    if (options?.showErrorToast !== false && typeof window !== "undefined") {
       toast.error(options?.errorMessage || "Network or server error occurred");
     }
 
