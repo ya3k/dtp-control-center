@@ -109,7 +109,7 @@ export function ApproveCompanyDialog({ open, onOpenChange, onApprovalComplete }:
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[80vh] flex flex-col">
+      <DialogContent className="sm:max-w-[950px] max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">Duyệt đăng ký công ty</DialogTitle>
         </DialogHeader>
