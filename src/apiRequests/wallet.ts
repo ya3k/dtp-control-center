@@ -1,4 +1,4 @@
-import { AdminExternalTransactionType } from './../schemaValidations/wallet.schema';
+import { AdminExternalTransactionType, BankInfoType, WithDrawType } from './../schemaValidations/wallet.schema';
 import { apiEndpoint } from "@/configs/routes";
 import http from "@/lib/http";
 import { DetailedTransactionType, TransactionType } from "@/schemaValidations/wallet.schema";
@@ -24,12 +24,11 @@ export const walletApiRequest = {
     }
   }
   ,
-  withdrawWithOTP: async (amount: number, otp: string) => {
+  withdrawWithOTP: async (data : WithDrawType, otp: string) => {
     try {
       const response = await http.post(
-        `${apiEndpoint.wallet}/withdraw`,
-        { amount },
-        { otp: otp } // Pass the OTP as an option
+        `${apiEndpoint.wallet}/withdraw`, data,
+        { otp: otp },
       );
       return response;
     } catch (error) {
@@ -89,5 +88,13 @@ export const walletApiRequest = {
       throw error;
     }
   },
-
+  getBankList: async () => {
+    try {
+      const response = await fetch(`https://api.banklookup.net/api/bank/list`);
+      return response.json();
+    } catch (error) {
+      console.error("Failed to fetch bank list:", error);
+      throw error;
+    }
+  }
 };

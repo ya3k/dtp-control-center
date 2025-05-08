@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { format, parseISO, isBefore, startOfDay } from "date-fns"
-import { Loader2, Plus, CalendarIcon } from "lucide-react"
+import { Loader2, Plus, CalendarIcon, RefreshCcw } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -29,40 +29,35 @@ const frequencyOptions = [
 
 interface TourEditScheduleFormProps {
     tourId: string
-    onUpdateSuccess?: () => void // Made optional to fix linter error
 }
 
-export default function TourEditScheduleForm({ tourId, onUpdateSuccess }: TourEditScheduleFormProps) {
+export default function TourEditScheduleForm({ tourId }: TourEditScheduleFormProps) {
     const [isLoading, setIsLoading] = useState(true)
-    const [schedules, setSchedules] = useState<string[]>([])
+    const [schedules, setSchedules] = useState<Array<{openDate: string, status: string}>>([])
     const [addDialogOpen, setAddDialogOpen] = useState(false)
     const [scheduleDates, setScheduleDates] = useState<Date[]>([])
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
     // Lấy lịch trình tour
-    const fetchTourSchedule = async () => {
+    const fetchTourSchedule = async (): Promise<void> => {
         try {
             setIsLoading(true)
             const response = await tourApiService.getTourSchedule(tourId)
             if (response.payload && Array.isArray(response.payload.data)) {
                 setSchedules(response.payload.data)
                 // Parse dates for calendar
-                const dates = response.payload.data.map((dateStr: string) => {
-                    try {
-                        if (dateStr.includes('.') || (dateStr.includes(' ') && dateStr.split(' ')[0].match(/^\d{4}-\d{2}-\d{2}$/))) {
-                            return parseISO(dateStr.split(' ')[0])
-                        } else if (dateStr.includes('T')) {
-                            return parseISO(dateStr)
-                        } else if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                            return parseISO(dateStr)
+                const dates = response.payload.data
+                    .filter((schedule: {openDate: string, status: string}) => schedule.status !== 'cancel')
+                    .map((schedule: {openDate: string, status: string}) => {
+                        try {
+                            return parseISO(schedule.openDate)
+                        } catch (error) {
+                            console.error("Error parsing date:", schedule.openDate, error)
+                            return null
                         }
-                        return new Date(dateStr)
-                    } catch (error) {
-                        console.error("Error parsing date:", dateStr, error)
-                        return null
-                    }
-                }).filter((date: Date | null): date is Date => date !== null)
+                    })
+                    .filter((date: Date | null): date is Date => date !== null)
                 setScheduleDates(dates)
             } else {
                 console.error("Định dạng phản hồi không mong đợi:", response)
@@ -105,42 +100,20 @@ export default function TourEditScheduleForm({ tourId, onUpdateSuccess }: TourEd
 
     // Get the original schedule string for a date
     const getScheduleForDate = (date: Date) => {
-        return schedules.find(schedule => {
-            const scheduleDate = parseISO(schedule.split(' ')[0])
+        const schedule = schedules.find(schedule => {
+            const scheduleDate = parseISO(schedule.openDate)
             return format(scheduleDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
         })
+        return schedule?.openDate || ''
     }
 
     // Định dạng ngày để hiển thị
     const formatDate = (dateString: string) => {
         try {
-            // Thử phân tích ngày trong các định dạng khác nhau
-            let date;
-
-            // Kiểm tra nếu ngày bao gồm định dạng microseconds (2025-04-13 00:00:00.000000)
-            if (dateString.includes('.') || (dateString.includes(' ') && dateString.split(' ')[0].match(/^\d{4}-\d{2}-\d{2}$/))) {
-                // Tách theo khoảng trắng để lấy phần ngày
-                const datePart = dateString.split(' ')[0];
-                date = parseISO(datePart);
-            }
-            // Kiểm tra nếu nó bao gồm thành phần thời gian với T
-            else if (dateString.includes('T')) {
-                date = parseISO(dateString);
-            }
-            // Thử phân tích trực tiếp cho định dạng ngày ISO không có thời gian
-            else if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                date = parseISO(dateString);
-            }
-            // Sử dụng đến constructor Date nếu các cách trên đều không khớp
-            else {
-                date = new Date(dateString);
-            }
-
-            // Định dạng để hiển thị
-            return format(date, 'dd/MM/yyyy');
+            return format(parseISO(dateString), 'dd/MM/yyyy')
         } catch (error) {
-            console.error("Lỗi khi định dạng ngày:", dateString, error);
-            return dateString; // Trả về nguyên bản nếu phân tích thất bại
+            console.error("Lỗi khi định dạng ngày:", dateString, error)
+            return dateString
         }
     }
 
@@ -151,15 +124,23 @@ export default function TourEditScheduleForm({ tourId, onUpdateSuccess }: TourEd
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex justify-between items-center">
-                    <span>Lịch trình Tour</span>
-                    <Button size="sm" variant="default" onClick={() => setAddDialogOpen(true)}>
-                        <Plus className="h-4 w-4 mr-2" /> Thêm lịch trình
-                    </Button>
-                </CardTitle>
-                <CardDescription>
-                    Quản lý tất cả các ngày của tour (quá khứ và tương lai)
-                </CardDescription>
+                <div className="flex justify-between items-center">
+                    <div>
+                        <CardTitle>Lịch trình Tour</CardTitle>
+                        <CardDescription>
+                            Quản lý tất cả các ngày của tour
+                        </CardDescription>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button variant="outline" onClick={fetchTourSchedule} className="flex items-center">
+                            <RefreshCcw className="h-4 w-4 mr-2" />
+                            Tải lại
+                        </Button>
+                        <Button size="sm" variant="core" onClick={() => setAddDialogOpen(true)}>
+                            <Plus className="h-4 w-4 mr-2" /> Thêm lịch trình
+                        </Button>
+                    </div>
+                </div>
             </CardHeader>
 
             <CardContent>
@@ -235,51 +216,45 @@ export default function TourEditScheduleForm({ tourId, onUpdateSuccess }: TourEd
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Ngày</TableHead>
+                                            <TableHead>Trạng thái</TableHead>
                                             <TableHead className="text-right">Thao tác</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {schedules.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={2} className="text-center py-6 text-muted-foreground">
+                                                <TableCell colSpan={3} className="text-center py-6 text-muted-foreground">
                                                     Không tìm thấy lịch trình nào. Nhấp &quot;Thêm lịch trình&quot; để tạo mới.
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
                                             schedules.map((schedule, index) => {
-                                                // Parse the date to check if it's in the past
-                                                let scheduleDate;
-                                                try {
-                                                    if (schedule.includes('.') || (schedule.includes(' ') && schedule.split(' ')[0].match(/^\d{4}-\d{2}-\d{2}$/))) {
-                                                        scheduleDate = parseISO(schedule.split(' ')[0]);
-                                                    } else if (schedule.includes('T')) {
-                                                        scheduleDate = parseISO(schedule);
-                                                    } else if (schedule.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                                                        scheduleDate = parseISO(schedule);
-                                                    } else {
-                                                        scheduleDate = new Date(schedule);
-                                                    }
-                                                } catch (error) {
-                                                    console.error("Error parsing date:", schedule, error);
-                                                    scheduleDate = new Date();
-                                                }
-                                                
-                                                const isPast = isBefore(scheduleDate, startOfDay(new Date()));
+                                                const scheduleDate = parseISO(schedule.openDate)
+                                                const isPast = isBefore(scheduleDate, startOfDay(new Date()))
                                                 
                                                 return (
                                                     <TableRow key={`schedule-${index}`}>
                                                         <TableCell className={`font-medium ${isPast ? 'text-muted-foreground line-through' : ''}`}>
-                                                            {formatDate(schedule)}
+                                                            {formatDate(schedule.openDate)}
                                                             {isPast && (
                                                                 <span className="ml-2 text-xs px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground">
                                                                     Đã qua
                                                                 </span>
                                                             )}
                                                         </TableCell>
+                                                        <TableCell>
+                                                            <span className={`px-2 py-1 rounded-md text-xs ${
+                                                                schedule.status === 'cancel' 
+                                                                    ? 'bg-red-100 text-red-700' 
+                                                                    : 'bg-green-100 text-green-700'
+                                                            }`}>
+                                                                {schedule.status === 'cancel' ? 'Đã hủy' : 'Sắp tới'}
+                                                            </span>
+                                                        </TableCell>
                                                         <TableCell className="text-right">
                                                             <DeleteScheduleDialog
-                                                                schedule={schedule}
-                                                                formattedDate={formatDate(schedule)}
+                                                                schedule={schedule.openDate}
+                                                                formattedDate={formatDate(schedule.openDate)}
                                                                 tourId={tourId}
                                                                 onDeleteSuccess={() => {
                                                                     fetchTourSchedule();
@@ -302,7 +277,7 @@ export default function TourEditScheduleForm({ tourId, onUpdateSuccess }: TourEd
             <Dialog open={deleteDialogOpen} onOpenChange={handleDialogClose}>
                 <DialogContent className="w-[300px]">
                     <DialogHeader>
-                        <DialogTitle>Xóa lịch trình</DialogTitle>
+                        <DialogTitle>Hủy lịch trình</DialogTitle>
                     </DialogHeader>
                     {selectedDate && (
                         <div className="flex flex-col gap-2">
@@ -311,14 +286,13 @@ export default function TourEditScheduleForm({ tourId, onUpdateSuccess }: TourEd
                             </p>
                             <div className="flex justify-center">
                                 <DeleteScheduleDialog
-                                    schedule={getScheduleForDate(selectedDate) || ''}
+                                    schedule={getScheduleForDate(selectedDate)}
                                     formattedDate={format(selectedDate, 'dd/MM/yyyy')}
                                     tourId={tourId}
                                     onDeleteSuccess={() => {
                                         fetchTourSchedule()
                                         handleDialogClose(false)
                                     }}
-
                                 />
                             </div>
 

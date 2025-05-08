@@ -149,31 +149,18 @@ export default function AddScheduleDialog({
                 const response = await tourApiService.getTourSchedule(tourId);
 
                 if (response.payload && Array.isArray(response.payload.data)) {
-                    // Explicitly type the items in response.payload.data
+                    // Filter out cancelled schedules and parse dates
                     const dates = response.payload.data
-                        .map((dateStr: string) => {
+                        .filter((schedule: { openDate: string, status: string }) => schedule.status !== 'cancel')
+                        .map((schedule: { openDate: string, status: string }) => {
                             try {
-                                // Handle different date formats
-                                if (dateStr.includes('.') || dateStr.includes(' ')) {
-                                    // Date with microseconds or space-separated format
-                                    const datePart = dateStr.split(' ')[0];
-                                    return parseISO(datePart);
-                                } else if (dateStr.includes('T')) {
-                                    // ISO format with time
-                                    return parseISO(dateStr);
-                                } else if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                                    // Simple YYYY-MM-DD format
-                                    return parseISO(dateStr);
-                                } else {
-                                    // Fallback
-                                    return new Date(dateStr);
-                                }
+                                return parseISO(schedule.openDate);
                             } catch (error) {
-                                console.error("Error parsing date:", error);
+                                console.error("Error parsing date:", schedule.openDate, error);
                                 return null;
                             }
                         })
-                        .filter((date: Date | null): date is Date => date !== null); // Explicitly type the filter
+                        .filter((date: Date | null): date is Date => date !== null);
 
                     setExistingDates(dates);
                 }

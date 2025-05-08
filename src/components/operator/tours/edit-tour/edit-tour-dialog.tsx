@@ -38,7 +38,7 @@ export function UpdateTourDialog({ tour: initialTour, open, onOpenChange, onUpda
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[850px] sm:max-h-full" onInteractOutside={(e) => {
+            <DialogContent className="sm:max-w-[1000px] sm:max-h-full" onInteractOutside={(e) => {
                 // Prevent interaction outside from closing the dialog
                 e.preventDefault();
             }}
@@ -63,7 +63,7 @@ export function UpdateTourDialog({ tour: initialTour, open, onOpenChange, onUpda
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                         <TabsList className="flex flex-auto mb-2">
                             <TabsTrigger value="info">Thông tin cơ bản</TabsTrigger>
-                            <TabsTrigger value="destinations">Timeline Tour</TabsTrigger>
+                            <TabsTrigger value="destinations">Điểm đến và hoạt động</TabsTrigger>
                             <TabsTrigger value="schedule">Lịch trình</TabsTrigger>
                             <TabsTrigger  value="tickets">Vé</TabsTrigger>
                         </TabsList>
@@ -81,7 +81,7 @@ export function UpdateTourDialog({ tour: initialTour, open, onOpenChange, onUpda
 
                         <TabsContent value="schedule" className="space-y-4">
                             {/* Schedule edit form will go here */}
-                            <TourEditScheduleForm tourId={tour.id} onUpdateSuccess={handleUpdateSuccess} />
+                            <TourEditScheduleForm tourId={tour.id}/>
                         </TabsContent>
 
                         <TabsContent value="tickets" className="space-y-4">

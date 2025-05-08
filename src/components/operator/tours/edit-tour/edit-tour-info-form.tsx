@@ -244,7 +244,7 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                         name="title"
                         render={({ field }) => (
                             <FormItem className="mx-2">
-                                <FormLabel>Nội dung</FormLabel>
+                                <FormLabel>Nội dung <span className="text-red-600">*</span></FormLabel>
                                 <FormControl>
                                     <Input
                                         {...field}
@@ -263,7 +263,7 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                         name="category"
                         render={({ field }) => (
                             <FormItem className="space-y-2 animate-slide-up mx-2" style={{ animationDelay: "100ms" }}>
-                                <FormLabel className="font-medium">Loại tour</FormLabel>
+                                <FormLabel className="font-medium">Loại tour <span className="text-red-600">*</span></FormLabel>
                                 <FormControl>
                                     <CategorySearch
                                         categories={categories || []}
@@ -400,7 +400,7 @@ export function TourEditInfoForm({ tourId, onUpdateSuccess }: TourInfoFormProps)
                         name="img"
                         render={({ field }) => (
                             <FormItem className="mx-2">
-                                <FormLabel>Ảnh thumbnail</FormLabel>
+                                <FormLabel>Ảnh thumbnail <span className="text-red-600">*</span></FormLabel>
                                 <div className="space-y-4">
                                     {/* Image Preview Section */}
                                     {previewImages.length > 0 && (

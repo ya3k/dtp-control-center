@@ -113,7 +113,7 @@ export function WithdrawFilterCard({
               <SelectItem value="all">Tất cả</SelectItem>
               <SelectItem value="Pending">Đang chờ</SelectItem>
               <SelectItem value="Done">Hoàn thành</SelectItem>
-              <SelectItem value="Rejected">Từ chối</SelectItem>
+              {/* <SelectItem value="Rejected">Từ chối</SelectItem> */}
             </SelectContent>
           </Select>
         </div>

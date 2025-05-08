@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react"
-import { Loader2, Plus, Calendar as CalendarIcon, Pencil } from "lucide-react"
+import { Loader2, Calendar as CalendarIcon, Pencil, RefreshCcw } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -49,7 +49,7 @@ export default function TourEditTicketForm({ tourId, onUpdateSuccess }: TourEdit
         setIsLoading(true)
         try {
             const response = await tourApiService.getTourScheduleTicket(tourId);
-
+            console.log(JSON.stringify(response))
             // Group tickets by day
             const grouped = (response.payload.data as ScheduleType[]).reduce((acc: GroupedTickets, schedule) => {
                 acc[schedule.day] = schedule.ticketSchedules;
@@ -108,10 +108,16 @@ export default function TourEditTicketForm({ tourId, onUpdateSuccess }: TourEdit
                     <h2 className="text-2xl font-bold">Lịch vé</h2>
                     <p className="text-muted-foreground">Quản lý lịch vé cho tour</p>
                 </div>
-                <Button onClick={() => setIsEditDialogOpen(true)}>
-                    <Pencil className="h-4 w-4 mr-2" />
-                    Thêm/Cập nhật vé
-                </Button>
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={fetchTicketSchedules} className="flex items-center">
+                        <RefreshCcw className="h-4 w-4 mr-2" />
+                        Tải lại
+                    </Button>
+                    <Button variant={'core'} onClick={() => setIsEditDialogOpen(true)}>
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Thêm/Cập nhật vé
+                    </Button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -125,6 +131,7 @@ export default function TourEditTicketForm({ tourId, onUpdateSuccess }: TourEdit
                         <CardDescription>
                             Chọn ngày để xem chi tiết vé (Chỉ những ngày có vé mới chọn được)
                         </CardDescription>
+                     
                     </CardHeader>
                     <CardContent>
                         {isLoading ? (

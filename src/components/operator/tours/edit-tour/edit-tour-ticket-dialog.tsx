@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, useFieldArray } from "react-hook-form"
-import { format, isSameDay } from "date-fns"
+import { format, isSameDay, parseISO } from "date-fns"
 import { z } from "zod"
-import { CalendarIcon, Plus, Trash2 } from "lucide-react"
+import { CalendarIcon, Plus, Trash2, RefreshCcw } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import tourApiService from "@/apiRequests/tour"
-import { TicketKind } from "@/schemaValidations/tour-operator.shema"
+import { TicketKind, TicketScheduleSchema } from "@/schemaValidations/tour-operator.shema"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 // Vietnamese labels for ticket kinds
@@ -53,6 +53,11 @@ interface EditTourTicketDialogProps {
     onUpdateSuccess: () => void;
 }
 
+interface ScheduleDay {
+    day: string;
+    ticketSchedules: z.infer<typeof TicketScheduleSchema>[];
+}
+
 export function EditTourTicketDialog({
     open,
     onOpenChange,
@@ -79,30 +84,22 @@ export function EditTourTicketDialog({
     // Fetch available schedule dates when dialog opens
     useEffect(() => {
         if (open) {
-            fetchAvailableDates();
+            fetchTicketSchedules();
         }
     }, [open, tourId]);
 
-    const fetchAvailableDates = async () => {
+    const fetchTicketSchedules = async () => {
         setIsLoadingDates(true);
         try {
-            const response = await tourApiService.getTourSchedule(tourId);
+            const response = await tourApiService.getTourScheduleTicket(tourId);
             
             if (response.payload && Array.isArray(response.payload.data)) {
                 // Parse dates for calendar
-                const dates = response.payload.data.map((dateStr: string) => {
+                const dates = response.payload.data.map((schedule: ScheduleDay) => {
                     try {
-                        // Handle different date formats
-                        if (dateStr.includes('.') || dateStr.includes(' ')) {
-                            return new Date(dateStr.split(' ')[0]);
-                        } else if (dateStr.includes('T')) {
-                            return new Date(dateStr);
-                        } else if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                            return new Date(dateStr);
-                        }
-                        return new Date(dateStr);
+                        return parseISO(schedule.day);
                     } catch (error) {
-                        console.error("Error parsing date:", dateStr, error);
+                        console.error("Error parsing date:", schedule.day, error);
                         return null;
                     }
                 }).filter((date: Date | null): date is Date => date !== null);
@@ -136,6 +133,16 @@ export function EditTourTicketDialog({
     const addTicket = () => {
         // Get current values from the form
         const currentValues = form.getValues("ticketKindUpdates.0");
+
+        // Check for duplicate ticket kind
+        const isDuplicate = fields.slice(1).some(
+            (field, index) => form.getValues(`ticketKindUpdates.${index + 1}.ticketKind`) === currentValues.ticketKind
+        );
+
+        if (isDuplicate) {
+            toast.error("Loại vé này đã tồn tại trong danh sách");
+            return;
+        }
 
         // Only append if we have valid values
         if (currentValues.newNetCost > 0 && currentValues.newAvailableTicket > 0) {
@@ -210,10 +217,18 @@ export function EditTourTicketDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[900px] h-[95vh] flex flex-col overflow-hidden">
                 <DialogHeader className="px-6 py-2">
-                    <DialogTitle>Cập nhật vé</DialogTitle>
-                    <DialogDescription>
-                        Chọn khoảng thời gian và cập nhật thông tin vé
-                    </DialogDescription>
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <DialogTitle>Cập nhật vé</DialogTitle>
+                            <DialogDescription>
+                                Chọn khoảng thời gian và cập nhật thông tin vé
+                            </DialogDescription>
+                        </div>
+                        <Button variant="outline" onClick={fetchTicketSchedules} className="flex items-center">
+                            <RefreshCcw className="h-4 w-4 mr-2" />
+                            Tải lại
+                        </Button>
+                    </div>
                 </DialogHeader>
 
                 <Form {...form}>

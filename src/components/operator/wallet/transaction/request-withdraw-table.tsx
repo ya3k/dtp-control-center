@@ -26,6 +26,16 @@ export function RequestWithdrawTable({
   onReject
 }: RequestWithdrawTableProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [approvingId, setApprovingId] = useState<string | null>(null)
+
+  const handleApprove = async (requestId: string) => {
+    setApprovingId(requestId)
+    try {
+      await onApprove?.(requestId)
+    } finally {
+      setApprovingId(null)
+    }
+  }
 
   const handleCopy = async (text: string, label: string) => {
     try {
@@ -62,7 +72,7 @@ export function RequestWithdrawTable({
         </div>
       ),
       enableHiding: true,
-      defaultHidden: false
+      defaultHidden: true
     },
     {
       id: "createdAt",
@@ -71,9 +81,8 @@ export function RequestWithdrawTable({
       cell: (request) => new Date(request.createdAt).toLocaleDateString('vi-VN', {
         year: 'numeric',
         month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
+        day: '2-digit'
+        
       }),
       enableHiding: false, // Required column
     },
@@ -105,6 +114,89 @@ export function RequestWithdrawTable({
           </Button>
         </div>
       ),
+      enableHiding: true,
+    },
+    {
+      id: "bankAccountNumber",
+      header: "Số tài khoản",
+      accessorKey: "bankAccountNumber",
+      cell: (request) => (
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-xs">{request.bankAccountNumber}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => handleCopy(request.bankAccountNumber, "Số tài khoản")}
+          >
+            {copiedId === request.bankAccountNumber ? (
+              <Check className="h-3 w-3" />
+            ) : (
+              <Copy className="h-3 w-3" />
+            )}
+          </Button>
+        </div>
+      ),
+      enableHiding: true,
+    },
+    {
+      id: "bankName",
+      header: "Tên ngân hàng",
+      accessorKey: "bankName",
+      cell: (request) => request.bankName || "—",
+      enableHiding: true,
+    },
+    {
+      id: "bankAccount",
+      header: "Tên tài khoản",
+      accessorKey: "bankAccount",
+      cell: (request) => request.bankAccount || "—",
+      enableHiding: true,
+    },
+    {
+      id: "transactionCode",
+      header: "Mã giao dịch",
+      accessorKey: "transactionCode",
+      cell: (request) => (
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-xs">{request.transactionCode}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => handleCopy(request.transactionCode, "Mã giao dịch")}
+          >
+            {copiedId === request.transactionCode ? (
+              <Check className="h-3 w-3" />
+            ) : (
+              <Copy className="h-3 w-3" />
+            )}
+          </Button>
+        </div>
+      ),
+      enableHiding: true,
+    },
+    {
+      id: "type",
+      header: "Loại giao dịch",
+      accessorKey: "type",
+      cell: (request) => {
+        const type = request.type;
+        let label = "Không xác định";
+        
+        switch (type) {
+          case "Withdraw":
+            label = "Rút tiền";
+            break;
+          case "Deposit":
+            label = "Nạp tiền";
+            break;
+          default:
+            label = type;
+        }
+        
+        return <span>{label}</span>;
+      },
       enableHiding: true,
     },
     {
@@ -149,7 +241,7 @@ export function RequestWithdrawTable({
         const amount = request.amount;
         return (
           <span className="font-semibold text-lg text-destructive">
-            - {formatPrice(Math.abs(amount))}
+            {formatPrice(Math.abs(amount))}
           </span>
         );
       },
@@ -173,11 +265,21 @@ export function RequestWithdrawTable({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onApprove && onApprove(request.id)}
+                onClick={() => handleApprove(request.id)}
+                disabled={approvingId === request.id}
                 className="flex items-center gap-1"
               >
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span>Duyệt</span>
+                {approvingId === request.id ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Đang xử lý...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>Duyệt</span>
+                  </>
+                )}
               </Button>
               {/* <Button
                 variant="outline"

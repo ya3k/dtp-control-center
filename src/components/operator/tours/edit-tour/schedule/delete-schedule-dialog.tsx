@@ -40,7 +40,7 @@ export default function DeleteScheduleDialog({
     // Handle deleting a schedule
     const handleDelete = async () => {
         if (!remark.trim()) {
-            toast.error("Vui lòng nhập lý do xóa lịch trình");
+            toast.error("Vui lòng nhập lý do hủy lịch trình");
             return;
         }
 
@@ -74,7 +74,7 @@ export default function DeleteScheduleDialog({
             }
 
             // console.log("Delete request data:", JSON.stringify(deleteData));
-
+console.log(JSON.stringify(deleteData))
             const response = await tourApiService.deleteTourSchedule(tourId, deleteData);
 
             if (!response.payload) {
@@ -85,7 +85,7 @@ export default function DeleteScheduleDialog({
             onDeleteSuccess();
             setOpen(false); // Close the dialog after successful deletion
         } catch (error) {
-            // console.error("Error deleting schedule:", error);
+            console.error("Error deleting schedule:", error);
             toast.error("Không thể xóa lịch trình");
         } finally {
             setIsSubmitting(false);
@@ -106,27 +106,27 @@ export default function DeleteScheduleDialog({
             <DialogTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50">
                     <Trash2 className="h-4 w-4" />
-                    Xóa lịch trình
+                    Hủy lịch trình
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Xác nhận xóa lịch trình</DialogTitle>
+                    <DialogTitle>Xác nhận hủy lịch trình</DialogTitle>
                     <DialogDescription>
-                        Bạn có chắc chắn muốn xóa lịch trình ngày  <span className="text-red-600 font-bold">{formattedDate}</span> không?
+                        Bạn có chắc chắn muốn hủy lịch trình ngày  <span className="text-red-600 font-bold">{formattedDate}</span> không?
                         Hành động này không thể hoàn tác.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="py-4">
                     <Label htmlFor="remark" className="text-right">
-                        Lý do xóa lịch trình
+                        Lý do hủy lịch trình
                     </Label>
                     <Textarea
                         id="remark"
                         cols={3}
                         value={remark}
                         onChange={(e) => setRemark(e.target.value)}
-                        placeholder="Nhập lý do xóa lịch trình..."
+                        placeholder="Nhập lý do hủy lịch trình..."
                         className="mt-2"
                     />
                 </div>

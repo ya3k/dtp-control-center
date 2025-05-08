@@ -4,6 +4,7 @@ import {  POSTTourType, PUTTourDestinationsType, TourDestinationResponseType } f
 import type {
   CreateTourBodyType,
   DELETETourScheduleBodyType,
+  getTourScheduleResType,
   POSTTourScheduleBodyType,
   PUTTourInfoBodyType,
   TicketScheduleResType,
@@ -58,7 +59,8 @@ const tourApiService = {
   }
   ,
   getTourSchedule: async (tourId: string) => {
-    const response = await http.get<TourInfoResType>(`${apiEndpoint.tourSchedule}/${tourId}`)
+    const response = await http.get<getTourScheduleResType>(`${apiEndpoint.tourSchedule}/${tourId}`)
+    console.log(JSON.stringify(response.payload.data))
     return response
   },
   postTourSchedule: async (tourId: string, body: POSTTourScheduleBodyType) => {
