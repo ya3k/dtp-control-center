@@ -8,6 +8,9 @@ export const WalletResSchema = z.object({
 
 export const WithDrawSchema = z.object({
     amount: z.number().positive().min(100000, "Số tiền tối thiểu là 100,000 VNĐ"),
+    bankAccountNumber: z.string(),
+    bankName: z.string(),
+    bankAccount: z.string(),
     otp: z.string().min(6, "Mã OTP phải có ít nhất 6 ký tự").max(10, "Mã OTP không vượt quá 10 ký tự"),
 })
 
@@ -38,6 +41,7 @@ export type TransactionType = z.infer<typeof transactionSchema>
 export type DetailedTransactionType = z.infer<typeof detailedTransactionSchema>
 
 export const AdminExternalTransactionSchema = z.object({
+    createdAt: z.string(), // Nếu cần, có thể dùng z.string().datetime() nếu format ISO
     id: z.string().uuid(),
     userId: z.string().uuid(),
     companyName: z.string(),
@@ -46,10 +50,27 @@ export const AdminExternalTransactionSchema = z.object({
     transactionCode: z.string(),
     description: z.string(),
     amount: z.number(),
-    type: z.string(), // Add more types if needed
-    status: z.string(), // Adjust based on actual possible statuses
-    createdAt: z.string(),
+    type: z.string(),
+    status: z.string(),
+    bankAccountNumber: z.string(),
+    bankName: z.string(),
+    bankAccount: z.string()
 });
 
 // Optional TypeScript type
 export type AdminExternalTransactionType = z.infer<typeof AdminExternalTransactionSchema>;
+
+export const BankInfoSchema = z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    code: z.string(),
+    bin: z.number(),
+    short_name: z.string(),
+    logo_url: z.string().url(),
+    icon_url: z.string().url(),
+    swift_code: z.string(),
+    lookup_supported: z.number().int().nonnegative(),
+  });
+  
+  // TypeScript type (tuỳ chọn)
+  export type BankInfoType = z.infer<typeof BankInfoSchema>;

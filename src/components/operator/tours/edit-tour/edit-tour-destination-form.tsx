@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { DestinationSchema, POSTTourDestinationType, PUTTourDestinationsType, TourDestinationResType } from '@/schemaValidations/crud-tour.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Trash2, FileImage, ChevronRight, AlertCircle, Loader2 } from 'lucide-react';
+import { Plus, Trash2, FileImage, ChevronRight, AlertCircle, Loader2, RefreshCcw } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -73,82 +73,81 @@ export default function EditTourDestinationForm({
     }
   });
 
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Fetch available destinations for dropdown
+      const destinationsResponse = await destinationApiRequest.getAll();
+      if (!destinationsResponse.payload?.value) {
+        throw new Error("No destinations data received");
+      }
+      setDestinations(destinationsResponse.payload.value);
+      
+      // Fetch tour destinations
+      const tourDestinationsResponse = await tourApiService.getTourDestination(tourId);
+      
+      // Debug log - Full tour destinations response
+      console.log("DEBUG - FULL RESPONSE DATA:", JSON.stringify(tourDestinationsResponse));
+      
+      if (!tourDestinationsResponse.payload.data) {
+        throw new Error("No tour destinations data received");
+      }
+
+      // Debug log - Initial destinations data
+      console.log("DEBUG - Initial destinations data:", JSON.stringify(tourDestinationsResponse.payload.data.map((dest: TourDestinationResType) => ({
+        destinationId: dest.destinationId,
+        sortOrderByDate: dest.sortOrderByDate,
+        sortOrder: dest.sortOrder
+      }))));
+
+      // Transform data for form
+      const transformedDestinations = tourDestinationsResponse.payload.data.map((dest: TourDestinationResType) => ({
+        destinationId: dest.destinationId,
+        destinationActivities: dest.destinationActivities || [],
+        startTime: dest.startTime,
+        endTime: dest.endTime,
+        sortOrder: dest.sortOrder,
+        sortOrderByDate: dest.sortOrderByDate,
+        img: dest.img || [],
+      }));
+      
+      // Debug log - Transformed destinations
+      console.log("DEBUG - Transformed destinations:", JSON.stringify(transformedDestinations.map((dest: POSTTourDestinationType) => ({
+        destinationId: dest.destinationId,
+        sortOrderByDate: dest.sortOrderByDate,
+        sortOrder: dest.sortOrder
+      }))));
+      
+      form.setValue('destinations', transformedDestinations);
+      
+      // Calculate days from destinations
+      if (transformedDestinations.length > 0) {
+        const maxDay = Math.max(...transformedDestinations.map((d: POSTTourDestinationType) => d.sortOrderByDate));
+        // Debug log - Max day calculation
+        console.log("DEBUG - Max day:", maxDay);
+        
+        setDays(Array.from({ length: maxDay }, (_, i) => i + 1));
+        
+        // Set all days as expanded by default
+        setExpandedDays(Array.from({ length: maxDay }, (_, i) => `day-${i+1}`));
+        
+        // Set destinations as expanded by default
+        const destKeys: string[] = [];
+        transformedDestinations.forEach((dest: POSTTourDestinationType, idx: number) => {
+          destKeys.push(`day-${dest.sortOrderByDate}-dest-${idx}`);
+        });
+        setExpandedDestinations(destKeys);
+      }
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+      toast.error("Không thể tải dữ liệu điểm đến");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   // Fetch destinations and tour data
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Fetch available destinations for dropdown
-        const destinationsResponse = await destinationApiRequest.getAll();
-        if (!destinationsResponse.payload?.value) {
-          throw new Error("No destinations data received");
-        }
-        setDestinations(destinationsResponse.payload.value);
-        
-        // Fetch tour destinations
-        const tourDestinationsResponse = await tourApiService.getTourDestination(tourId);
-        
-        // Debug log - Full tour destinations response
-        console.log("DEBUG - FULL RESPONSE DATA:", JSON.stringify(tourDestinationsResponse));
-        
-        if (!tourDestinationsResponse.payload.data) {
-          throw new Error("No tour destinations data received");
-        }
-
-        // Debug log - Initial destinations data
-        console.log("DEBUG - Initial destinations data:", JSON.stringify(tourDestinationsResponse.payload.data.map((dest: TourDestinationResType) => ({
-          destinationId: dest.destinationId,
-          sortOrderByDate: dest.sortOrderByDate,
-          sortOrder: dest.sortOrder
-        }))));
-
-        // Transform data for form
-        const transformedDestinations = tourDestinationsResponse.payload.data.map((dest: TourDestinationResType) => ({
-          destinationId: dest.destinationId,
-          destinationActivities: dest.destinationActivities || [],
-          startTime: dest.startTime,
-          endTime: dest.endTime,
-          sortOrder: dest.sortOrder,
-          sortOrderByDate: dest.sortOrderByDate,
-          img: dest.img || [],
-        }));
-        
-        // Debug log - Transformed destinations
-        console.log("DEBUG - Transformed destinations:", JSON.stringify(transformedDestinations.map((dest: POSTTourDestinationType) => ({
-          destinationId: dest.destinationId,
-          sortOrderByDate: dest.sortOrderByDate,
-          sortOrder: dest.sortOrder
-        }))));
-        
-        form.setValue('destinations', transformedDestinations);
-        
-        // Calculate days from destinations
-        if (transformedDestinations.length > 0) {
-          const maxDay = Math.max(...transformedDestinations.map((d: POSTTourDestinationType) => d.sortOrderByDate));
-          // Debug log - Max day calculation
-          console.log("DEBUG - Max day:", maxDay);
-          
-          setDays(Array.from({ length: maxDay }, (_, i) => i + 1));
-          
-          // Set all days as expanded by default
-          setExpandedDays(Array.from({ length: maxDay }, (_, i) => `day-${i+1}`));
-          
-          // Set destinations as expanded by default
-          const destKeys: string[] = [];
-          transformedDestinations.forEach((dest: POSTTourDestinationType, idx: number) => {
-            destKeys.push(`day-${dest.sortOrderByDate}-dest-${idx}`);
-          });
-          setExpandedDestinations(destKeys);
-        }
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-        toast.error("Không thể tải dữ liệu điểm đến");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     if (tourId) {
       fetchData();
     }
@@ -478,14 +477,24 @@ export default function EditTourDestinationForm({
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold">Chỉnh sửa lịch trình tour</h2>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={addDay}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Thêm ngày mới
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={fetchData}
+                >
+                  <RefreshCcw className="w-4 h-4 mr-2" />
+                  Tải lại
+                </Button>
+                <Button
+                  type="button"
+                  variant="core"
+                  onClick={addDay}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Thêm ngày mới
+                </Button>
+              </div>
             </div>
 
             {error && (
@@ -520,7 +529,7 @@ export default function EditTourDestinationForm({
                             </span>
                             <Button
                               type="button"
-                              variant="outline"
+                              variant="core"
                               size="sm"
                               onClick={(e) => {
                                 e.stopPropagation(); // Prevent accordion from toggling
@@ -740,7 +749,7 @@ export default function EditTourDestinationForm({
                                       <h4 className="text-sm font-medium">Hoạt động trong ngày</h4>
                                       <Button
                                         type="button"
-                                        variant="outline"
+                                        variant="core"
                                         size="sm"
                                         onClick={() => addActivity(destinationIndex)}
                                       >

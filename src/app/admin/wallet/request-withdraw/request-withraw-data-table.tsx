@@ -73,7 +73,7 @@ export default function RequestWithdrawDataTable() {
 
       // Search term (description contains)
       if (debouncedSearchTerm) {
-        filterConditions.push(`contains(description, '${debouncedSearchTerm}')`)
+        filterConditions.push(`(contains(description, '${debouncedSearchTerm}') or contains(companyName, '${debouncedSearchTerm}'))`);
       }
 
       // Type filter - only get withdraw requests
@@ -92,7 +92,7 @@ export default function RequestWithdrawDataTable() {
       
       if (dateFilter.endDate) {
         const endDateStr = dateFilter.endDate.toISOString()
-        filterConditions.push(`createAt le ${endDateStr}`)
+        filterConditions.push(`createdAt le ${endDateStr}`)
       }
 
       // Combine filter conditions

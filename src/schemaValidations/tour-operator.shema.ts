@@ -91,9 +91,9 @@ export const tourByCompanyResSchema = z.object({
   companyId: z.string().uuid(),
   categoryId: z.string().uuid(),
   description: z.string(),
-  about: z.string(),     
-  include: z.string(),    
-  pickinfor: z.string(),  
+  about: z.string(),
+  include: z.string(),
+  pickinfor: z.string(),
   isDeleted: z.boolean(),
 })
 
@@ -192,6 +192,13 @@ export const tourOdataResSchema = z.object({
   onlyFromCost: z.number(),
 });
 export type tourOdataResType = z.infer<typeof tourOdataResSchema>;
+
+export const getTourScheduleResSchema = z.object({
+  openDate: z.string(),
+  status: z.string()
+})
+
+export type getTourScheduleResType = z.infer<typeof getTourScheduleResSchema>;
 
 export const POSTtourScheduleSchema = z.object({
   tourId: z.string(),
