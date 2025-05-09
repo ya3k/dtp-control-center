@@ -57,9 +57,11 @@ export function OpTourTable({
       header: "Điểm nổi bật",
       accessorKey: "description",
       cell: (info) => (
-        <div className="max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap" title={info.description}>
-          {truncateDescription(info.description, 50)}
-        </div>
+        <div
+        className="max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap"
+        title={info.description}
+        dangerouslySetInnerHTML={{ __html: truncateDescription(info.description, 50) }}
+      />
       ),
       enableHiding: true,
     },

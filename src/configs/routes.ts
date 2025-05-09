@@ -3,6 +3,8 @@ export const links = {
     login: { href: "/login", label: "Đăng nhập" },
     home: { href: "/", label: "Trang chủ" },
     companyConfirm: { href: "/confirm-account", label: "Xác thực tài khoản công ty" },
+    forgotPassword: {href:"/forgot-password", label:"Quên mật khẩu"},
+    resetPassword: {href:"/reset-password", label:"Đặt lại mật khẩu"},
 
 }
 
@@ -50,6 +52,8 @@ export const apiEndpoint = {
     refresh: "/api/authentication/refresh",
     confirmation: "/api/authentication/confirmation",
     storeToken: "/api/authentication/store-token",
+    forgotPassword: "/api/authentication/forget-password",
+    resetPassword: "/api/authentication/reset-password",
     //user
     user: `/api/user`,
     profile: "/api/user/me",

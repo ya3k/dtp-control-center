@@ -87,19 +87,9 @@ export default function EditTourDestinationForm({
       // Fetch tour destinations
       const tourDestinationsResponse = await tourApiService.getTourDestination(tourId);
       
-      // Debug log - Full tour destinations response
-      console.log("DEBUG - FULL RESPONSE DATA:", JSON.stringify(tourDestinationsResponse));
-      
       if (!tourDestinationsResponse.payload.data) {
         throw new Error("No tour destinations data received");
       }
-
-      // Debug log - Initial destinations data
-      console.log("DEBUG - Initial destinations data:", JSON.stringify(tourDestinationsResponse.payload.data.map((dest: TourDestinationResType) => ({
-        destinationId: dest.destinationId,
-        sortOrderByDate: dest.sortOrderByDate,
-        sortOrder: dest.sortOrder
-      }))));
 
       // Transform data for form
       const transformedDestinations = tourDestinationsResponse.payload.data.map((dest: TourDestinationResType) => ({
@@ -112,20 +102,11 @@ export default function EditTourDestinationForm({
         img: dest.img || [],
       }));
       
-      // Debug log - Transformed destinations
-      console.log("DEBUG - Transformed destinations:", JSON.stringify(transformedDestinations.map((dest: POSTTourDestinationType) => ({
-        destinationId: dest.destinationId,
-        sortOrderByDate: dest.sortOrderByDate,
-        sortOrder: dest.sortOrder
-      }))));
-      
       form.setValue('destinations', transformedDestinations);
       
       // Calculate days from destinations
       if (transformedDestinations.length > 0) {
         const maxDay = Math.max(...transformedDestinations.map((d: POSTTourDestinationType) => d.sortOrderByDate));
-        // Debug log - Max day calculation
-        console.log("DEBUG - Max day:", maxDay);
         
         setDays(Array.from({ length: maxDay }, (_, i) => i + 1));
         
@@ -140,7 +121,6 @@ export default function EditTourDestinationForm({
         setExpandedDestinations(destKeys);
       }
     } catch (error) {
-      console.error("Failed to fetch data:", error);
       toast.error("Không thể tải dữ liệu điểm đến");
     } finally {
       setIsLoading(false);
@@ -195,16 +175,6 @@ export default function EditTourDestinationForm({
       img: [],
     };
 
-    // Debug log - New destination
-    console.log("DEBUG - Adding new destination:", JSON.stringify({
-      dayNumber,
-      destinationsInDay: destinationsForThisDay.length,
-      newDestination: {
-        sortOrderByDate: newDestination.sortOrderByDate,
-        sortOrder: newDestination.sortOrder
-      }
-    }));
-
     const updatedDestinations = [...(form.getValues().destinations || []), newDestination];
     form.setValue('destinations', updatedDestinations);
     
@@ -222,12 +192,6 @@ export default function EditTourDestinationForm({
 
   const addDay = () => {
     const newDayNumber = days.length + 1;
-    
-    // Debug log - Adding new day
-    console.log("DEBUG - Adding new day:", JSON.stringify({
-      currentDays: days,
-      newDayNumber
-    }));
     
     setDays([...days, newDayNumber]);
     // Automatically add a first destination for this day
@@ -249,8 +213,8 @@ export default function EditTourDestinationForm({
     
     const newActivity = {
       name: "",
-      startTime: "",
-      endTime: "",
+      startTime: null,
+      endTime: null,
       sortOrder: currentActivities.length,
     };
 
@@ -357,18 +321,6 @@ export default function EditTourDestinationForm({
       destination => destination.sortOrderByDate === day
     ) || [];
     
-    // Debug log - only log occasionally to avoid too many logs
-    if (destinations.length > 0 && Math.random() < 0.1) {
-      console.log("DEBUG - getDestinationsForDay:", JSON.stringify({
-        day,
-        count: destinations.length,
-        sample: destinations.map(d => ({
-          destinationId: d.destinationId,
-          sortOrderByDate: d.sortOrderByDate
-        }))
-      }));
-    }
-    
     return destinations;
   };
 
@@ -391,13 +343,6 @@ export default function EditTourDestinationForm({
         return;
       }
 
-      // Debug log - Before sorting
-      console.log("DEBUG - Before sorting:", JSON.stringify(data.destinations.map(d => ({
-        destinationId: d.destinationId,
-        sortOrderByDate: d.sortOrderByDate,
-        sortOrder: d.sortOrder
-      }))));
-      
       // Sort destinations by day first, then by sortOrder within each day
       const sortedDestinations = [...data.destinations].sort((a, b) => {
         if (a.sortOrderByDate === b.sortOrderByDate) {
@@ -406,19 +351,33 @@ export default function EditTourDestinationForm({
         return a.sortOrderByDate - b.sortOrderByDate;
       });
       
-      // Debug log - After sorting
-      console.log("DEBUG - After sorting:", JSON.stringify(sortedDestinations.map(d => ({
-        destinationId: d.destinationId,
-        sortOrderByDate: d.sortOrderByDate,
-        sortOrder: d.sortOrder
-      }))));
-
       // Prepare API request body
       const requestBody: PUTTourDestinationsType = {
         tourId: tourId,
         destinations: sortedDestinations.map(dest => ({
           destinationId: dest.destinationId,
-          destinationActivities: dest.destinationActivities || [],
+          destinationActivities: dest.destinationActivities?.map(activity => {
+            const processedActivity: {
+              name: string;
+              sortOrder: number;
+              startTime?: string;
+              endTime?: string;
+            } = {
+              name: activity.name,
+              sortOrder: activity.sortOrder
+            };
+            
+            // Only include time fields if they have values
+            if (activity.startTime && activity.startTime !== '') {
+              processedActivity.startTime = activity.startTime;
+            }
+            
+            if (activity.endTime && activity.endTime !== '') {
+              processedActivity.endTime = activity.endTime;
+            }
+            
+            return processedActivity;
+          }) || [],
           startTime: dest.startTime,
           endTime: dest.endTime,
           sortOrder: dest.sortOrder,
@@ -427,14 +386,8 @@ export default function EditTourDestinationForm({
         }))
       };
       
-      // Debug log - Full request body
-      console.log("DEBUG - FULL REQUEST BODY:", JSON.stringify(requestBody));
-      
       // Call API to update destinations
       const response = await tourApiService.putTourDesitnation(tourId, requestBody);
-      
-      // Debug log - Full API response
-      console.log("DEBUG - FULL API RESPONSE:", JSON.stringify(response));
       
       toast.success("Cập nhật điểm đến thành công");
       
@@ -442,7 +395,6 @@ export default function EditTourDestinationForm({
         onSaveSuccess();
       }
     } catch (error) {
-      console.error("Failed to update tour destinations:", error);
       toast.error("Không thể cập nhật điểm đến");
     } finally {
       setIsSaving(false);
@@ -795,13 +747,17 @@ export default function EditTourDestinationForm({
                                                   name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.startTime`}
                                                   render={({ field }) => (
                                                     <FormItem>
-                                                      <FormLabel>Thời gian bắt đầu <span className='text-red-600'>*</span></FormLabel>
+                                                      <FormLabel>Thời gian bắt đầu</FormLabel>
                                                       <FormControl>
                                                         <Input 
                                                           type="time" 
-                                                          value={field.value.substring(0, 5)} 
+                                                          value={field.value?.substring(0, 5) || ''} 
                                                           onChange={(e) => {
-                                                            const newTime = `${e.target.value}:00`;
+                                                            // If empty, set to null/undefined to match schema validation
+                                                            const newTime = e.target.value 
+                                                              ? `${e.target.value}:00` 
+                                                              : null;
+                                                            
                                                             const currentDestinations = [...form.getValues().destinations];
                                                             const currentActivities = [...currentDestinations[destinationIndex].destinationActivities];
                                                             currentActivities[activityIndex] = {
@@ -826,13 +782,17 @@ export default function EditTourDestinationForm({
                                                   name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.endTime`}
                                                   render={({ field }) => (
                                                     <FormItem>
-                                                      <FormLabel>Thời gian kết thúc <span className='text-red-600'>*</span></FormLabel>
+                                                      <FormLabel>Thời gian kết thúc</FormLabel>
                                                       <FormControl>
                                                         <Input 
                                                           type="time" 
-                                                          value={field.value.substring(0, 5)} 
+                                                          value={field.value?.substring(0, 5) || ''} 
                                                           onChange={(e) => {
-                                                            const newTime = `${e.target.value}:00`;
+                                                            // If empty, set to null/undefined to match schema validation
+                                                            const newTime = e.target.value 
+                                                              ? `${e.target.value}:00` 
+                                                              : null;
+                                                            
                                                             const currentDestinations = [...form.getValues().destinations];
                                                             const currentActivities = [...currentDestinations[destinationIndex].destinationActivities];
                                                             currentActivities[activityIndex] = {

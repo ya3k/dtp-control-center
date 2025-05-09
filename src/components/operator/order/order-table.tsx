@@ -156,7 +156,7 @@ export function OrderTable({
             case PaymentStatus.PROCESSING:
               return "Đang xử lý"
             case PaymentStatus.PAID:
-              return "Hoàn thành"
+              return "Đã thanh toán"
             case PaymentStatus.CANCELED:
               return "Đã hủy"
             default:

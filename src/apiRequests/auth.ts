@@ -55,6 +55,10 @@ const authApiRequest = {
 
   confrimAccountClientToBe: (body: { confirmationToken: string }) =>
     http.post(apiEndpoint.confirmation, body),
+  forgotPassword: (body: { email: string; confirmUrl: string }) =>
+    http.post(apiEndpoint.forgotPassword, body),
+  resetPassword: (body: { confirmationToken: string; newPassword: string }) =>
+    http.post(apiEndpoint.resetPassword, body),
 
 };
 

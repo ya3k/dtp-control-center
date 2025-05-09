@@ -240,13 +240,43 @@ export default function TourDestinationForm() {
   const validateAndNext = () => {
     try {
       const data = form.getValues();
+
+      // Filter out empty time fields from each activity before validation and submission
+      const processedDestinations = data.destinations.map(destination => {
+        if (!destination.destinationActivities?.length) {
+          return destination;
+        }
+
+        const processedActivities = destination.destinationActivities.map(activity => {
+          const processed = { ...activity };
+          
+          // Remove empty or null time fields
+          if (!processed.startTime || processed.startTime === "") {
+            delete processed.startTime;
+          }
+          
+          if (!processed.endTime || processed.endTime === "") {
+            delete processed.endTime;
+          }
+          
+          return processed;
+        });
+
+        return {
+          ...destination,
+          destinationActivities: processedActivities
+        };
+      });
+
+      // Validate with the processed data
       z.object({
         destinations: z.array(DestinationSchema).min(1, "Phải có ít nhất một điểm đến")
-      }).parse(data);
+      }).parse({ destinations: processedDestinations });
+      
       setError("");
       
       // Sort destinations by day first, then by sortOrder within each day
-      const sortedDestinations = [...data.destinations].sort((a, b) => {
+      const sortedDestinations = [...processedDestinations].sort((a, b) => {
         if (a.sortOrderByDate === b.sortOrderByDate) {
           return a.sortOrder - b.sortOrder;
         }
@@ -720,9 +750,14 @@ export default function TourDestinationForm() {
                                                   name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.startTime`}
                                                   render={({ field }) => (
                                                     <FormItem>
-                                                      <FormLabel>Thời gian bắt đầu <span className='text-red-600'>*</span></FormLabel>
+                                                      <FormLabel>Thời gian bắt đầu</FormLabel>
                                                       <FormControl>
-                                                        <Input type="time" step="1" {...field} />
+                                                        <Input 
+                                                          type="time" 
+                                                          step="1" 
+                                                          {...field} 
+                                                          value={field.value || ""}
+                                                        />
                                                       </FormControl>
                                                       <FormMessage />
                                                     </FormItem>
@@ -734,9 +769,14 @@ export default function TourDestinationForm() {
                                                   name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.endTime`}
                                                   render={({ field }) => (
                                                     <FormItem>
-                                                      <FormLabel>Thời gian kết thúc <span className='text-red-600'>*</span></FormLabel>
+                                                      <FormLabel>Thời gian kết thúc</FormLabel>
                                                       <FormControl>
-                                                        <Input type="time" step="1" {...field} />
+                                                        <Input 
+                                                          type="time" 
+                                                          step="1" 
+                                                          {...field} 
+                                                          value={field.value || ""}
+                                                        />
                                                       </FormControl>
                                                       <FormMessage />
                                                     </FormItem>

@@ -198,7 +198,7 @@ export function EditTourTicketDialog({
             //     quantity: ticket.newAvailableTicket
             // })));
             // console.log('Raw formatted data:', JSON.stringify(formattedData, null, 2));
-
+console.log(JSON.stringify(formattedData))
             await tourApiService.updateTourTickets(tourId, formattedData);
             form.reset();
 
