@@ -21,7 +21,6 @@ function OperatorDashboard() {
         // Lấy dữ liệu từ API
         const response = await analysApiRequest.getForAd();
         const resData = await response.payload.data;
-
         setDailySales(resData.dailySales);
         setTopTours(resData.topTours);
         setNewestBookings(resData.newestBookings);
