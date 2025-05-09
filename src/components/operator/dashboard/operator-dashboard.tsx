@@ -44,6 +44,7 @@ export function OperatorDashboard({
         } else {
           const response = await analysApiRequest.getForOp();
           data = response.payload.data;
+          console.log(JSON.stringify(data))
         }
 
         setDailySales(data.dailySales || []);
