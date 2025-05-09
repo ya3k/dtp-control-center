@@ -11,7 +11,7 @@ interface PageSizeSelectorProps {
 export function OpTourPageSizeSelector({ pageSize, setPageSize }: PageSizeSelectorProps) {
   return (
     <div className="space-y-2">
-      <Label>Items per page</Label>
+      <Label>Số lượng danh mục mỗi trang</Label>
       <Select 
         value={pageSize.toString()} 
         onValueChange={(value) => setPageSize(Number(value))}

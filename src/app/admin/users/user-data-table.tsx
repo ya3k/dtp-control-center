@@ -130,7 +130,7 @@ export default function UserDataTable() {
 
       // Use userApiRequest with error handling
       const response = await userApiRequest.getWithOdata(queryString)
-      console.log(JSON.stringify(response.payload))
+      // console.log(JSON.stringify(response.payload))
 
       
       setUsers(response.payload.value || [])

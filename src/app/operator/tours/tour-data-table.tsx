@@ -95,6 +95,7 @@ export default function OpTourDataTable() {
 
       // Use tourApiService instead of direct fetch
       const response = await tourApiService.getWithODataByCompany(queryString)
+      // console.log(JSON.stringify(response))
       console.log(queryString)
       // console.log(JSON.stringify(response.payload?.value))
       setTours(response.payload?.value || [])

@@ -78,3 +78,31 @@ export const registerResponseSchema = z
 
 export type RegisterResponseSchemaType = z.TypeOf<typeof registerResponseSchema>;
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Email không hợp lệ"),
+});
+
+export type ForgotPasswordSchemaType = z.infer<typeof forgotPasswordSchema>;
+
+
+export const resetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(1, { message: "Mật khẩu không được để trống" })
+      .min(8, { message: "Mật khẩu phải có ít nhất 8 kí tự" })
+      .max(50, { message: "Mật khẩu không được quá 50 kí tự" })
+      .regex(/^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>]).+$/, {
+        message:
+          "Mật khẩu phải chứa ít nhất một chữ cái viết hoa và một ký tự đặc biệt",
+      }),
+    confirmPassword: z
+      .string()
+      .min(1, { message: "Xác nhận mật khẩu không được để trống" }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Mật khẩu không khớp",
+    path: ["confirmPassword"],
+  });
+
+export type ResetPasswordSchemaType = z.infer<typeof resetPasswordSchema>;
