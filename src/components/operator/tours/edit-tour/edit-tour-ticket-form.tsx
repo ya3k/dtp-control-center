@@ -115,7 +115,7 @@ export default function TourEditTicketForm({ tourId, onUpdateSuccess }: TourEdit
                     </Button>
                     <Button variant={'core'} onClick={() => setIsEditDialogOpen(true)}>
                         <Pencil className="h-4 w-4 mr-2" />
-                        Thêm/Cập nhật vé
+                       Cập nhật vé
                     </Button>
                 </div>
             </div>
