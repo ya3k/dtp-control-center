@@ -109,6 +109,9 @@ export const apiEndpoint = {
     // analys
     opAnalys: `/api/tour/operator/analys`,
     adAnalys: `/api/tour/admin/analys`,
+
+    //system setting
+    system: `/api/system`
 }
 
 

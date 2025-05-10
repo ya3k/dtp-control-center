@@ -12,6 +12,8 @@ import { CompanyTableFilterCard } from "@/components/admin/company/company-table
 import { ApproveCompanyDialog } from "@/components/admin/company/company-request/company-request-list"
 import { EditCompanyDialog } from "@/components/admin/company/edit-company-dialog"
 import { DeleteCompanyDialog } from "@/components/admin/company/delete-company-dialog"
+import { toast } from "sonner"
+import { Badge } from "@/components/ui/badge"
 
 export default function CompanyDataTable() {
   // Data state
@@ -19,6 +21,7 @@ export default function CompanyDataTable() {
   const [loading, setLoading] = useState<boolean>(true)
   const [totalCount, setTotalCount] = useState<number>(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [pendingCount, setPendingCount] = useState(0)
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1)
@@ -55,6 +58,34 @@ export default function CompanyDataTable() {
   useEffect(() => {
     setCurrentPage(1)
   }, [debouncedSearchTerm, licenseFilter])
+
+  //fetch company request list
+  const fetchPendingCompanies = async () => {
+    setLoading(true)
+    try {
+      // Build OData query to get only unlicensed companies
+      const params = new URLSearchParams()
+      params.append("$filter", "licensed eq false")
+      params.append("$count", "true")
+
+      const queryString = `?${params.toString()}`
+      console.log(queryString)
+      const response = await companyApiRequest.getWithOData(queryString)
+      const countReq = response.payload["@odata.count"] || 0
+      setPendingCount(countReq)
+    } catch (error) {
+      console.error("Error fetching pending companies:", error)
+      toast.error("Không thể tải danh sách công ty đang chờ duyệt")
+    } finally {
+      setLoading(false)
+    }
+  }
+   
+  useEffect(() =>{
+    fetchPendingCompanies()
+  },[])
+
+
 
   //fetching tour
   const fetchCompany = async () => {
@@ -109,7 +140,7 @@ export default function CompanyDataTable() {
 
   // Fetch data with OData parameters
   useEffect(() => {
-    fetchCompany()
+    fetchCompany();
   }, [currentPage, pageSize, debouncedSearchTerm, licenseFilter])
 
 
@@ -117,6 +148,7 @@ export default function CompanyDataTable() {
   const handleRefresh = async () => {
     setIsRefreshing(true)
     fetchCompany();
+    fetchPendingCompanies();
     setIsRefreshing(false)
   }
 
@@ -154,6 +186,7 @@ export default function CompanyDataTable() {
   // Handle approval completion
   const handleApprovalComplete = () => {
     // Refresh the main company list to reflect changes
+    fetchPendingCompanies();
     fetchCompany()
   }
   // Calculate total pages
@@ -214,6 +247,11 @@ export default function CompanyDataTable() {
               >
                 <PlusCircle className="h-4 w-4" />
                 <span>Duyệt công ty</span>
+                {pendingCount > 0 && (
+                  <Badge variant="destructive" className="ml-2">
+                    {pendingCount}
+                  </Badge>
+                )}
               </Button>
             </div>
           </div>

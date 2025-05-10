@@ -13,10 +13,10 @@ self.addEventListener('message', (event) => {
       // ✅ Handle background message
       messaging.onBackgroundMessage((payload) => {
         console.log('[Service Worker] Received background message:', payload);
-        const { title, body, image, ...restPayload } = payload?.data;
+        const { title, body, image, ...restPayload } = payload?.notification  ;
         const notificationOptions = {
           body,
-          icon: image || '/icon.png',
+          icon: image || '/public/images/binhdinhtour.png',
           data: restPayload,
         };
         self.registration.showNotification(title, notificationOptions);

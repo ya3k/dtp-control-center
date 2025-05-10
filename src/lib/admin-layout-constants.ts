@@ -1,5 +1,5 @@
 import SidebarItem from "@/types/sidebaritems";
-import { Banknote, BanknoteIcon, Building2, History, LayoutDashboard, Library, Map, TicketPercent, TicketSlash, User, Wallet2 } from "lucide-react";
+import { Banknote, BanknoteIcon, Building2, History, LayoutDashboard, Library, Map, Settings, TicketPercent, TicketSlash, User, Wallet2 } from "lucide-react";
 
 export const adminItems: SidebarItem[] = [
     {
@@ -45,4 +45,9 @@ export const adminItems: SidebarItem[] = [
             { title: "Yêu cầu rút tiền", url: "/admin/wallet/request-withdraw", icon: BanknoteIcon},
         ],
     },
+    {
+        title: "Setting",
+        url: "/admin/setting",
+        icon: Settings,
+    }
 ];

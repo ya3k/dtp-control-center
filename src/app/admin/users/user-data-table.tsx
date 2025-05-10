@@ -14,8 +14,11 @@ import { CreateUserDialog } from "@/components/admin/users/create-user-dialog"
 import { DeleteUsersDialog } from "@/components/admin/users/delete-user-dialog"
 import { EditUserDialog } from "@/components/admin/users/edit-user-dialog"
 import { CompanyResType } from "@/schemaValidations/company.schema"
+import { useAuthContext } from "@/providers/AuthProvider"
+import { UserRoleEnum } from "@/types/user"
 
 export default function UserDataTable() {
+  const {user} = useAuthContext();
   // Data state
   const [users, setUsers] = useState<UserResType[]>([])
   const [loading, setLoading] = useState<boolean>(true)
@@ -64,10 +67,13 @@ export default function UserDataTable() {
     }
   }
 
+
   // Fetch companies on component mount
   useEffect(() => {
+    if(user?.roleName == UserRoleEnum.Admin){
     fetchCompanies()
-  }, [])
+    }
+  }, [user?.roleName])
 
   // Debounce search term
   useEffect(() => {
@@ -130,7 +136,7 @@ export default function UserDataTable() {
 
       // Use userApiRequest with error handling
       const response = await userApiRequest.getWithOdata(queryString)
-      // console.log(JSON.stringify(response.payload))
+      console.log(JSON.stringify(response.payload))
 
       
       setUsers(response.payload.value || [])

@@ -11,6 +11,7 @@ import { CompanyRequestSchema, TCompanyQuestBodyType } from "@/schemaValidations
 import companyApiRequest from "@/apiRequests/company"
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
+import Link from "next/link"
 
 export default function CompanyRequestForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -31,7 +32,7 @@ export default function CompanyRequestForm() {
   // Xử lý khi người dùng gửi biểu mẫu
   async function onSubmit(data: TCompanyQuestBodyType) {
     setIsSubmitting(true)
-    
+
     try {
       // console.log(`Request body: `, JSON.stringify(data));
       console.log(JSON.stringify(data))
@@ -50,121 +51,131 @@ export default function CompanyRequestForm() {
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl">Đăng ký công ty</CardTitle>
-        <CardDescription>Nhập thông tin công ty để đăng ký.</CardDescription>
+    <Card className="w-full max-w-2xl mx-auto shadow-lg border-t-4 border-t-core">
+      <CardHeader className="space-y-1 pb-6">
+        <CardTitle className="text-2xl font-bold text-center">Đăng ký công ty</CardTitle>
+        <CardDescription className="text-center text-muted-foreground">Nhập thông tin công ty để đăng ký.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tên công ty</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Công ty TNHH ABC" {...field} />
-                  </FormControl>
-                  <FormDescription>Tên đăng ký chính thức của công ty.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-medium">Tên công ty</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Công ty TNHH ABC" className="focus-visible:ring-primary" {...field} />
+                    </FormControl>
+                    <FormDescription className="text-xs">Tên đăng ký chính thức của công ty.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="lienhe@congty.com" {...field} />
-                  </FormControl>
-                  <FormDescription>Email liên hệ chính của công ty.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-medium">Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="lienhe@congty.com" className="focus-visible:ring-primary" {...field} />
+                    </FormControl>
+                    <FormDescription className="text-xs">Email liên hệ chính của công ty.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Số điện thoại</FormLabel>
-                  <FormControl>
-                    <Input placeholder="+84 123 456 789" {...field} />
-                  </FormControl>
-                  <FormDescription>Số điện thoại liên hệ chính.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-medium">Số điện thoại</FormLabel>
+                    <FormControl>
+                      <Input placeholder="0912345678" className="focus-visible:ring-primary" {...field} />
+                    </FormControl>
+                    <FormDescription className="text-xs">Số điện thoại liên hệ chính.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="taxCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-medium">Mã số thuế</FormLabel>
+                    <FormControl>
+                      <Input placeholder="123456789" className="focus-visible:ring-primary" {...field} />
+                    </FormControl>
+                    <FormDescription className="text-xs">Mã số thuế của công ty.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Địa chỉ công ty</FormLabel>
+                  <FormLabel className="font-medium">Địa chỉ công ty</FormLabel>
                   <FormControl>
-                    <Input type="text" placeholder="Số 1, ...." {...field} />
+                    <Input type="text" placeholder="Số 1, ...." className="focus-visible:ring-primary" {...field} />
                   </FormControl>
-                  <FormDescription>Địa chỉ công ty.</FormDescription>
+                  <FormDescription className="text-xs">Địa chỉ đăng ký kinh doanh của công ty.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="taxCode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mã số thuế</FormLabel>
-                  <FormControl>
-                    <Input placeholder="123456789" {...field} />
-                  </FormControl>
-                  <FormDescription>Mã số thuế của công ty.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <FormField
               control={form.control}
               name="commissionRate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phần trăm hoa hồng mong muốn chia cho nền tảng</FormLabel>
+                  <FormLabel className="font-medium">Phần trăm hoa hồng</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      placeholder="10" 
-                      {...field}
-                      onChange={(e) => {
-                        const value = e.target.value ? parseFloat(e.target.value) : 0;
-                        field.onChange(value);
-                      }}
-                      min={0}
-                      max={100}
-                      step={0.1}
-                    />
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        placeholder="10"
+                        className="pr-8 focus-visible:ring-primary"
+                        {...field}
+                        onChange={(e) => {
+                          const value = e.target.value ? parseFloat(e.target.value) : 0;
+                          field.onChange(value);
+                        }}
+                        min={0}
+                        max={100}
+                        step={0.1}
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+                    </div>
                   </FormControl>
-                  <FormDescription>Phần trăm hoa hồng mong muốn chia cho nền tảng(0-100%).</FormDescription>
+                  <FormDescription className="text-xs">Phần trăm hoa hồng mong muốn chia cho nền tảng (0-100%).</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button 
-              type="submit" 
-              className="w-full" 
+            <Button
+              variant={'core'}
+              type="submit"
+              className="w-full mt-6 font-semibold py-6"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Đang xử lý...
                 </>
               ) : (
@@ -174,10 +185,15 @@ export default function CompanyRequestForm() {
           </form>
         </Form>
       </CardContent>
-      <CardFooter className="flex justify-between text-sm text-muted-foreground">
-        <p>Không được để trống bất kỳ trường nào</p>
-        <p>Thông tin công ty sẽ được xem xét và duyệt</p>
+      <CardFooter className="flex flex-col sm:flex-row justify-between text-sm text-muted-foreground border-t pt-4">
+        <p className="mb-2 sm:mb-0">⚠️ Không được để trống bất kỳ trường nào</p>
+        <p>📋 Thông tin công ty sẽ được xem xét và duyệt</p>
+
       </CardFooter>
+      <div className="ml-4 mb-4">
+        <Link href={'/'} className="underline">Trở lại đăng nhập</Link>
+
+      </div>
     </Card>
   )
 }

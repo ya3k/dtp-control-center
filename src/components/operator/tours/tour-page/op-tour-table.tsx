@@ -4,9 +4,10 @@ import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { History, Loader2, Pencil, X } from "lucide-react"
+import { CalendarCheck, History, Loader2, Pencil, X } from "lucide-react"
 import { tourByCompanyResType } from "@/schemaValidations/tour-operator.shema"
 import { ColumnDef, ColumnToggleDropdown } from "@/components/common/table/column-toggle-dropdown"
+import { cn } from "@/lib/utils"
 
 interface TourTableProps {
   tours: tourByCompanyResType[]
@@ -58,10 +59,10 @@ export function OpTourTable({
       accessorKey: "description",
       cell: (info) => (
         <div
-        className="max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap"
-        title={info.description}
-        dangerouslySetInnerHTML={{ __html: truncateDescription(info.description, 50) }}
-      />
+          className="max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap"
+          title={info.description}
+          dangerouslySetInnerHTML={{ __html: truncateDescription(info.description, 50) }}
+        />
       ),
       enableHiding: true,
     },
@@ -102,13 +103,22 @@ export function OpTourTable({
           <Button
             variant="ghost"
             size="icon"
-            className="text-red-600 hover:text-red-500 hover:bg-red-50"
+            className={cn(
+              info.isDeleted
+                ? "text-green-600 hover:text-green-500 hover:bg-green-50"
+                : "text-red-600 hover:text-red-500 hover:bg-red-50"
+            )}
             onClick={() => onCloseTour && onCloseTour(info)}
             title={info.isDeleted ? "Mở lại tour" : "Đóng tour"}
           >
-            <X className="h-3 w-3 font-bold" />
+            {info.isDeleted ? (
+              <CalendarCheck className="h-3 w-3" />
+            ) : (
+              <X className="h-3 w-3" />
+            )}
           </Button>
         </div>
+
       ),
       enableHiding: false,
       align: "center",
