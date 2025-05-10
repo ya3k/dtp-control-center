@@ -213,8 +213,8 @@ export default function EditTourDestinationForm({
     
     const newActivity = {
       name: "",
-      startTime: null,
-      endTime: null,
+      startTime: "",
+      endTime: "",
       sortOrder: currentActivities.length,
     };
 
@@ -356,28 +356,7 @@ export default function EditTourDestinationForm({
         tourId: tourId,
         destinations: sortedDestinations.map(dest => ({
           destinationId: dest.destinationId,
-          destinationActivities: dest.destinationActivities?.map(activity => {
-            const processedActivity: {
-              name: string;
-              sortOrder: number;
-              startTime?: string;
-              endTime?: string;
-            } = {
-              name: activity.name,
-              sortOrder: activity.sortOrder
-            };
-            
-            // Only include time fields if they have values
-            if (activity.startTime && activity.startTime !== '') {
-              processedActivity.startTime = activity.startTime;
-            }
-            
-            if (activity.endTime && activity.endTime !== '') {
-              processedActivity.endTime = activity.endTime;
-            }
-            
-            return processedActivity;
-          }) || [],
+          destinationActivities: dest.destinationActivities || [],
           startTime: dest.startTime,
           endTime: dest.endTime,
           sortOrder: dest.sortOrder,
@@ -385,7 +364,6 @@ export default function EditTourDestinationForm({
           img: dest.img || [],
         }))
       };
-      
       // Call API to update destinations
       const response = await tourApiService.putTourDesitnation(tourId, requestBody);
       
@@ -747,16 +725,13 @@ export default function EditTourDestinationForm({
                                                   name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.startTime`}
                                                   render={({ field }) => (
                                                     <FormItem>
-                                                      <FormLabel>Thời gian bắt đầu</FormLabel>
-                                                      <FormControl>
+                                                      <FormLabel>Thời gian bắt đầu <span className='text-red-600'>*</span></FormLabel>                                                      <FormControl>
                                                         <Input 
                                                           type="time" 
-                                                          value={field.value?.substring(0, 5) || ''} 
+                                                          value={field.value.substring(0, 5)} 
                                                           onChange={(e) => {
                                                             // If empty, set to null/undefined to match schema validation
-                                                            const newTime = e.target.value 
-                                                              ? `${e.target.value}:00` 
-                                                              : null;
+                                                            const newTime = `${e.target.value}:00`;
                                                             
                                                             const currentDestinations = [...form.getValues().destinations];
                                                             const currentActivities = [...currentDestinations[destinationIndex].destinationActivities];
@@ -782,17 +757,12 @@ export default function EditTourDestinationForm({
                                                   name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.endTime`}
                                                   render={({ field }) => (
                                                     <FormItem>
-                                                      <FormLabel>Thời gian kết thúc</FormLabel>
-                                                      <FormControl>
+                                                      <FormLabel>Thời gian kết thúc <span className='text-red-600'>*</span></FormLabel>                                                      <FormControl>
                                                         <Input 
                                                           type="time" 
-                                                          value={field.value?.substring(0, 5) || ''} 
-                                                          onChange={(e) => {
+                                                          value={field.value.substring(0, 5)}                                                           onChange={(e) => {
                                                             // If empty, set to null/undefined to match schema validation
-                                                            const newTime = e.target.value 
-                                                              ? `${e.target.value}:00` 
-                                                              : null;
-                                                            
+                                                            const newTime = `${e.target.value}:00`;
                                                             const currentDestinations = [...form.getValues().destinations];
                                                             const currentActivities = [...currentDestinations[destinationIndex].destinationActivities];
                                                             currentActivities[activityIndex] = {

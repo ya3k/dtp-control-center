@@ -49,20 +49,13 @@ export const destinationActivities = z.object({
   name: z.string()
     .min(3, "Tên hoạt động phải có ít nhất 3 ký tự"),
 
-  startTime: z.string()
-    .nullable()
-    .optional()
-    .refine(val => val === null || val === undefined || /^\d{2}:\d{2}:\d{2}$/.test(val), {
-      message: "Hãy nhập thời gian đúng định dạng (HH:mm:ss)."
-    }),
-
+    startTime: z.string()
+    .nonempty("Hãy nhập thời gian cho hoạt động")
+    .regex(/^\d{2}:\d{2}:\d{2}$/, "Định dạng thời gian không hợp lệ. Sử dụng HH:MM:SS"),
+  
   endTime: z.string()
-    .nullable()
-    .optional()
-    .refine(val => val === null || val === undefined || /^\d{2}:\d{2}:\d{2}$/.test(val), {
-      message: "Hãy nhập thời gian đúng định dạng (HH:mm:ss)."
-    }),
-
+    .nonempty("Hãy nhập thời gian cho hoạt động")
+    .regex(/^\d{2}:\d{2}:\d{2}$/, "Định dạng thời gian không hợp lệ. Sử dụng HH:MM:SS"),
   sortOrder: z.number()
     .int("Thứ tự phải là số nguyên")
     .nonnegative("Thứ tự không được âm"),
@@ -176,20 +169,8 @@ export type POSTTourType = z.infer<typeof TourSchema>;
 //put tour destination
 export const destinationResActivitySchema = z.object({
   name: z.string(),
-  
-  startTime: z.string()
-    .nullable()
-    .optional()
-    .refine(val => val === null || val === undefined || /^\d{2}:\d{2}:\d{2}$/.test(val), {
-      message: "Hãy nhập thời gian đúng định dạng (HH:mm:ss)."
-    }),
-
-  endTime: z.string()
-    .nullable()
-    .optional()
-    .refine(val => val === null || val === undefined || /^\d{2}:\d{2}:\d{2}$/.test(val), {
-      message: "Hãy nhập thời gian đúng định dạng (HH:mm:ss)."
-    }),
+  startTime: z.string(),
+  endTime: z.string(),
   sortOrder: z.number(),
 });
 

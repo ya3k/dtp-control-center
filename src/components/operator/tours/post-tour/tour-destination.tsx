@@ -83,11 +83,11 @@ export default function TourDestinationForm() {
       setDays([1]);
       return;
     }
-    
-    const maxDay = Math.max(...currentDestinations.map(d => 
+
+    const maxDay = Math.max(...currentDestinations.map(d =>
       typeof d.sortOrderByDate === 'number' ? d.sortOrderByDate : 1
     ));
-    
+
     setDays(Array.from({ length: maxDay }, (_, i) => i + 1));
   }, [form.watch('destinations')]);
 
@@ -109,9 +109,9 @@ export default function TourDestinationForm() {
 
   // Toggle destination expansion
   const toggleDestination = (destId: string) => {
-    setExpandedDestinations(prev => 
-      prev.includes(destId) 
-        ? prev.filter(id => id !== destId) 
+    setExpandedDestinations(prev =>
+      prev.includes(destId)
+        ? prev.filter(id => id !== destId)
         : [...prev, destId]
     );
   };
@@ -134,11 +134,11 @@ export default function TourDestinationForm() {
     const destinationsForThisDay = form.getValues().destinations?.filter(
       d => d.sortOrderByDate === dayNumber
     ) || [];
-    
-    const maxSortOrder = destinationsForThisDay.length > 0 
+
+    const maxSortOrder = destinationsForThisDay.length > 0
       ? Math.max(...destinationsForThisDay.map(d => d.sortOrder))
       : -1;
-    
+
     const newDestination: POSTTourDestinationType = {
       destinationId: "",
       destinationActivities: [],
@@ -151,12 +151,12 @@ export default function TourDestinationForm() {
 
     const updatedDestinations = [...(form.getValues().destinations || []), newDestination];
     form.setValue('destinations', updatedDestinations);
-    
+
     // Auto-expand the day when adding a new destination
     if (!expandedDays.includes(`day-${dayNumber}`)) {
       setExpandedDays([...expandedDays, `day-${dayNumber}`]);
     }
-    
+
     // Auto-expand the new destination
     const newDestinationKey = `day-${dayNumber}-dest-${destinationsForThisDay.length}`;
     if (!expandedDestinations.includes(newDestinationKey)) {
@@ -183,11 +183,11 @@ export default function TourDestinationForm() {
   const addActivity = (destinationIndex: number) => {
     const destinations = form.getValues().destinations || [];
     const currentActivities = destinations[destinationIndex].destinationActivities || [];
-    
+
     const newActivity = {
       name: "",
-      startTime: "",
-      endTime: "",
+      startTime: "08:00:00",
+      endTime: "17:00:00",
       sortOrder: currentActivities.length,
     };
 
@@ -217,22 +217,22 @@ export default function TourDestinationForm() {
   const handleFileChange = (destinationIndex: number, event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       const files = Array.from(event.target.files);
-      
+
       // Get current images for this destination
       const destination = form.getValues().destinations[destinationIndex];
       const existingImages = destination.img || [];
       const pendingImages = useTourStore.getState().pendingImages.destinationImages[destinationIndex] || [];
-      
+
       // Check if adding these files would exceed the limit
       const totalImagesAfterAdd = existingImages.length + pendingImages.length + files.length;
-      
+
       if (totalImagesAfterAdd > MAX_IMAGES) {
         toast.error(`Không thể tải lên hơn ${MAX_IMAGES} hình ảnh cho mỗi điểm đến. Hiện tại: ${existingImages.length + pendingImages.length} / ${MAX_IMAGES}`);
         // Reset the input field
         event.target.value = '';
         return;
       }
-      
+
       setPendingDestinationImages(destinationIndex, files);
     }
   };
@@ -241,48 +241,21 @@ export default function TourDestinationForm() {
     try {
       const data = form.getValues();
 
-      // Filter out empty time fields from each activity before validation and submission
-      const processedDestinations = data.destinations.map(destination => {
-        if (!destination.destinationActivities?.length) {
-          return destination;
-        }
-
-        const processedActivities = destination.destinationActivities.map(activity => {
-          const processed = { ...activity };
-          
-          // Remove empty or null time fields
-          if (!processed.startTime || processed.startTime === "") {
-            delete processed.startTime;
-          }
-          
-          if (!processed.endTime || processed.endTime === "") {
-            delete processed.endTime;
-          }
-          
-          return processed;
-        });
-
-        return {
-          ...destination,
-          destinationActivities: processedActivities
-        };
-      });
 
       // Validate with the processed data
       z.object({
         destinations: z.array(DestinationSchema).min(1, "Phải có ít nhất một điểm đến")
-      }).parse({ destinations: processedDestinations });
-      
+      }).parse(data);
       setError("");
-      
+
       // Sort destinations by day first, then by sortOrder within each day
-      const sortedDestinations = [...processedDestinations].sort((a, b) => {
+      const sortedDestinations = [...data.destinations].sort((a, b) => {
         if (a.sortOrderByDate === b.sortOrderByDate) {
           return a.sortOrder - b.sortOrder;
         }
         return a.sortOrderByDate - b.sortOrderByDate;
       });
-      
+
       // Update the formData in the store
       const updatedFormData: Partial<POSTTourType> = {
         destinations: sortedDestinations
@@ -290,7 +263,7 @@ export default function TourDestinationForm() {
       useTourStore.setState((state) => ({
         formData: { ...state.formData, ...updatedFormData }
       }));
-      
+
       nextStep();
     } catch (err: unknown) {
       const error = err as z.ZodError;
@@ -310,21 +283,21 @@ export default function TourDestinationForm() {
     const destinations = [...form.getValues().destinations];
     const destination = destinations[destinationIndex];
     const day = destination.sortOrderByDate;
-    
+
     // Find destinations for the same day
     const currentSortOrder = destination.sortOrder;
-    
+
     if (currentSortOrder > 0) {
       // Find the destination with the previous sort order
       const previousDestIndex = destinations.findIndex(
         d => d.sortOrderByDate === day && d.sortOrder === currentSortOrder - 1
       );
-      
+
       if (previousDestIndex !== -1) {
         // Swap the sort orders
         destinations[destinationIndex].sortOrder--;
         destinations[previousDestIndex].sortOrder++;
-        
+
         form.setValue('destinations', destinations);
       }
     }
@@ -335,22 +308,22 @@ export default function TourDestinationForm() {
     const destinations = [...form.getValues().destinations];
     const destination = destinations[destinationIndex];
     const day = destination.sortOrderByDate;
-    
+
     // Find destinations for the same day
     const dayDestinations = getDestinationsForDay(day);
     const currentSortOrder = destination.sortOrder;
-    
+
     if (currentSortOrder < dayDestinations.length - 1) {
       // Find the destination with the next sort order
       const nextDestIndex = destinations.findIndex(
         d => d.sortOrderByDate === day && d.sortOrder === currentSortOrder + 1
       );
-      
+
       if (nextDestIndex !== -1) {
         // Swap the sort orders
         destinations[destinationIndex].sortOrder++;
         destinations[nextDestIndex].sortOrder--;
-        
+
         form.setValue('destinations', destinations);
       }
     }
@@ -362,7 +335,7 @@ export default function TourDestinationForm() {
     const hasPendingImages = Object.values(pendingImages.destinationImages).some(
       files => files && files.length > 0
     );
-    
+
     if (!hasPendingImages) {
       // This forces a re-render of any destination cards with pending images
       form.setValue('destinations', [...form.getValues().destinations]);
@@ -382,7 +355,7 @@ export default function TourDestinationForm() {
   // Update preview URLs when pending images change
   useEffect(() => {
     const newPreviewUrls: Record<number, string[]> = {};
-    
+
     Object.entries(pendingImages.destinationImages).forEach(([index, files]) => {
       if (files && files.length > 0) {
         const destIndex = parseInt(index);
@@ -431,19 +404,19 @@ export default function TourDestinationForm() {
             )}
 
             <ScrollArea className="h-[700px] pr-4">
-              <Accordion 
-                type="multiple" 
-                value={expandedDays} 
+              <Accordion
+                type="multiple"
+                value={expandedDays}
                 onValueChange={setExpandedDays}
                 className="space-y-4"
               >
                 {days.map((day) => {
                   const dayKey = `day-${day}`;
                   const dayDestinations = getDestinationsForDay(day);
-                  
+
                   return (
-                    <AccordionItem 
-                      key={dayKey} 
+                    <AccordionItem
+                      key={dayKey}
                       value={dayKey}
                       className="border border-border rounded-lg overflow-hidden bg-card"
                     >
@@ -479,7 +452,7 @@ export default function TourDestinationForm() {
                             );
                             const destKey = `day-${day}-dest-${idx}`;
                             const isExpanded = expandedDestinations.includes(destKey);
-                            
+
                             return (
                               <Collapsible
                                 key={destKey}
@@ -491,7 +464,7 @@ export default function TourDestinationForm() {
                                   <div className="flex items-center gap-2">
                                     <ChevronRight className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
                                     <span className="text-base font-medium">Điểm đến {idx + 1}</span>
-                                    {destination.destinationId && 
+                                    {destination.destinationId &&
                                       <span className="text-sm text-muted-foreground">
                                         ({destinations.find(d => d.id === destination.destinationId)?.name || ''})
                                       </span>
@@ -535,7 +508,7 @@ export default function TourDestinationForm() {
                                     </Button>
                                   </div>
                                 </CollapsibleTrigger>
-                                
+
                                 <CollapsibleContent className="p-4 space-y-4">
                                   <FormField
                                     control={form.control}
@@ -566,7 +539,7 @@ export default function TourDestinationForm() {
                                               type="time"
                                               step="1"
                                               {...field}
-                                              
+
                                               onChange={(e) => handleDestinationChange('startTime', e.target.value, destinationIndex)}
                                             />
                                           </FormControl>
@@ -603,11 +576,11 @@ export default function TourDestinationForm() {
                                         <div className="flex flex-wrap gap-2 mb-2">
                                           {destination.img?.map((imgUrl, imgIdx) => (
                                             <div key={`img-${imgIdx}`} className="relative w-24 h-24 rounded overflow-hidden">
-                                              <Image 
-                                                src={imgUrl} 
-                                                alt={`Destination image ${imgIdx + 1}`} 
-                                                width={96} 
-                                                height={96} 
+                                              <Image
+                                                src={imgUrl}
+                                                alt={`Destination image ${imgIdx + 1}`}
+                                                width={96}
+                                                height={96}
                                                 className="object-cover"
                                               />
                                               <Button
@@ -625,7 +598,7 @@ export default function TourDestinationForm() {
                                               </Button>
                                             </div>
                                           ))}
-                                          
+
                                           {pendingImages.destinationImages[destinationIndex]?.map((file, fileIdx) => (
                                             <div key={`pending-${fileIdx}`} className="relative w-24 h-24 rounded overflow-hidden">
                                               {previewUrls[destinationIndex]?.[fileIdx] ? (
@@ -660,13 +633,12 @@ export default function TourDestinationForm() {
                                             </div>
                                           ))}
                                         </div>
-                                        
+
                                         <div className="flex items-center gap-2">
-                                          <label className={`cursor-pointer flex-1 ${
-                                            ((destination.img?.length || 0) + (pendingImages.destinationImages[destinationIndex]?.length || 0) >= MAX_IMAGES) 
-                                              ? 'opacity-50 cursor-not-allowed' 
+                                          <label className={`cursor-pointer flex-1 ${((destination.img?.length || 0) + (pendingImages.destinationImages[destinationIndex]?.length || 0) >= MAX_IMAGES)
+                                              ? 'opacity-50 cursor-not-allowed'
                                               : ''
-                                          }`}>
+                                            }`}>
                                             <Input
                                               type="file"
                                               accept="image/*"
@@ -684,7 +656,7 @@ export default function TourDestinationForm() {
                                             {(destination.img?.length || 0) + (pendingImages.destinationImages[destinationIndex]?.length || 0)}/{MAX_IMAGES}
                                           </div>
                                         </div>
-                                        
+
                                         {((destination.img?.length || 0) + (pendingImages.destinationImages[destinationIndex]?.length || 0) > MAX_IMAGES) && (
                                           <Alert variant="destructive" className="mt-2">
                                             <AlertCircle className="h-4 w-4" />
@@ -750,12 +722,11 @@ export default function TourDestinationForm() {
                                                   name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.startTime`}
                                                   render={({ field }) => (
                                                     <FormItem>
-                                                      <FormLabel>Thời gian bắt đầu</FormLabel>
-                                                      <FormControl>
-                                                        <Input 
-                                                          type="time" 
-                                                          step="1" 
-                                                          {...field} 
+                                                      <FormLabel>Thời gian bắt đầu <span className='text-red-600'>*</span></FormLabel>                                                      <FormControl>
+                                                        <Input
+                                                          type="time"
+                                                          step="1"
+                                                          {...field}
                                                           value={field.value || ""}
                                                         />
                                                       </FormControl>
@@ -769,12 +740,11 @@ export default function TourDestinationForm() {
                                                   name={`destinations.${destinationIndex}.destinationActivities.${activityIndex}.endTime`}
                                                   render={({ field }) => (
                                                     <FormItem>
-                                                      <FormLabel>Thời gian kết thúc</FormLabel>
-                                                      <FormControl>
-                                                        <Input 
-                                                          type="time" 
-                                                          step="1" 
-                                                          {...field} 
+                                                      <FormLabel>Thời gian kết thúc <span className='text-red-600'>*</span></FormLabel>                                                      <FormControl>
+                                                        <Input
+                                                          type="time"
+                                                          step="1"
+                                                          {...field}
                                                           value={field.value || ""}
                                                         />
                                                       </FormControl>

@@ -98,7 +98,11 @@ export function SettingTable() {
                     <TableRow key={setting.id}>
                       <TableCell>{setting.settingCode}</TableCell>
                       <TableCell>{setting.settingKey}</TableCell>
-                      <TableCell>{setting.settingValue}</TableCell>
+                      <TableCell>
+                        {setting.settingValue}
+                        {setting.settingKey.toLowerCase().includes('(date)') && ' ngày'}
+                        {setting.settingKey.toLowerCase().includes('phần trăm') && ' %'}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button

@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { z } from "zod"
-import { SystemSetting, SystemSettingSchema } from "@/schemaValidations/system.schema"
+import { SystemSetting, putSystemSettingSchema } from "@/schemaValidations/system.schema"
 import { toast } from "sonner"
 import {
   Dialog,
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { SettingForm } from "./setting-form"
 
-const formSchema = SystemSettingSchema.omit({ id: true })
+const formSchema = putSystemSettingSchema
 type FormValues = z.infer<typeof formSchema>
 
 interface EditSettingDialogProps {
@@ -40,13 +40,11 @@ export function EditSettingDialog({
       await new Promise((resolve) => setTimeout(resolve, 1000))
       
       const updatedSetting: SystemSetting = {
-        id: setting.id,
-        settingCode: data.settingCode,
-        settingKey: data.settingKey,
+        ...setting,
         settingValue: data.settingValue
       }
       
-      toast.success("Setting updated successfully")
+      toast.success("Cập nhật thành công")
       onOpenChange(false)
       onEditComplete(updatedSetting)
     } catch (error) {
@@ -61,9 +59,9 @@ export function EditSettingDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Setting</DialogTitle>
+          <DialogTitle>Chỉnh sửa thông số hủy tour</DialogTitle>
           <DialogDescription>
-            Update the system setting details. Click save when done.
+           
           </DialogDescription>
         </DialogHeader>
 

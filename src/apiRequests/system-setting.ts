@@ -1,4 +1,4 @@
-import { SystemSetting } from "@/schemaValidations/system.schema";
+import { PUTSystemType, SystemSetting } from "@/schemaValidations/system.schema";
 import http from "@/lib/http";
 import { apiEndpoint } from "@/configs/routes";
 
@@ -13,9 +13,9 @@ export const systemSettingApiRequest = {
     }
   },
 
-  putSystem: async (body: SystemSetting) =>{
+  putSystem: async (body: PUTSystemType) =>{
     try {
-      const response = await http.put<SystemSetting>(apiEndpoint.system, body);
+      const response = await http.put(apiEndpoint.system, body);
       return response;
     } catch (error) {
       console.error("Failed to update system settings:", error);
