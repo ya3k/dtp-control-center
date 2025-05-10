@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { SettingForm } from "./setting-form"
+import { systemSettingApiRequest } from "@/apiRequests/system-setting"
 
 const formSchema = putSystemSettingSchema
 type FormValues = z.infer<typeof formSchema>
@@ -34,10 +35,10 @@ export function EditSettingDialog({
 
     setIsSubmitting(true)
     try {
-      // This will be replaced with actual API call when ready
-      console.log("Updating setting:", setting.id, data)
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const response = await systemSettingApiRequest.putSystem({
+        id: setting.id,
+        settingValue: data.settingValue
+      })
       
       const updatedSetting: SystemSetting = {
         ...setting,
@@ -49,7 +50,7 @@ export function EditSettingDialog({
       onEditComplete(updatedSetting)
     } catch (error) {
       console.error("Error updating setting:", error)
-      toast.error("Failed to update setting")
+      toast.error("Cập nhật thất bại")
     } finally {
       setIsSubmitting(false)
     }
