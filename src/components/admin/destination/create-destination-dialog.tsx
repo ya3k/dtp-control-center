@@ -147,7 +147,7 @@ export function CreateDestinationDialog({
 
       map.current = new window.maplibregl.Map({
         container: mapContainer.current,
-        style: 'https://api.maptiler.com/maps/streets/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL',
+        style: 'https://api.maptiler.com/maps/streets/style.json?key=jfuhFK1rEPxjG0UbJpDL',
         center: [lng, lat],
         zoom: 15
       });

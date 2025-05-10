@@ -35,11 +35,11 @@ export default function CompanyConfirm() {
     setLoading(true);
     const fetchConfirmation = async () => {
       try {
-        console.log(decodedToken)
+        // console.log(decodedToken)
         const res = await authApiRequest.confrimAccountClientToBe({
           confirmationToken: decodedToken,
         });
-        console.log(res)
+        // console.log(res)
       } catch (error) {
         if (error instanceof HttpError) {
           setError(error.payload.message);

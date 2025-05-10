@@ -111,7 +111,8 @@ export const apiEndpoint = {
     adAnalys: `/api/tour/admin/analys`,
 
     //system setting
-    system: `/api/system`
+    system: `/api/system`,
+    feedback : `/api/tour/feedback`,
 }
 
 

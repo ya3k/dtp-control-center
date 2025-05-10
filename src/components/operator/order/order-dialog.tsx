@@ -34,7 +34,8 @@ export function OrderToursHistoryDialog({ tour, open, onOpenChange }: OrderListT
                     filter = `&$filter=tourDate eq ${formattedDate}`
                 }
                 const response = await orderApiRequest.getTourOrderHistory(tour.id, filter)
-                console.log("Order history response:", JSON.stringify(response.payload.value))
+                
+                // console.log("Order history response:", JSON.stringify(response.payload.value))
                 setOrderHistory(response.payload.value || [])
             } catch (error) {
                 console.error("Error fetching order history:", error)
@@ -72,12 +73,14 @@ export function OrderToursHistoryDialog({ tour, open, onOpenChange }: OrderListT
                 </DialogHeader>
 
                 <div className="mb-4">
+                    <p>Tìm kiếm theo ngày đi</p>
                     <input
                         type="date"
                         value={selectedDate}
                         onChange={(e) => handleDateChange(e.target.value)}
                         className="border rounded p-2"
                     />
+                    
                     {selectedDate && (
                         <Button
                             variant={'destructive'}

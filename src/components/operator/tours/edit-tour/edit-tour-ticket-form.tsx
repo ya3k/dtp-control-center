@@ -49,7 +49,7 @@ export default function TourEditTicketForm({ tourId, onUpdateSuccess }: TourEdit
         setIsLoading(true)
         try {
             const response = await tourApiService.getTourScheduleTicket(tourId);
-            console.log(JSON.stringify(response))
+            // console.log(JSON.stringify(response))
             // Group tickets by day
             const grouped = (response.payload.data as ScheduleType[]).reduce((acc: GroupedTickets, schedule) => {
                 acc[schedule.day] = schedule.ticketSchedules;

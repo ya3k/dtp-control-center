@@ -88,6 +88,15 @@ export const walletApiRequest = {
       throw error;
     }
   },
+  rejectWithdraw: async (trancId: string, remark: string) => {
+    try {
+      const response = await http.post(`${apiEndpoint.wallet}/external-transaction/${trancId}/reject`, {remark: remark});
+      return response;
+    } catch (error) {
+      console.error("fail to reject withdraw:", error);
+      throw error;
+    }
+  },
   getBankList: async () => {
     try {
       const response = await fetch(`https://api.banklookup.net/api/bank/list`);

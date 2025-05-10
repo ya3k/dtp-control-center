@@ -16,8 +16,8 @@ export default function FcmTokenComp() {
         // console.log(messaging)
         const unsubscribe = onMessage(messaging, (payload) => {
           console.log('Foreground push notification received:', JSON.stringify(payload));
-          const test = JSON.stringify(payload)
-          console.log(`tst `, test)
+          // const test = JSON.stringify(payload)
+          // console.log(`tst `, test)
           console.log(payload.notification)
           // Based on the actual payload structure you're receiving
           // The notification content is in payload.data

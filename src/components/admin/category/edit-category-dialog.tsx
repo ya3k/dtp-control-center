@@ -34,7 +34,7 @@ export function EditCategoryDialog({
     setIsSubmitting(true)
     try {
       const response = await categoryApiRequest.update(category.id, data)
-      console.log(JSON.stringify(response.payload))
+      // console.log(JSON.stringify(response.payload))
       
       if (response.status === 204) {
         const updatedCategory = { ...category, ...data }

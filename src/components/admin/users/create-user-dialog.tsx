@@ -47,7 +47,7 @@ export function CreateUserDialog({
   const [companies, setCompanies] = useState<{ id: string, name: string }[]>([])
   const [isLoadingCompanies, setIsLoadingCompanies] = useState(false);
   const { user } = useAuthContext();
-  console.log(`dada`, user?.companyId)
+  // console.log(`dada`, user?.companyId)
   const confirmURL = `${envConfig.NEXT_PUBLIC_BASE_URL}${links.companyConfirm.href}`;
 
   const companyId = user?.roleName === UserRoleEnum.Operator ? user.companyId : null;

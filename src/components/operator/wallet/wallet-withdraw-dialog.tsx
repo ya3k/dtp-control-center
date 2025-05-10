@@ -49,7 +49,7 @@ export function WalletWithdrawDialog({
   const form = useForm<WithDrawType>({
     resolver: zodResolver(WithDrawSchema),
     defaultValues: {
-      amount: 100000,
+      amount: 5000,
       bankAccountNumber: "",
       bankName: "",
       bankAccount: "",

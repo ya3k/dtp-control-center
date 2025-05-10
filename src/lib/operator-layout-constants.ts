@@ -1,5 +1,5 @@
 import SidebarItem from "@/types/sidebaritems";
-import { Banknote, Calendar, History, Home, MapPin, Torus, Users, Wallet2 } from "lucide-react";
+import { Banknote, Calendar, History, Home, MapPin, NotebookPen, Torus, Users, Wallet2 } from "lucide-react";
 export const operatorItems: SidebarItem[] = [
     {
         title: "Dashboard",
@@ -13,6 +13,7 @@ export const operatorItems: SidebarItem[] = [
         subItems: [
             { title: "Danh Sách Tour", url: "/operator/tours", icon: Calendar },
             { title: "Tạo Tour", url: "/operator/tours/create", icon: MapPin },
+            { title: "FeedBack", url: "/operator/tours/feedback", icon: NotebookPen },
         ],
     },
     // {

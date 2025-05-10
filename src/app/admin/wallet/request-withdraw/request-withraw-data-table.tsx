@@ -133,7 +133,7 @@ export default function RequestWithdrawDataTable() {
      
       console.log(`Approving request ${requestId}`)
       const res = await walletApiRequest.acceptWithdraw(requestId);
-      console.log(JSON.stringify(res))
+      // console.log(JSON.stringify(res))
       toast.success("Duyệt thành công")
 
       // Refresh the list after approval
@@ -144,16 +144,17 @@ export default function RequestWithdrawDataTable() {
   }
 
   // Handle rejecting a withdrawal request
-  const handleRejectRequest = async (requestId: string) => {
+  const handleRejectRequest = async (requestId: string, remark: string) => {
     try {
-      // Implement rejection API call here
-      // await walletApiRequest.rejectWithdrawRequest(requestId)
-      console.log(`Rejecting request ${requestId}`)
-      
+      const res = await walletApiRequest.rejectWithdraw(requestId, remark);
+      // console.log(JSON.stringify(res))
+      toast.success("Đã từ chối yêu cầu rút tiền")
+
       // Refresh the list after rejection
       fetchWithdrawRequests()
     } catch (error) {
       console.error("Error rejecting withdrawal request:", error)
+      toast.error("Không thể từ chối yêu cầu rút tiền")
     }
   }
 

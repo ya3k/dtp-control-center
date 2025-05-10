@@ -263,7 +263,7 @@ export default function BasicTourInfoForm() {
                     )}
                   </div>
                   <FormDescription>
-                    Hình ảnh sẽ được tải lên khi bạn gửi biểu mẫu. Định dạng hỗ trợ: JPG, PNG, WebP. Kích thước tối đa: 5MB mỗi hình.
+                    Hình ảnh sẽ được tải lên khi bạn gửi biểu mẫu. Định dạng hỗ trợ: JPG, PNG, WebP. Kích thước tối đa: 1MB mỗi hình.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

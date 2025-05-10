@@ -202,7 +202,7 @@ export default function TourEditScheduleForm({ tourId }: TourEditScheduleFormPro
                                         }
                                         footer={
                                             <p className="mt-2 text-sm text-muted-foreground text-center">
-                                                Nhấp vào ngày có lịch trình <span className="font-bold text-black">(in đậm)</span> để xóa lịch trình
+                                                Nhấp vào ngày có lịch trình <span className="font-bold text-black">(in đậm)</span> để hủy lịch trình
                                             </p>
                                         }
                                     />

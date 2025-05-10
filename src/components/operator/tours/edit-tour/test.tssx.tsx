@@ -26,7 +26,7 @@ const TourEditPage = ({ tourId, onUpdateSuccess }: TourEditDestinationProps) => 
             try {
                 setIsLoading(true);
                 const resTourDes = await tourApiService.getTourDestination(tourId);
-                console.log(resTourDes.payload.data)
+                // console.log(resTourDes.payload.data)
                 setTourDestinations(resTourDes.payload.data)
             } catch (error) {
                 console.log(error)

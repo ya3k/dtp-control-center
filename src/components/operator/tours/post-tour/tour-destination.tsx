@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { DestinationSchema, POSTTourDestinationType, POSTTourType } from '@/schemaValidations/crud-tour.schema';
 import useTourStore from '@/store/tourStore';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Trash2, FileImage, ChevronDown, ChevronUp, ChevronRight, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, FileImage, ChevronDown, ChevronUp, ChevronRight, AlertCircle, RefreshCw } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -59,20 +59,20 @@ export default function TourDestinationForm() {
   });
 
   // Handle data fetching
+  const fetchDestinations = async () => {
+    try {
+      setIsLoading(true);
+      const response = await destinationApiRequest.getAll();
+      const data = await response.payload.value;
+      setDestinations(data);
+    } catch (error) {
+      console.error("Failed to fetch destinations:", error);
+      toast.error("Failed to load destinations");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchDestinations = async () => {
-      try {
-        setIsLoading(true);
-        const response = await destinationApiRequest.getAll();
-        const data = await response.payload.value;
-        setDestinations(data);
-      } catch (error) {
-        console.error("Failed to fetch destinations:", error);
-        toast.error("Failed to load destinations");
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchDestinations();
   }, []);
 
@@ -387,14 +387,25 @@ export default function TourDestinationForm() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold">Lịch trình tour theo ngày</h2>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={addDay}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Thêm ngày mới
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={fetchDestinations}
+                  disabled={isLoading}
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                  Tải lại điểm đến
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addDay}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Thêm ngày mới
+                </Button>
+              </div>
             </div>
 
             {error && (
@@ -516,12 +527,25 @@ export default function TourDestinationForm() {
                                     render={({ field }) => (
                                       <FormItem>
                                         <FormLabel>Điểm đến <span className='text-red-600'>*</span></FormLabel>
-                                        <DestinationSearch
-                                          destinations={destinations}
-                                          value={field.value}
-                                          onChange={(value) => handleDestinationChange('destinationId', value, destinationIndex)}
-                                          disabled={isLoading}
-                                        />
+                                        <div className="flex gap-2">
+                                          <div className="flex-1">
+                                            <DestinationSearch
+                                              destinations={destinations}
+                                              value={field.value}
+                                              onChange={(value) => handleDestinationChange('destinationId', value, destinationIndex)}
+                                              disabled={isLoading}
+                                            />
+                                          </div>
+                                          <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={fetchDestinations}
+                                            disabled={isLoading}
+                                          >
+                                            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                                          </Button>
+                                        </div>
                                         <FormMessage />
                                       </FormItem>
                                     )}

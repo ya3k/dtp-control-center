@@ -128,7 +128,7 @@ export default function CompanyDataTable() {
       // Use tourApiService instead of direct fetch
       const response = await companyApiRequest.getWithOData(queryString)
       console.log(queryString)
-      console.log(JSON.stringify(response.payload))
+      // console.log(JSON.stringify(response.payload))
       setCompanies(response.payload?.value)
       setTotalCount(response.payload["@odata.count"] || 0)
     } catch (error) {

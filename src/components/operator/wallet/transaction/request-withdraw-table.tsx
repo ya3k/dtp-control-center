@@ -9,13 +9,23 @@ import { AdminExternalTransactionType } from "@/schemaValidations/wallet.schema"
 import { ColumnDef, ColumnToggleDropdown } from "@/components/common/table/column-toggle-dropdown"
 import { formatPrice } from "@/lib/utils"
 import { toast } from "sonner"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 
 interface RequestWithdrawTableProps {
   withdrawRequests: AdminExternalTransactionType[]
   loading: boolean
   resetFilters: () => void
   onApprove?: (requestId: string) => void
-  onReject?: (requestId: string) => void
+  onReject?: (requestId: string, remark: string) => void
 }
 
 export function RequestWithdrawTable({
@@ -27,6 +37,9 @@ export function RequestWithdrawTable({
 }: RequestWithdrawTableProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [approvingId, setApprovingId] = useState<string | null>(null)
+  const [rejectingId, setRejectingId] = useState<string | null>(null)
+  const [remark, setRemark] = useState("")
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false)
 
   const handleApprove = async (requestId: string) => {
     setApprovingId(requestId)
@@ -34,6 +47,24 @@ export function RequestWithdrawTable({
       await onApprove?.(requestId)
     } finally {
       setApprovingId(null)
+    }
+  }
+
+  const handleReject = async (requestId: string) => {
+    setRejectingId(requestId)
+    setIsRejectDialogOpen(true)
+  }
+
+  const handleRejectConfirm = async () => {
+    if (!rejectingId) return
+    
+    try {
+      await onReject?.(rejectingId, remark)
+      setIsRejectDialogOpen(false)
+      setRemark("")
+    } catch {
+    } finally {
+      setRejectingId(null)
     }
   }
 
@@ -281,18 +312,19 @@ export function RequestWithdrawTable({
                   </>
                 )}
               </Button>
-              {/* <Button
+              <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onReject && onReject(request.id)}
+                onClick={() => handleReject(request.id)}
+                disabled={rejectingId === request.id}
                 className="flex items-center gap-1"
               >
                 <XCircle className="h-4 w-4 text-red-500" />
                 <span>Từ chối</span>
-              </Button> */}
+              </Button>
             </>
           )}
-          {(request.status === "Approved" || request.status === "Processing") && (
+          {/* {(request.status === "Approved" || request.status === "Processing") && (
             <Badge variant="secondary">Đang xử lý</Badge>
           )}
           {request.status === "Completed" && (
@@ -300,7 +332,7 @@ export function RequestWithdrawTable({
           )}
           {request.status === "Rejected" && (
             <Badge variant="destructive">Đã từ chối</Badge>
-          )}
+          )} */}
         </div>
       ),
       enableHiding: false,
@@ -343,6 +375,49 @@ export function RequestWithdrawTable({
 
   return (
     <div>
+      {/* Reject Dialog */}
+      <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Từ chối yêu cầu rút tiền</DialogTitle>
+            <DialogDescription>
+              Vui lòng nhập lý do từ chối yêu cầu rút tiền này.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="remark">Lý do từ chối</Label>
+              <Textarea
+                id="remark"
+                value={remark}
+                onChange={(e) => setRemark(e.target.value)}
+                placeholder="Nhập lý do từ chối..."
+                className="min-h-[100px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsRejectDialogOpen(false)
+                setRemark("")
+                setRejectingId(null)
+              }}
+            >
+              Hủy
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleRejectConfirm}
+              disabled={!remark.trim()}
+            >
+              Xác nhận từ chối
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Column visibility dropdown */}
       <div className="flex justify-end my-2 px-4">
         <ColumnToggleDropdown

@@ -63,7 +63,7 @@ export function LoginForm({
           });
 
           if (currentToken) {
-            console.log(currentToken);
+            // console.log(currentToken);
             return currentToken;
           } else {
             console.log(

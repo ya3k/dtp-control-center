@@ -61,13 +61,13 @@ export function ApproveCompanyDialog({ open, onOpenChange, onApprovalComplete }:
 
     try {
       // Call API to approve company with the correct request body format
-      console.log(JSON.stringify(
-        {
-          companyId: company.id,
-          confirmUrl: `${envConfig.NEXT_PUBLIC_BASE_URL}${links.companyConfirm.href}`,
-          accept: true,
-        }
-      ))
+      // console.log(JSON.stringify(
+      //   {
+      //     companyId: company.id,
+      //     confirmUrl: `${envConfig.NEXT_PUBLIC_BASE_URL}${links.companyConfirm.href}`,
+      //     accept: true,
+      //   }
+      // ))
       const respones = await companyApiRequest.approve({
         companyId: company.id,
         confirmUrl: `${envConfig.NEXT_PUBLIC_BASE_URL}${links.companyConfirm.href}`,

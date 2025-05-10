@@ -7,7 +7,7 @@ export const WalletResSchema = z.object({
 })
 
 export const WithDrawSchema = z.object({
-    amount: z.number().positive().min(100000, "Số tiền tối thiểu là 100,000 VNĐ"),
+    amount: z.number().positive().min(5000, "Số tiền tối thiểu là 2000 VNĐ"),
     bankAccountNumber: z.string(),
     bankName: z.string(),
     bankAccount: z.string(),

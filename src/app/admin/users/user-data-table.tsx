@@ -55,7 +55,7 @@ export default function UserDataTable() {
     try {
       // Fetch companies for dropdown, with error handling
       const companiesResponse = await companyApiRequest.getWithOData()
-      console.log(JSON.stringify(companiesResponse))
+      // console.log(JSON.stringify(companiesResponse))
       
       setCompanies(companiesResponse.payload.value || [])
     } catch (error) {
@@ -136,7 +136,7 @@ export default function UserDataTable() {
 
       // Use userApiRequest with error handling
       const response = await userApiRequest.getWithOdata(queryString)
-      console.log(JSON.stringify(response.payload))
+      // console.log(JSON.stringify(response.payload))
 
       
       setUsers(response.payload.value || [])

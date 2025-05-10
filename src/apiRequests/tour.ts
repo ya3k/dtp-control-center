@@ -155,6 +155,15 @@ const tourApiService = {
     }
   },
 
+  getFeedBack: async () => {
+    try {
+      const response = await http.get(`${apiEndpoint.feedback}`);
+      return response;
+    } catch (error) {
+      console.error("Failed to fetch feedback:", error);
+      throw error;
+    }
+  }
 
 
 };

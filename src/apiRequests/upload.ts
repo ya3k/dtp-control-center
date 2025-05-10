@@ -70,18 +70,18 @@ const uploadApiRequest = {
     });
 
     // Debug log for FormData
-    console.log('FormData structure:');
-    for (const [key, value] of formData.entries()) {
-      if (value instanceof File) {
-        console.log(`${key}:`, {
-          name: value.name,
-          type: value.type,
-          size: `${(value.size / 1024 / 1024).toFixed(2)} MB`
-        });
-      } else {
-        console.log(`${key}:`, value);
-      }
-    }
+    // console.log('FormData structure:');
+    // for (const [key, value] of formData.entries()) {
+    //   if (value instanceof File) {
+    //     console.log(`${key}:`, {
+    //       name: value.name,
+    //       type: value.type,
+    //       size: `${(value.size / 1024 / 1024).toFixed(2)} MB`
+    //     });
+    //   } else {
+    //     console.log(`${key}:`, value);
+    //   }
+    // }
     
     return uploadApiRequest.uploadWithFormData(formData);
   },
@@ -107,14 +107,14 @@ const uploadApiRequest = {
    * @returns Promise with upload response containing URLs
    */
   uploadTourImages: async (files: File[]): Promise<UploadResponse> => {
-    console.log('uploadTourImages called with:', {
-      numberOfFiles: files.length,
-      files: files.map(f => ({
-        name: f.name,
-        type: f.type,
-        size: `${(f.size / 1024 / 1024).toFixed(2)} MB`
-      }))
-    });
+    // console.log('uploadTourImages called with:', {
+    //   numberOfFiles: files.length,
+    //   files: files.map(f => ({
+    //     name: f.name,
+    //     type: f.type,
+    //     size: `${(f.size / 1024 / 1024).toFixed(2)} MB`
+    //   }))
+    // });
 
     // Create an array of tour image types matching the number of files
     const imageTypes = Array(files.length).fill(IMAGE_TYPES.TOUR);
@@ -178,24 +178,24 @@ const uploadApiRequest = {
   uploadWithFormData: async (formData: FormData): Promise<UploadResponse> => {
     try {
       // Enhanced FormData logging
-      console.log('FormData contents:');
-      for (const pair of formData.entries()) {
-        if (pair[1] instanceof File) {
-          console.log(`${pair[0]}: File`, {
-            name: pair[1].name,
-            type: pair[1].type,
-            size: `${(pair[1].size / 1024 / 1024).toFixed(2)} MB`
-          });
-        } else {
-          console.log(`${pair[0]}:`, pair[1]);
-        }
-      }
+      // console.log('FormData contents:');
+      // for (const pair of formData.entries()) {
+      //   if (pair[1] instanceof File) {
+      //     console.log(`${pair[0]}: File`, {
+      //       name: pair[1].name,
+      //       type: pair[1].type,
+      //       size: `${(pair[1].size / 1024 / 1024).toFixed(2)} MB`
+      //     });
+      //   } else {
+      //     console.log(`${pair[0]}:`, pair[1]);
+      //   }
+      // }
 
       // Log request details
-      console.log('Upload request URL:', `${baseURL}${apiEndpoint.upload}`);
-      console.log('Upload request headers:', {
-        Authorization: 'Bearer [TOKEN]' // Don't log actual token
-      });
+      // console.log('Upload request URL:', `${baseURL}${apiEndpoint.upload}`);
+      // console.log('Upload request headers:', {
+      //   Authorization: 'Bearer [TOKEN]' // Don't log actual token
+      // });
 
       const response = await fetch(`${baseURL}${apiEndpoint.upload}`, {
         method: 'POST',
@@ -207,9 +207,9 @@ const uploadApiRequest = {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Upload failed with status:', response.status);
-        console.error('Error response:', errorText);
-        console.error('Response headers:', Object.fromEntries(response.headers.entries()));
+        // console.error('Upload failed with status:', response.status);
+        // console.error('Error response:', errorText);
+        // console.error('Response headers:', Object.fromEntries(response.headers.entries()));
         throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
       }
 

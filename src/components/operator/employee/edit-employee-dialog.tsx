@@ -49,7 +49,7 @@ function EditEmployeeDialog({ user, open, onOpenChange }: EditEmployeeDialogProp
     if (!user) return  
     setIsSubmitting(true)
     try {
-      console.log(data)
+      // console.log(data)
       toast.success(`${data.email} update`)
       onOpenChange(false)
     } catch (error) {

@@ -78,8 +78,8 @@ export function EditVoucherDialog({
         // Format date to ISO string format
         expiryDate: format(selectedDate, "yyyy-MM-dd"),
       }
-      console.log(`vourcher id`, voucher.id)
-      console.log(JSON.stringify(updatedVoucherData))
+      // console.log(`vourcher id`, voucher.id)
+      // console.log(JSON.stringify(updatedVoucherData))
       // Call API to update voucher
       const response = await voucherApiRequest.updateVoucher(voucher.id, updatedVoucherData)
       
